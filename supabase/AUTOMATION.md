@@ -50,6 +50,12 @@ automatically. Leave the one-time checkbox unchecked on future manual runs.
 The existing workflow concurrency group prevents overlapping database deploys.
 No credentials are published in the wiki artifact.
 
+Each workflow attempt uploads and deploys a matching artifact named
+`github-pages-RUN_ID-ATTEMPT`. The workflow waits for that artifact to appear in
+the listing API before deploying, so a retry does not select an older attempt's
+artifact. When updating the workflow to fix a failed run, push the changes and
+start a new run: rerunning an old job keeps that job's original workflow code.
+
 ## Adopted versions
 
 | Version | Already-applied original SQL |
