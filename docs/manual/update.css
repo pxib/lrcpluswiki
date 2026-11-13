@@ -1,0 +1,29 @@
+.wiki-update {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  max-width: calc(100% - 32px);
+  padding: 12px 16px;
+  border: 1px solid var(--accent, #36c);
+  border-radius: 3px;
+  background: var(--surface, #fff);
+  color: var(--text, #202122);
+  box-shadow: 0 2px 8px #0003;
+  font: 14px/1.5 Arial, sans-serif;
+}
+.wiki-update button {
+  padding: 4px 12px;
+  border: 1px solid var(--accent, #36c);
+  border-radius: 2px;
+  background: var(--surface, #fff);
+  color: var(--link, #0645ad);
+  font: inherit;
+  cursor: pointer;
+}
+.wiki-update button:focus-visible { outline: 2px solid var(--accent, #36c); outline-offset: 2px; }
+@media print { .wiki-update { display: none; } }

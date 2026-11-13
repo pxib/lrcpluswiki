@@ -27,6 +27,9 @@ jobs:
       - name: Check published files
         run: node tools/check-pages.cjs
 
+      - name: Stamp wiki update version
+        run: node tools/stamp-wiki-build.cjs
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
