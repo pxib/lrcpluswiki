@@ -5,11 +5,31 @@ Run SQL files in Supabase's SQL Editor as the project owner, in this order:
 1. `community.sql` — initial accounts/profiles and discussions.
 2. `moderation.sql` — staff roles, private reports, restrictions, and topic locks.
 3. `content-controls.sql` — word filters and reply deletion.
+4. `talk-performance.sql` — batched public topic counts.
 
 Each file is a one-time transactional migration. For an existing installation,
 run only the migrations you have not applied, then push the website changes.
 The content-controls migration preserves existing discussion text and starts
 with an empty word-filter list.
+
+## Talk loading and counts
+
+Apply `talk-performance.sql` before deploying the updated Talk client. Its
+`community_topic_stats(uuid[])` read-only function returns comment and distinct
+participant totals for up to 20 topics in one request. The opening post and
+deleted reply placeholders count as comments; null/deleted author IDs do not
+count as participants. Invoker security preserves the caller's read policies.
+No private moderation or authentication records are queried.
+
+The initial Talk view loads 20 topic openings and one aggregate request,
+without downloading reply bodies or author lists. Expand **Replies** to fetch
+50 replies at a time. Comment permalinks resolve their topic directly, expand
+its replies, and load through the linked comment. **Load more** continues to
+offer the rest of the article's topics without duplicating that topic.
+
+Posting and deleting a reply refresh that topic's aggregate. If the migration
+has not yet been applied, topics and replies still work; aggregate labels stay
+hidden instead of reverting to downloading complete author lists.
 
 To bootstrap the first admin, register/verify your own wiki account, copy its
 User UID from Supabase Authentication → Users, and run:

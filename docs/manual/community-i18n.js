@@ -38,6 +38,7 @@
     ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]])),
     ...Object.fromEntries(moderationKeys.map((key, i) => [key, moderation[i]])),
     ...Object.fromEntries(contentKeys.map((key, i) => [key, content[i]])),
+    replies: lang.startsWith('yue') ? '回覆' : lang === 'ko' ? '답글' : lang === 'ja' ? '返信' : 'Replies',
     noReports: lang.startsWith('yue') ? '呢個分類暫時冇舉報。' : lang === 'ko' ? '이 상태의 신고가 없습니다.' : lang === 'ja' ? 'この状態の報告はありません。' : 'No reports with this status.'
   });
 })();

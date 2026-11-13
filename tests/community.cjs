@@ -33,6 +33,12 @@ function mockAuth(dom, config = true) {
   return { auth, calls, emit: (event, session) => callback(event, session) };
 }
 async function flush() { await new Promise(resolve => setImmediate(resolve)); }
+async function openReplies(dom, selector = '.community-replies') {
+  const disclosure = dom.window.document.querySelector(selector);
+  disclosure.open = true;
+  disclosure.dispatchEvent(new dom.window.Event('toggle'));
+  await flush();
+}
 async function submit(dom, mode, values) {
   dom.window.location.hash = mode;
   dom.window.dispatchEvent(new dom.window.Event('hashchange'));
@@ -287,13 +293,19 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
     };
     return builder;
   };
-  api.client.rpc = async (name, payload) => { posted.push({name,payload}); return {data:'new-id',error:null}; };
+  api.client.rpc = async (name, payload) => {
+    if (name === 'community_topic_stats') return {data:[{topic_id:topic.id,comment_count:2,participant_count:2}],error:null};
+    posted.push({name,payload}); return {data:'new-id',error:null};
+  };
   evalScript(dom, 'talk-timestamps.js');
   evalScript(dom, 'manual.js');
   evalScript(dom, 'community-talk.js');
   await flush();
   const doc = dom.window.document;
   const live = doc.querySelector('.community-talk');
+  assert.equal(reads, 1, 'initial view only loads topics');
+  assert.equal(live.querySelector('.talk-depth-1'), null);
+  await openReplies(dom);
   assert.equal(live.nextElementSibling.id, 'talk-body');
   assert.equal(live.querySelector('.talk-topic h2').firstChild.textContent, topic.title);
   assert.equal(live.querySelector('.talk-depth-0 .community-message').textContent, topic.body);
@@ -319,6 +331,7 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(doc.querySelectorAll('.community-scripted-label').length, 1);
   emit('SIGNED_IN', {user:{id:'alice',user_metadata:{username:'Alice'}}});
   await flush();
+  await openReplies(dom);
   assert.equal(live.querySelectorAll('.talk-actions > a').length, 2);
   assert.equal(live.querySelectorAll('.talk-actions > button').length, 0);
   assert.equal(live.querySelectorAll('.talk-actions [aria-disabled]').length, 0);
@@ -348,7 +361,7 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   dom.window.close();
 });
 
-test('community metadata counts all reply pages and distinct participants', async () => {
+test('community metadata uses a batched aggregate without downloading replies', async () => {
   const dom = page('index.html', '#main/talk');
   mockAuth(dom);
   await dom.window.ManualCommunity.ready;
@@ -357,9 +370,20 @@ test('community metadata counts all reply pages and distinct participants', asyn
     id: `reply-${i}`, author_id: i % 2 ? 'alice' : 'bob', body: 'Reply',
     created_at: topic.created_at, profiles: {username: i % 2 ? 'Alice' : 'Bob'}
   }));
+  let replyReads = 0;
+  const statsCalls = [];
+  dom.window.ManualCommunity.client.rpc = async (name, payload) => {
+    assert.equal(name, 'community_topic_stats');
+    statsCalls.push(payload);
+    return {data:[{topic_id:topic.id,comment_count:replies.length + 1,
+      participant_count:new Set([topic.author_id,...replies.map(row => row.author_id)].filter(Boolean)).size}],error:null};
+  };
   dom.window.ManualCommunity.client.from = table => ({
     select() { return this; }, eq() { return this; }, order() { return this; },
-    async range(start, end) { return {data: (table === 'community_topics' ? [topic] : replies).slice(start, end + 1), error: null}; }
+    async range(start, end) {
+      if (table === 'community_comments') replyReads++;
+      return {data: (table === 'community_topics' ? [topic] : replies).slice(start, end + 1), error: null};
+    }
   });
   evalScript(dom, 'talk-timestamps.js');
   evalScript(dom, 'manual.js');
@@ -368,12 +392,136 @@ test('community metadata counts all reply pages and distinct participants', asyn
   const doc = dom.window.document;
   const labels = () => [...doc.querySelectorAll('.community-talk .talk-meta-item')].map(node => node.textContent);
   assert.deepEqual(labels(), ['1,002 comments', '2 people in discussion']);
+  assert.equal(replyReads, 0);
+  assert.equal(statsCalls.length, 1);
+  assert.deepEqual(Array.from(statsCalls[0].p_topics), ['paged']);
+  await openReplies(dom);
   assert.equal(doc.querySelectorAll('.community-talk .talk-depth-1').length, 50);
+  const more = doc.querySelector('.community-replies button');
+  more.click();
+  await flush();
+  assert.equal(doc.querySelectorAll('.community-talk .talk-depth-1').length, 100);
+  assert.equal(replyReads, 2, 'Load more appends a page instead of resetting replies');
+  assert.deepEqual(labels(), ['1,002 comments', '2 people in discussion']);
   replies = [];
   [...doc.querySelectorAll('.community-toolbar button')].find(node => node.textContent === 'Refresh').click();
   await flush();
   assert.deepEqual(labels(), ['1 comment', '1 person in discussion']);
+  assert.equal(replyReads, 2);
   dom.window.close();
+});
+
+test('comment permalinks load their topic directly and expand paginated replies', async () => {
+  const dom = page('index.html', '#main/talk/community-comment-reply-54');
+  mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const topics = Array.from({length:21}, (_, i) => ({id:`topic-${i}`,title:`Topic ${i}`,body:'Opening',created_at:'2026-01-01',author_id:'alice'}));
+  const replies = Array.from({length:55}, (_, i) => ({id:`reply-${i}`,topic_id:'topic-20',body:`Reply ${i}`,created_at:'2026-01-01',author_id:'bob'}));
+  const reads = [];
+  const stats = [];
+  const api = dom.window.ManualCommunity;
+  api.client.rpc = async (name, payload) => {
+    stats.push(Array.from(payload.p_topics));
+    return {data:payload.p_topics.map(id => ({topic_id:id,comment_count:id === 'topic-20' ? 56 : 1,participant_count:2})),error:null};
+  };
+  api.client.from = table => {
+    const filters = {};
+    return {
+      select() { return this; }, eq(key, value) { filters[key] = value; return this; }, order() { return this; },
+      async maybeSingle() { reads.push({table,filters}); return {data:replies.find(row => row.id === filters.id),error:null}; },
+      async range(start, end) {
+        reads.push({table,filters,start,end});
+        const rows = (table === 'community_topics' ? topics : replies)
+          .filter(row => Object.entries(filters).every(([key,value]) => key === 'article_id' || row[key] === value));
+        return {data:rows.slice(start,end + 1),error:null};
+      }
+    };
+  };
+  evalScript(dom,'talk-timestamps.js'); evalScript(dom,'manual.js'); evalScript(dom,'community-talk.js');
+  await flush();
+  const doc = dom.window.document;
+  assert.ok(doc.getElementById('community-comment-reply-54'));
+  assert.equal(doc.querySelector('.community-replies').open,true);
+  assert.equal(doc.querySelectorAll('.community-talk .talk-topic').length,1);
+  assert.equal(reads.filter(row => row.table === 'community_topics').length,1);
+  assert.equal(reads.find(row => row.table === 'community_topics').filters.id,'topic-20');
+  assert.deepEqual(stats,[['topic-20']]);
+  const moreTopics = doc.querySelector('.community-talk').lastElementChild;
+  moreTopics.click(); await flush();
+  assert.equal(doc.querySelectorAll('.community-talk .talk-topic').length,21);
+  assert.equal(stats[1].length,20);
+  moreTopics.click(); await flush();
+  assert.equal(doc.querySelectorAll('.community-talk .talk-topic').length,21, 'preferred topic is not duplicated');
+  assert.equal(moreTopics.hidden,true);
+  assert.equal(reads.filter(row => row.table === 'community_comments' && row.start !== undefined).length,2,
+    'only the requested topic downloads replies');
+  dom.window.close();
+});
+
+test('missing stats migration and failed reply requests retain readable topics and a retry', async () => {
+  const dom = page('yue.html','#main/talk');
+  mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api = dom.window.ManualCommunity;
+  let fail = true;
+  api.client.rpc = async () => ({data:null,error:{code:'PGRST202'}});
+  api.client.from = table => ({
+    select(){return this;},eq(){return this;},order(){return this;},
+    async range(){return table === 'community_topics'
+      ? {data:[{id:'topic',title:'Topic',body:'Opening',created_at:'2026-01-01'}],error:null}
+      : fail ? {data:null,error:Error('Network failure')}
+      : {data:[{id:'reply',body:'Recovered reply',created_at:'2026-01-01'}],error:null};}
+  });
+  evalScript(dom,'talk-timestamps.js');evalScript(dom,'manual.js');evalScript(dom,'community-talk.js');
+  await flush();
+  const doc = dom.window.document;
+  assert.equal(doc.querySelector('.community-replies summary').textContent,'回覆');
+  assert.equal(doc.querySelector('.community-talk .talk-meta').hidden,true);
+  await openReplies(dom);
+  const more = doc.querySelector('.community-replies button');
+  assert.equal(more.hidden,false);
+  assert.equal(more.disabled,false);
+  fail = false; more.click(); await flush();
+  assert.match(doc.querySelector('.community-replies').textContent,/Recovered reply/);
+  dom.window.close();
+});
+
+test('PostgreSQL topic aggregates count all comments, respect RLS, and retain deletion totals', async () => {
+  const db = new PGlite();
+  try {
+    await db.exec(`create role anon;create role authenticated;create schema auth;
+      create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email_confirmed_at timestamptz,banned_until timestamptz);
+      create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      grant usage on schema public,auth to anon,authenticated;`);
+    for (const file of ['community.sql','moderation.sql','content-controls.sql','talk-performance.sql']) {
+      await db.exec(fs.readFileSync(path.join(__dirname,'../supabase',file),'utf8'));
+    }
+    const alice = '30000000-0000-0000-0000-000000000001';
+    const bob = '30000000-0000-0000-0000-000000000002';
+    await db.exec(`insert into auth.users values
+      ('${alice}','{"username":"Alice"}',now(),null),('${bob}','{"username":"Bob"}',now(),null);`);
+    const topic = (await db.query("insert into community_topics(article_id,author_id,title,body) values('main',$1,'Topic','Opening') returning id",[alice])).rows[0].id;
+    await db.query(`insert into community_comments(topic_id,author_id,body)
+      select $1,case when n % 2 = 0 then $2::uuid else $3::uuid end,'Reply'
+      from generate_series(1,1001) n`,[topic,alice,bob]);
+    await db.query("insert into community_comments(topic_id,body,deleted_at) values($1,'[deleted]',now())",[topic]);
+    async function counts(ids = [topic]) {
+      return (await db.query('select * from community_topic_stats($1::uuid[])',[ids])).rows
+        .map(row => [row.topic_id,Number(row.comment_count),Number(row.participant_count)]);
+    }
+    await db.exec('set role anon');
+    assert.deepEqual(await counts(),[[topic,1003,2]]);
+    assert.deepEqual(await counts([topic,topic]),[[topic,1003,2]]);
+    assert.deepEqual(await counts([]),[]);
+    await assert.rejects(counts(Array(21).fill(topic)),/too_many_topics/);
+    await assert.rejects(db.query('select * from community_reports'),/permission denied/);
+    await db.exec(`reset role;delete from auth.users where id='${bob}';set role authenticated`);
+    assert.deepEqual(await counts(),[[topic,1003,1]],'deleted profiles lose attribution without reducing comment counts');
+    await db.exec("reset role;alter policy comments_read on community_comments using (body <> 'Reply');set role anon");
+    assert.deepEqual(await counts(),[[topic,2,1]],'invoker aggregates respect comment read policies');
+    await db.exec('reset role;alter policy topics_read on community_topics using (false);alter policy comments_read on community_comments using (false);set role anon');
+    assert.deepEqual(await counts(),[]);
+  } finally { await db.close(); }
 });
 
 test('PostgreSQL enforces public reads, protected attribution, verification and posting limits', async () => {
@@ -674,6 +822,7 @@ test('comment menus offer owner deletion with confirmation and render deleted pl
   };
   evalScript(dom,'talk-timestamps.js');evalScript(dom,'manual.js');evalScript(dom,'community-moderation.js');evalScript(dom,'community-talk.js');
   await flush();
+  await openReplies(dom);
   const doc=dom.window.document;
   const own=doc.getElementById('community-comment-own-reply');
   const other=doc.getElementById('community-comment-other-reply');

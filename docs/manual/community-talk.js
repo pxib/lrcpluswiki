@@ -144,19 +144,47 @@
     const more = button(t.more, loadTopics);
     live.append(more);
     let offset = 0;
-    async function loadTopics() {
+    const metadataNodes = new Map();
+    const renderedTopics = new Set();
+    async function loadMetadata(ids) {
+      if (!ids.length) return;
+      try {
+        const { data, error } = await api.client.rpc('community_topic_stats', {p_topics: ids});
+        if (error) throw error;
+        if (version !== generation) return;
+        for (const row of data || []) {
+          const metadata = metadataNodes.get(row.topic_id);
+          if (!metadata) continue;
+          metadata.replaceChildren(...metadataLabels(Number(row.comment_count), Number(row.participant_count))
+            .map(label => el('span', label, 'talk-meta-item')));
+          metadata.hidden = false;
+        }
+      } catch {
+        // Older installations can still read/post while awaiting the migration.
+        ids.forEach(id => { const node = metadataNodes.get(id); if (node) node.hidden = true; });
+      }
+    }
+    async function loadTopics(preferredId) {
+      if (more.disabled) return;
       more.disabled = true;
       notice.textContent = t.loading;
       try {
-        const { data, error } = await api.client.from('community_topics')
+        let query = api.client.from('community_topics')
           .select('*,profiles(username)').eq('article_id', article)
-          .order('created_at', {ascending: true}).order('id', {ascending: true}).range(offset, offset + 19);
+          .order('created_at', {ascending: true}).order('id', {ascending: true});
+        if (typeof preferredId === 'string') query = query.eq('id', preferredId);
+        const preferred = typeof preferredId === 'string';
+        const { data, error } = await query.range(preferred ? 0 : offset, preferred ? 0 : offset + 19);
         if (error) throw error;
         if (version !== generation) return;
-        offset += data.length;
-        more.hidden = data.length < 20;
-        notice.textContent = offset === 0 ? t.empty : '';
+        if (!preferred) offset += data.length;
+        more.hidden = !preferred && data.length < 20;
+        notice.textContent = !data.length && !renderedTopics.size ? t.empty : '';
+        const addedIds = [];
         for (const row of data) {
+          if (renderedTopics.has(row.id)) continue;
+          renderedTopics.add(row.id);
+          addedIds.push(row.id);
           const section = el('section', '', 'talk-topic');
           section.id = `community-topic-${row.id}`;
           const heading = el('h2', row.title);
@@ -172,10 +200,14 @@
           heading.append(' ', permalink);
           const metadata = el('p', '', 'talk-meta');
           metadata.hidden = true;
+          metadataNodes.set(row.id, metadata);
           const opening = el('div', '', 'talk-comment talk-depth-0');
           opening.append(el('p', row.body, 'community-message'), signature(row, article, section.id));
           const replyOptions = row.locked ? {} : api.session
-            ? { onReply: () => composer(section, article, row.id, version, () => Promise.all([loadReplies(true), loadMetadata()])) }
+            ? { onReply: () => composer(section, article, row.id, version, () => {
+              disclosure.open = true;
+              return Promise.all([loadReplies(true), loadMetadata([row.id])]);
+            }) }
             : { replyHref: loginLink().href };
           window.ManualTalkUI.addCommentActions(opening, topicLink.hash, replyOptions);
           window.ManualCommunityModeration?.addReport(opening, 'topic', row.id);
@@ -185,41 +217,34 @@
             opening.querySelector('.talk-actions > a').title = t.locked;
           }
           window.ManualCommunityModeration?.addTopicControls(section, row, render);
+          const disclosure = el('details', '', 'community-replies');
+          disclosure.append(el('summary', t.replies));
           const replies = el('div');
-          section.append(replies);
+          disclosure.append(replies);
+          section.append(disclosure);
           let replyOffset = 0;
+          let repliesLoaded = false;
+          let repliesLoading = false;
           const replyStatus = el('p');
           replyStatus.setAttribute('role', 'status');
-          const moreReplies = button(t.more, loadReplies);
-          section.append(replyStatus, moreReplies);
-          async function loadMetadata() {
-            // Fetch only attribution, across all pages, so totals do not depend on visible replies.
-            let count = 1;
-            let offset = 0;
-            const authors = new Set(row.author_id ? [row.author_id] : []);
-            try {
-              while (true) {
-                const { data, error } = await api.client.from('community_comments').select('author_id')
-                  .eq('topic_id', row.id).order('id', {ascending: true}).range(offset, offset + 999);
-                if (error) throw error;
-                if (version !== generation) return;
-                count += data.length;
-                data.forEach(reply => { if (reply.author_id) authors.add(reply.author_id); });
-                offset += data.length;
-                if (data.length < 1000) break;
-              }
-              metadata.replaceChildren(...metadataLabels(count, authors.size).map(label => el('span', label, 'talk-meta-item')));
-              metadata.hidden = false;
-            } catch { metadata.hidden = true; }
-          }
+          const moreReplies = button(t.more, () => loadReplies());
+          moreReplies.hidden = true;
+          disclosure.append(replyStatus, moreReplies);
+          disclosure.addEventListener('toggle', () => {
+            if (disclosure.open && !repliesLoaded) loadReplies();
+          });
           async function loadReplies(reset = false) {
+            if (repliesLoading) return;
+            repliesLoading = true;
             moreReplies.disabled = true;
+            replyStatus.textContent = t.loading;
             if (reset) { replyOffset = 0; replies.replaceChildren(); }
             try {
               const result = await api.client.from('community_comments').select('*,profiles(username)')
                 .eq('topic_id', row.id).order('created_at', {ascending: true}).order('id', {ascending: true}).range(replyOffset, replyOffset + 49);
               if (result.error) throw result.error;
               if (version !== generation) return;
+              repliesLoaded = true;
               replyOffset += result.data.length;
               moreReplies.hidden = result.data.length < 50;
               replyStatus.textContent = '';
@@ -230,26 +255,39 @@
                 window.ManualTalkUI.addCommentActions(comment, `#${article}/talk/${comment.id}`, replyOptions);
                 if (!reply.deleted_at) {
                   window.ManualCommunityModeration?.addReport(comment, 'comment', reply.id);
-                  window.ManualCommunityModeration?.addDeleteComment(comment, reply, () => Promise.all([loadReplies(true),loadMetadata()]));
+                  window.ManualCommunityModeration?.addDeleteComment(comment, reply, () => Promise.all([loadReplies(true),loadMetadata([row.id])]));
                 }
                 if (row.locked) comment.querySelector('.talk-actions > a').title = t.locked;
                 replies.append(comment);
               }
               scrollToRequested();
-              if (location.hash.includes('/community-comment-') && !document.getElementById(location.hash.split('/')[2]) && !moreReplies.hidden) await loadReplies();
-            } catch { replyStatus.textContent = t.unavailable; }
-            finally { moreReplies.disabled = false; }
+            } catch { replyStatus.textContent = t.unavailable; moreReplies.hidden = false; }
+            finally { moreReplies.disabled = false; repliesLoading = false; }
           }
           topics.append(section);
-          await Promise.all([loadReplies(), loadMetadata()]);
-          if (version !== generation) return;
+          if (preferred && parts[2]?.startsWith('community-comment-')) {
+            disclosure.open = true;
+            do {
+              await loadReplies();
+              if (version !== generation) return;
+            } while (repliesLoaded && !moreReplies.hidden && !replyStatus.textContent && !document.getElementById(parts[2]));
+          }
         }
+        await loadMetadata(addedIds);
         scrollToRequested();
-        if (location.hash.includes('/community-') && !document.getElementById(location.hash.split('/')[2]) && !more.hidden) await loadTopics();
       } catch { if (version === generation) notice.textContent = t.unavailable; }
       finally { more.disabled = false; }
     }
-    await loadTopics();
+    let preferredId = parts[2]?.startsWith('community-topic-') ? parts[2].slice('community-topic-'.length) : null;
+    if (parts[2]?.startsWith('community-comment-')) {
+      try {
+        const { data, error } = await api.client.from('community_comments').select('topic_id')
+          .eq('id', parts[2].slice('community-comment-'.length)).maybeSingle();
+        if (!error) preferredId = data?.topic_id;
+      } catch { /* Missing/deleted links still show the article's topics. */ }
+      if (version !== generation) return;
+    }
+    await loadTopics(preferredId);
   }
   // manual.js emits after it has replaced the scripted Talk DOM.
   window.addEventListener('manualroutechange', render);

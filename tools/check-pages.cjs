@@ -20,8 +20,10 @@ for (const name of ['index.html', 'ja.html', 'ko.html', 'yue.html', 'account.htm
     if (resource) check(file, resource[1]);
   }
 }
-const css = path.join(root, 'manual.css');
-for (const [, reference] of fs.readFileSync(css, 'utf8').matchAll(/url\(['"]?([^)'"\s]+)['"]?\)/g)) check(css, reference);
+for (const name of fs.readdirSync(root).filter(name => name.endsWith('.css'))) {
+  const css = path.join(root, name);
+  for (const [, reference] of fs.readFileSync(css, 'utf8').matchAll(/url\(['"]?([^)'"\s]+)['"]?\)/g)) check(css, reference);
+}
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
