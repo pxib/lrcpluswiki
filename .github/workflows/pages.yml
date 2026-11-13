@@ -58,9 +58,10 @@ jobs:
           supabase link --project-ref "$SUPABASE_PROJECT_ID"
           if [[ "$RECORD_EXISTING" == "true" ]]; then
             # Frozen adoption list: never add future migrations here.
-            supabase migration repair --remote --status applied \
+            supabase migration repair \
               20261113000001 20261113000002 20261113000003 20261113000004 \
-              20261113000005 20261113000006 20261113000007 20261113000008
+              20261113000005 20261113000006 20261113000007 20261113000008 \
+              --status applied --remote --yes
           fi
           supabase db push --remote --dry-run
           supabase db push --remote --yes

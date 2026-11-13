@@ -69,6 +69,11 @@ fails, inspect the failed step; the same history-repair operation can be retried
 for these original eight versions. Do not record a version as applied when its
 SQL has not actually been run.
 
+The repair command passes `--yes` because the current CLI requires explicit
+confirmation for hosted migration-history changes in unattended Actions runs.
+Its version arguments come before `--remote` so an optional target argument
+cannot consume a migration version.
+
 ## Future changes
 
 Create a new file in `supabase/migrations/` named
