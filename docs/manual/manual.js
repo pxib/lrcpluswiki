@@ -60,7 +60,10 @@
     const actions = document.createElement('div');
     actions.className = 'talk-actions';
     const reply = document.createElement('a');
-    reply.href = talkLoginLink(hash);
+    reply.href = hash;
+    reply.setAttribute('aria-disabled', 'true');
+    reply.addEventListener('click', event => event.preventDefault());
+    reply.title = window.ManualCommunityText.scripted;
     reply.textContent = cantonese ? '回覆' : korean ? '답글' : japanese ? '返信' : 'Reply';
     const menu = document.createElement('details');
     menu.className = 'talk-comment-menu';
@@ -378,6 +381,7 @@
       url.searchParams.set('return', location.hash || '#main');
       link.href = url.href;
     });
+    window.dispatchEvent(new Event('manualroutechange'));
     content.focus({preventScroll: true});
     if (viewingTalk) {
       const target = topic && document.getElementById(topic);

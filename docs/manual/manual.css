@@ -167,7 +167,7 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 @media(max-width:760px){.character-profile{float:none;width:100%;max-width:500px;margin:14px 0}.character-article h2{overflow:visible}}
 @media print{.character-profile{float:none;width:100%;max-width:500px;margin:14px 0;break-inside:avoid}}
 @media print{#ayami-editorial-note{display:none!important}}
-/* Fictional personal tools and locally handled account pages. */
+/* Personal tools and community account pages. */
 .page-header .utility{display:flex;align-items:center;flex-wrap:wrap;gap:12px;justify-content:flex-end}
 .utility .account-state{padding:0;color:var(--muted)}
 .account-links{display:inline-flex;gap:12px}
@@ -190,3 +190,18 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .account-error{max-width:520px;margin:0 0 18px;padding:12px 16px;border:1px solid #b32424;border-left-width:4px;background:var(--panel);color:var(--text)}
 .account-error:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:760px){.page-header .utility{margin:4px 12px 10px}.account-page .tools{width:auto;order:0}.account-state{display:none}}
+.account-links button{border:0;padding:0;background:transparent;color:var(--link);font:inherit;cursor:pointer}
+.account-feedback{max-width:520px;white-space:pre-wrap}
+.account-feedback:empty{display:none}
+.community-talk{margin-top:28px;border-top:1px solid var(--border)}
+.community-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.community-talk button{width:auto;padding:5px 10px;margin:4px 8px 4px 0;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
+.community-talk button:disabled{opacity:.6;cursor:default}
+.community-message{white-space:pre-wrap;overflow-wrap:anywhere}
+.community-composer{display:block;width:100%;max-width:640px;height:auto;margin:16px 0;padding:14px;border:1px solid var(--border);background:var(--panel)}
+.community-composer label{display:block;font-weight:bold;margin:0 0 12px}
+.community-composer input,.community-composer textarea{display:block;width:100%;max-width:100%;margin-top:5px;padding:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+.community-composer textarea{resize:vertical;min-height:100px}
+.talk-actions a[aria-disabled="true"]{color:var(--muted);cursor:default;text-decoration:none}
+[hidden]{display:none!important}
+@media print{.community-toolbar,.community-composer,.community-talk button,.account-links{display:none!important}}
