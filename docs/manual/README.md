@@ -122,7 +122,7 @@ The online manual supports Supabase-backed registration, email verification, log
 
 See [COMMUNITY-SETUP.md](COMMUNITY-SETUP.md) for backend creation, email settings, public configuration, and verification steps. Until configured, account controls are disabled. Offline reading remains available.
 
-The scripted discussions described above remain read-only examples, separately labeled from community discussions. Their Reply controls are disabled; use the community section to participate.
+Community discussions appear first in the Talk tab and use the same topic contents, section permalinks, indented comments, signatures, and comment actions as the scripted examples. The scripted discussions remain separately labeled read-only examples below them. Their Reply controls are disabled; use the community section to participate.
 
 Signed-in users can open **Account settings** from the personal tools in every
 edition. The `#settings` view shows the protected public username, private email

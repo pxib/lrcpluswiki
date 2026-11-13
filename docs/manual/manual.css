@@ -193,10 +193,12 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .account-links button{border:0;padding:0;background:transparent;color:var(--link);font:inherit;cursor:pointer}
 .account-feedback{max-width:520px;white-space:pre-wrap}
 .account-feedback:empty{display:none}
-.community-talk{margin-top:28px;border-top:1px solid var(--border)}
+.community-talk{margin-bottom:28px}
 .community-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
-.community-talk button{width:auto;padding:5px 10px;margin:4px 8px 4px 0;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
+.community-talk button:not(.talk-actions button){width:auto;padding:5px 10px;margin:4px 8px 4px 0;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
 .community-talk button:disabled{opacity:.6;cursor:default}
+.community-talk .talk-actions>button{border:0;background:transparent;color:var(--link);padding:0;margin:0;font-size:inherit;font-weight:bold}
+.community-talk .talk-actions>button:hover{text-decoration:underline}
 .community-message{white-space:pre-wrap;overflow-wrap:anywhere}
 .community-composer{display:block;width:100%;max-width:640px;height:auto;margin:16px 0;padding:14px;border:1px solid var(--border);background:var(--panel)}
 .community-composer label{display:block;font-weight:bold;margin:0 0 12px}

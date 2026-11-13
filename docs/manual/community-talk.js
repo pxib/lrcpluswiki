@@ -5,7 +5,8 @@
   const host = document.getElementById('talk-panel');
   const live = document.createElement('section');
   live.className = 'community-talk';
-  host.append(live);
+  const body = document.getElementById('talk-body');
+  body.before(live);
   let generation = 0;
   let activeArticle = '';
   let lastUser = null;
@@ -105,7 +106,6 @@
     activeArticle = article;
     live.replaceChildren(el('h2', t.live));
     // The archived examples are not live accounts or reply targets.
-    const body = document.getElementById('talk-body');
     if (body.querySelector('.talk-topic') && !body.querySelector('.community-scripted-label')) body.prepend(el('p', t.scripted, 'note community-scripted-label'));
     const notice = el('p', t.loading);
     notice.setAttribute('role', 'status');
@@ -120,6 +120,13 @@
     start.hidden = !api.session;
     toolbar.append(api.session ? start : loginLink(), button(t.refresh, render));
     live.append(toolbar);
+    const toc = el('details', '', 'toc');
+    toc.id = 'community-contents';
+    toc.open = true;
+    toc.hidden = true;
+    const topicList = el('ol');
+    toc.append(el('summary', window.ManualTalkUI.contents), topicList);
+    live.append(toc);
     const topics = el('div');
     live.append(topics);
     const more = button(t.more, loadTopics);
@@ -140,7 +147,24 @@
         for (const row of data) {
           const section = el('section', '', 'talk-topic');
           section.id = `community-topic-${row.id}`;
-          section.append(el('h3', row.title), el('p', row.body, 'community-message'), signature(row, article, section.id));
+          const heading = el('h2', row.title);
+          const topicLink = el('a', row.title);
+          topicLink.href = `#${article}/talk/${section.id}`;
+          const item = el('li');
+          item.append(topicLink);
+          topicList.append(item);
+          toc.hidden = false;
+          const permalink = el('a', '§', 'section-link');
+          permalink.href = topicLink.href;
+          permalink.setAttribute('aria-label', `${window.ManualTalkUI.permalink}: ${row.title}`);
+          heading.append(' ', permalink);
+          const opening = el('div', '', 'talk-comment talk-depth-0');
+          opening.append(el('p', row.body, 'community-message'), signature(row, article, section.id));
+          const replyOptions = api.session
+            ? { onReply: () => composer(section, article, row.id, version, () => loadReplies(true)) }
+            : { replyHref: loginLink().href };
+          window.ManualTalkUI.addCommentActions(opening, topicLink.hash, replyOptions);
+          section.append(heading, opening);
           const replies = el('div');
           section.append(replies);
           let replyOffset = 0;
@@ -163,6 +187,7 @@
                 const comment = el('div', '', 'talk-comment talk-depth-1');
                 comment.id = `community-comment-${reply.id}`;
                 comment.append(el('p', reply.body, 'community-message'), signature(reply, article, comment.id));
+                window.ManualTalkUI.addCommentActions(comment, `#${article}/talk/${comment.id}`, replyOptions);
                 replies.append(comment);
               }
               scrollToRequested();
@@ -170,7 +195,6 @@
             } catch { replyStatus.textContent = t.unavailable; }
             finally { moreReplies.disabled = false; }
           }
-          if (api.session) section.append(button(t.reply, () => composer(section, article, row.id, version, () => loadReplies(true))));
           topics.append(section);
           await loadReplies();
           if (version !== generation) return;

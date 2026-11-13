@@ -56,14 +56,25 @@
     timestamp.href = permalink.href;
     timestamp.append(time);
     signature.append(' ', timestamp);
-
+    addCommentActions(comment, hash);
+  }
+  function addCommentActions(comment, hash, { onReply, replyHref } = {}) {
+    const permalink = new URL(location.href);
+    permalink.hash = hash;
     const actions = document.createElement('div');
     actions.className = 'talk-actions';
-    const reply = document.createElement('a');
-    reply.href = hash;
-    reply.setAttribute('aria-disabled', 'true');
-    reply.addEventListener('click', event => event.preventDefault());
-    reply.title = window.ManualCommunityText.scripted;
+    const reply = document.createElement(onReply ? 'button' : 'a');
+    if (onReply) {
+      reply.type = 'button';
+      reply.addEventListener('click', onReply);
+    } else {
+      reply.href = replyHref || hash;
+      if (!replyHref) {
+        reply.setAttribute('aria-disabled', 'true');
+        reply.addEventListener('click', event => event.preventDefault());
+        reply.title = window.ManualCommunityText.scripted;
+      }
+    }
     reply.textContent = cantonese ? '回覆' : korean ? '답글' : japanese ? '返信' : 'Reply';
     const menu = document.createElement('details');
     menu.className = 'talk-comment-menu';
@@ -125,6 +136,7 @@
     actions.append(reply, menu);
     comment.append(actions);
   }
+  window.ManualTalkUI = { addCommentActions, contents: messages.contents, permalink: messages.permalink };
   document.addEventListener('click', event => {
     document.querySelectorAll('.talk-comment-menu[open]').forEach(menu => {
       if (!menu.contains(event.target)) menu.open = false;
