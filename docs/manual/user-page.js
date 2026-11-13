@@ -286,6 +286,18 @@
       if (error) throw error;
       if (!data) { status.textContent = text[4]; return; }
       profile = data;
+      if (/^[A-Za-z0-9_]{3,30}$/.test(data.username || '')) {
+        const url = new URL(location.href);
+        url.searchParams.delete('id');
+        url.searchParams.set('name', data.username);
+        history.replaceState(history.state, '', url.href);
+        document.querySelectorAll('.language-switch a').forEach(anchor => {
+          const localized = new URL(anchor.href);
+          localized.searchParams.delete('id');
+          localized.searchParams.set('name', data.username);
+          anchor.href = localized.href;
+        });
+      }
       controls();
       title(data.username);
       document.getElementById('user-username').textContent = data.username;

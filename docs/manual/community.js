@@ -15,11 +15,12 @@
   const notify = () => window.dispatchEvent(new Event('communitychange'));
   api.userLink = (username, id) => {
     const label = username || t.deleted;
-    if (!id && !/^[A-Za-z0-9_]{3,30}$/.test(username || '')) return document.createTextNode(label);
+    const hasUsername = /^[A-Za-z0-9_]{3,30}$/.test(username || '');
+    if (!id && !hasUsername) return document.createTextNode(label);
     const lang = document.documentElement.lang;
     const file = lang.startsWith('yue') ? 'yue-user.html' : lang === 'ko' ? 'ko-user.html' : lang === 'ja' ? 'ja-user.html' : 'user.html';
     const url = new URL(file, location.href);
-    url.searchParams.set(id ? 'id' : 'name', id || username);
+    url.searchParams.set(hasUsername ? 'name' : 'id', hasUsername ? username : id);
     const link = document.createElement('a');
     link.className = 'community-user-link';
     link.href = url.href;
@@ -36,7 +37,12 @@
   function header() {
     document.querySelectorAll('.account-state').forEach(node => {
       node.textContent = api.session ? api.session.user.user_metadata?.username || t.username : t.loggedOut;
-      if (api.session) node.replaceChildren(api.userLink(node.textContent, api.session.user.id));
+      if (api.session) {
+        // Auth metadata is editable; resolve the account ID before using its public username.
+        const link = api.userLink(null, api.session.user.id);
+        link.textContent = node.textContent;
+        node.replaceChildren(link);
+      }
       const indicator = api.session && api.staffIndicator(api.staffRole);
       if (indicator) node.append(' ', indicator);
     });

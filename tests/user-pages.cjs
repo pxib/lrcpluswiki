@@ -57,7 +57,12 @@ test('public user pages load only public profile columns in all four languages',
     assert.equal(doc.querySelector('.user-page-editor').hidden, true);
     assert.equal(doc.querySelector('.user-details time').dateTime, '2025-03-09');
     assert.deepEqual(requests[0], {table: 'profiles', columns: 'id,username,joined_on', eq: ['id', id]});
-    for (const link of doc.querySelectorAll('.language-switch a')) assert.equal(new URL(link.href).searchParams.get('id'), id);
+    assert.equal(new URL(dom.window.location.href).searchParams.get('name'), 'ExampleUser');
+    assert.equal(new URL(dom.window.location.href).searchParams.has('id'), false);
+    for (const link of doc.querySelectorAll('.language-switch a')) {
+      assert.equal(new URL(link.href).searchParams.get('name'), 'ExampleUser');
+      assert.equal(new URL(link.href).searchParams.has('id'), false);
+    }
     dom.window.close();
   }
 });
@@ -108,19 +113,37 @@ test('late responses after leaving the page do not repopulate the profile', asyn
   assert.equal(dom.window.document.getElementById('user-details').hidden, true);
   dom.window.close();
 });
-test('user links use localized files and stable IDs and leave deleted users unlinked', async () => {
+test('user links prefer localized username URLs, fall back to IDs and leave deleted users unlinked', async () => {
   for (const [file, target] of [['user.html','user.html'], ['ja-user.html','ja-user.html'], ['ko-user.html','ko-user.html'], ['yue-user.html','yue-user.html']]) {
     const {dom, api} = page(file);
     await flush();
-    const link = api.userLink('UntrustedMetadata', id);
+    const link = api.userLink('Example_User', id);
     const url = new URL(link.href);
     assert.ok(url.pathname.endsWith('/' + target));
-    assert.equal(url.searchParams.get('id'), id);
-    assert.equal(url.searchParams.has('name'), false);
+    assert.equal(url.searchParams.get('name'), 'Example_User');
+    assert.equal(url.searchParams.has('id'), false);
+    assert.equal(new URL(api.userLink(null, id).href).searchParams.get('id'), id);
+    assert.equal(new URL(api.userLink('<invalid>', id).href).searchParams.get('id'), id);
     assert.equal(api.userLink(null).nodeType, 3);
     dom.window.close();
   }
 });
+test('legacy URLs preserve context and resolve trusted usernames instead of editable auth metadata', async () => {
+  const {dom, api, requests} = page('user.html', `?id=${id}&return=manual#introduction`);
+  await flush();
+  const url = new URL(dom.window.location.href);
+  assert.equal(url.searchParams.get('name'), 'ExampleUser');
+  assert.equal(url.searchParams.get('return'), 'manual');
+  assert.equal(url.hash, '#introduction');
+  assert.equal(requests[0].eq[1], id);
+  api.session = {user: {id, user_metadata: {username: 'SomeoneElse'}}};
+  dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+  const link = dom.window.document.querySelector('.account-state a');
+  assert.equal(new URL(link.href).searchParams.get('id'), id);
+  assert.equal(new URL(link.href).searchParams.has('name'), false);
+  dom.window.close();
+});
+
 test('owners preview safe Markdown and publish using the loaded revision in all languages', async () => {
   for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html']) {
     const options = {owner: true, page: {body: 'Old introduction', revision: 4}, rpc: async name => ({data: name === 'community_save_user_page' ? 5 : [], error: null})};
@@ -208,7 +231,7 @@ test('missing user-page migration retains profile viewing and disables editing',
   assert.match(doc.getElementById('user-status').textContent,/not available yet/);
   dom.window.close();
 });
-test('title menu copies the stable user link and supports Escape in every language', async () => {
+test('title menu copies the username link and supports Escape in every language', async () => {
   for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html']) {
     const {dom} = page(file, '?name=ExampleUser');
     await flush();
@@ -222,8 +245,8 @@ test('title menu copies the stable user link and supports Escape in every langua
     menu.open=true;
     copy.click();
     await flush();
-    assert.equal(new URL(copied).searchParams.get('id'),id);
-    assert.equal(new URL(copied).searchParams.has('name'),false);
+    assert.equal(new URL(copied).searchParams.get('name'),'ExampleUser');
+    assert.equal(new URL(copied).searchParams.has('id'),false);
     assert.equal(new URL(copied).pathname.endsWith('/'+file),true);
     assert.ok(menu.querySelector('[role="status"]').textContent);
     menu.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
@@ -244,7 +267,7 @@ test('copy menu offers a selected read-only link when clipboard access is unavai
   await flush();
   const field=menu.querySelector('input');
   assert.equal(field.readOnly,true);
-  assert.equal(new URL(field.value).searchParams.get('id'),id);
+  assert.equal(new URL(field.value).searchParams.get('name'),'ExampleUser');
   assert.equal(doc.activeElement,field);
   assert.equal(menu.querySelector('textarea'),null);
   dom.window.close();
