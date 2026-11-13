@@ -18,7 +18,7 @@
     const hasUsername = /^[A-Za-z0-9_]{3,30}$/.test(username || '');
     if (!id && !hasUsername) return document.createTextNode(label);
     const lang = document.documentElement.lang;
-    const file = lang.startsWith('yue') ? 'yue-user.html' : lang === 'ko' ? 'ko-user.html' : lang === 'ja' ? 'ja-user.html' : 'user.html';
+    const file = window.ManualLocale?.user || (lang.startsWith('yue') ? 'yue-user.html' : lang === 'ko' ? 'ko-user.html' : lang === 'ja' ? 'ja-user.html' : 'user.html');
     const url = new URL(file, location.href);
     url.searchParams.set(hasUsername ? 'name' : 'id', hasUsername ? username : id);
     const link = document.createElement('a');
@@ -54,7 +54,7 @@
         settings.dataset.accountSettings = 'true';
         settings.textContent = t.settings;
         const lang = document.documentElement.lang;
-        const file = lang.startsWith('yue') ? 'yue-account.html' : lang === 'ko' ? 'ko-account.html' : lang === 'ja' ? 'ja-account.html' : 'account.html';
+        const file = window.ManualLocale?.account || (lang.startsWith('yue') ? 'yue-account.html' : lang === 'ko' ? 'ko-account.html' : lang === 'ja' ? 'ja-account.html' : 'account.html');
         const url = new URL(file, location.href);
         url.searchParams.set('return', new URLSearchParams(location.search).get('return') || location.hash || '#main');
         url.hash = 'settings';

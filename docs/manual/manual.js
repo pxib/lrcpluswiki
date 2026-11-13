@@ -1,6 +1,7 @@
 /* Classic scripts and hash routes deliberately support opening via file://. */
 'use strict';
 (() => {
+  const l = window.ManualLocale?.text || (value => value);
   const japanese = document.documentElement.lang === 'ja';
   const korean = document.documentElement.lang === 'ko';
   const cantonese = document.documentElement.lang.startsWith('yue');
@@ -17,9 +18,9 @@
     search: '検索', article: '記事', manual: 'LRCPlus マニュアル', source: 'ソースを表示',
     permalink: 'この節への固定リンク', searchPrompt: '語句を入力して、すべての記事を検索できます。'
   } : {
-    contents: 'Contents', related: 'Related articles', home: 'Main page', all: 'All articles',
-    search: 'Search', article: 'Article', manual: 'LRCPlus manual', source: 'View source',
-    permalink: 'Permanent link to this section', searchPrompt: 'Enter a word or phrase to search all articles.'
+    contents: l('Contents'), related: l('Related articles'), home: l('Main page'), all: l('All articles'),
+    search: l('Search'), article: l('Article'), manual: l('LRCPlus manual'), source: l('View source'),
+    permalink: l('Permanent link to this section'), searchPrompt: l('Enter a word or phrase to search all articles.')
   };
   const articles = [...document.querySelectorAll('#articles > article')];
   const byId = new Map(articles.map(article => [article.id, article]));
@@ -34,9 +35,9 @@
   const talkPanel = document.getElementById('talk-panel');
   const talkPages = new Map([...document.querySelectorAll('template[data-talk-for]')]
     .map(template => [template.dataset.talkFor, template]));
-  const talkLabel = cantonese ? '討論' : korean ? '토론' : japanese ? 'ノート' : 'Talk';
+  const talkLabel = cantonese ? '討論' : korean ? '토론' : japanese ? 'ノート' : l('Talk');
   function talkLoginLink(returnHash) {
-    const url = new URL(cantonese ? 'yue-account.html' : korean ? 'ko-account.html' : japanese ? 'ja-account.html' : 'account.html', location.href);
+    const url = new URL(window.ManualLocale?.account || (cantonese ? 'yue-account.html' : korean ? 'ko-account.html' : japanese ? 'ja-account.html' : 'account.html'), location.href);
     url.searchParams.set('return', returnHash);
     url.hash = 'login';
     return url.href;
@@ -51,7 +52,7 @@
     const time = document.createElement('time');
     time.dateTime = date.toISOString();
     time.textContent = window.ManualTalkTimestamps.format(date, document.documentElement.lang);
-    time.title = cantonese ? '虛構討論時間' : korean ? '가상 토론의 날짜와 시간' : japanese ? '架空の会話の日時' : 'Fictional discussion timestamp';
+    time.title = cantonese ? '虛構討論時間' : korean ? '가상 토론의 날짜와 시간' : japanese ? '架空の会話の日時' : l('Fictional discussion timestamp');
     const timestamp = document.createElement('a');
     timestamp.href = permalink.href;
     timestamp.append(time);
@@ -77,17 +78,17 @@
         reply.title = window.ManualCommunityText.scripted;
       }
     }
-    reply.textContent = cantonese ? '回覆' : korean ? '답글' : japanese ? '返信' : 'Reply';
+    reply.textContent = cantonese ? '回覆' : korean ? '답글' : japanese ? '返信' : l('Reply');
     const menu = document.createElement('details');
     menu.className = 'talk-comment-menu';
     const summary = document.createElement('summary');
     summary.textContent = '•••';
-    summary.setAttribute('aria-label', cantonese ? '更多留言操作' : korean ? '댓글 추가 작업' : japanese ? 'コメントのその他の操作' : 'More comment options');
+    summary.setAttribute('aria-label', cantonese ? '更多留言操作' : korean ? '댓글 추가 작업' : japanese ? 'コメントのその他の操作' : l('More comment options'));
     const popup = document.createElement('div');
     popup.className = 'talk-comment-popup';
     const copy = document.createElement('a');
     copy.href = permalink.href;
-    copy.textContent = cantonese ? '複製連結' : korean ? '링크 복사' : japanese ? 'リンクをコピー' : 'Copy link';
+    copy.textContent = cantonese ? '複製連結' : korean ? '링크 복사' : japanese ? 'リンクをコピー' : l('Copy link');
     const status = document.createElement('span');
     status.className = 'talk-copy-status';
     status.setAttribute('role', 'status');
@@ -109,14 +110,14 @@
         field.remove();
         copy.focus({preventScroll: true});
       }
-      status.textContent = copied ? (cantonese ? '已複製連結。' : korean ? '링크를 복사했습니다.' : japanese ? 'コピーしました。' : 'Link copied.')
-        : (cantonese ? '請選取下面嘅連結再複製。' : korean ? '아래 링크를 선택하여 복사하세요.' : japanese ? 'リンクを選択してコピーしてください。' : 'Select the link below to copy it.');
+      status.textContent = copied ? (cantonese ? '已複製連結。' : korean ? '링크를 복사했습니다.' : japanese ? 'コピーしました。' : l('Link copied.'))
+        : (cantonese ? '請選取下面嘅連結再複製。' : korean ? '아래 링크를 선택하여 복사하세요.' : japanese ? 'リンクを選択してコピーしてください。' : l('Select the link below to copy it.'));
       if (!copied && !popup.querySelector('input')) {
         const field = document.createElement('input');
         field.type = 'text';
         field.readOnly = true;
         field.value = permalink.href;
-        field.setAttribute('aria-label', cantonese ? '留言固定連結' : korean ? '댓글 고유 링크' : japanese ? 'コメントの固定リンク' : 'Comment permalink');
+        field.setAttribute('aria-label', cantonese ? '留言固定連結' : korean ? '댓글 고유 링크' : japanese ? 'コメントの固定リンク' : l('Comment permalink'));
         popup.append(field);
         field.focus();
         field.select();
@@ -139,7 +140,7 @@
     actions.append(reply, menu);
     comment.append(actions);
   }
-  const latestLabel = cantonese ? '最新留言' : korean ? '최근 댓글' : japanese ? '最新のコメント' : 'Latest comment';
+  const latestLabel = cantonese ? '最新留言' : korean ? '최근 댓글' : japanese ? '最新のコメント' : l('Latest comment');
   function latestTime(date, hash) {
     const link = document.createElement('a');
     link.href = hash;
@@ -165,8 +166,8 @@
     topicLink.href = topicHash;
     topicLink.textContent = title;
     latest.replaceChildren(`${latestLabel}: `, latestTime(date, hash),
-      cantonese ? '，由 ' : korean ? ' · ' : japanese ? '、投稿者：' : ' by ', authorLink || author,
-      cantonese ? '，話題：' : korean ? ' · 주제: ' : japanese ? '、議題：' : ' in topic ', topicLink);
+      cantonese ? '，由 ' : korean ? ' · ' : japanese ? '、投稿者：' : l(' by '), authorLink || author,
+      cantonese ? '，話題：' : korean ? ' · 주제: ' : japanese ? '、議題：' : l(' in topic '), topicLink);
   }
   window.ManualTalkUI = { addCommentActions, topicLatest, pageLatest, contents: messages.contents, permalink: messages.permalink };
   document.addEventListener('click', event => {
@@ -279,7 +280,11 @@
       words.every(word => page.text.toLocaleLowerCase().includes(word))
     ).sort((a, b) => Number(b.title.toLowerCase().includes(query.toLowerCase())) -
       Number(a.title.toLowerCase().includes(query.toLowerCase()))) : [];
-    document.getElementById('search-summary').textContent = words.length
+    document.getElementById('search-summary').textContent = window.ManualLocale
+      ? (words.length
+        ? l('{count} articles found for “{query}”.').replace('{count}', matches.length).replace('{query}', () => query) + (matches.length ? '' : ' ' + l('Try fewer words, or browse the navigation.'))
+        : messages.searchPrompt)
+      : words.length
       ? cantonese
         ? `「${query}」搵到 ${matches.length} 篇文章。${matches.length ? '' : '試吓減少搜尋字詞，或者用導覽搵文章。'}`
         : korean
@@ -381,7 +386,7 @@
       } else {
         const empty = document.createElement('p');
         empty.className = 'note';
-        empty.textContent = cantonese ? '呢篇文章暫時未收錄粵語討論。' : korean ? '이 문서에는 아직 한국어 토론이 수록되어 있지 않습니다.' : japanese ? 'この記事には、まだ収録された議論がありません。' : 'No discussions have been included for this article yet.';
+        empty.textContent = cantonese ? '呢篇文章暫時未收錄粵語討論。' : korean ? '이 문서에는 아직 한국어 토론이 수록되어 있지 않습니다.' : japanese ? 'この記事には、まだ収録された議論がありません。' : l('No discussions have been included for this article yet.');
         body.append(empty);
       }
       const articleLink = document.getElementById('talk-article-link');
@@ -410,7 +415,7 @@
         pageLatest(comment.querySelector('time').dateTime, `#${article.id}/talk/${comment.id}`,
           author, `#${article.id}/talk/${heading.id}`, heading.firstChild.textContent);
       } else {
-        latest.textContent = cantonese ? '呢篇文章暫時未收錄留言。' : korean ? '이 문서에는 아직 수록된 댓글이 없습니다.' : japanese ? 'この記事には、まだコメントが収録されていません。' : 'No comments included for this article yet.';
+        latest.textContent = cantonese ? '呢篇文章暫時未收錄留言。' : korean ? '이 문서에는 아직 수록된 댓글이 없습니다.' : japanese ? 'この記事には、まだコメントが収録されていません。' : l('No comments included for this article yet.');
       }
     } else if (viewingSource) {
       document.title = `${messages.source}: ${article.dataset.title} — ${messages.manual}`;
@@ -459,7 +464,7 @@
     message.setAttribute('role', 'status');
     const dismiss = document.createElement('button');
     dismiss.type = 'button';
-    dismiss.textContent = cantonese ? '關閉' : korean ? '닫기' : japanese ? '閉じる' : 'Dismiss';
+    dismiss.textContent = cantonese ? '關閉' : korean ? '닫기' : japanese ? '閉じる' : l('Dismiss');
     cell.append(message, dismiss);
     row.append(cell);
     heading.parentElement.after(row);
@@ -482,7 +487,7 @@
         ? '이 문서는 내가 직접 썼어. 개발자가 “뛰어난 재능”이라는 말을 세 번이나 지웠다니까.'
         : japanese
         ? 'この記事は私が書きました。「類まれな才能」って書いたら、開発者に3回消されました。'
-        : 'I wrote this article myself. The developer removed “exceptionally talented” three times.';
+        : l('I wrote this article myself. The developer removed “exceptionally talented” three times.');
     });
     dismiss.addEventListener('click', closeNote);
     heading.closest('table').addEventListener('keydown', event => {
@@ -507,14 +512,14 @@
       layer.className = 'zero-gravity';
       layer.setAttribute('role', 'dialog');
       layer.setAttribute('aria-modal', 'true');
-      layer.setAttribute('aria-label', cantonese ? '無重力模式' : korean ? '무중력 모드' : japanese ? '無重力モード' : 'Zero gravity');
+      layer.setAttribute('aria-label', cantonese ? '無重力模式' : korean ? '무중력 모드' : japanese ? '無重力モード' : l('Zero gravity'));
       const controls = document.createElement('div');
       controls.className = 'zero-gravity-controls';
       const hint = document.createElement('span');
-      hint.textContent = cantonese ? '無重力！試吓拖住啲字再掟出去。' : korean ? '무중력! 단어를 끌어서 던져 보세요.' : japanese ? '無重力！ 単語をドラッグして投げてみよう。' : 'Zero gravity! Drag and toss the words.';
+      hint.textContent = cantonese ? '無重力！試吓拖住啲字再掟出去。' : korean ? '무중력! 단어를 끌어서 던져 보세요.' : japanese ? '無重力！ 単語をドラッグして投げてみよう。' : l('Zero gravity! Drag and toss the words.');
       const restore = document.createElement('button');
       restore.type = 'button';
-      restore.textContent = cantonese ? '恢復重力（Esc）' : korean ? '중력 복원 (Esc)' : japanese ? '重力を戻す (Esc)' : 'Restore gravity (Esc)';
+      restore.textContent = cantonese ? '恢復重力（Esc）' : korean ? '중력 복원 (Esc)' : japanese ? '重力を戻す (Esc)' : l('Restore gravity (Esc)');
       controls.append(hint, restore);
       const particles = [];
       const originals = [];

@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="zh"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Content-Security-Policy" content="form-action 'none'; connect-src https://*.supabase.co">
+  <title>用户页面 — LRCPlus wiki</title>
+  <script src="locales/zh.js"></script><script src="theme.js"></script>
+  <link rel="stylesheet" href="manual.css">
+  <link rel="icon" type="image/png" href="assets/media/iconwiki.png">
+  <script src="community-config.js" defer=""></script>
+  <script src="community-i18n.js" defer=""></script>
+  <script src="community.js" defer=""></script>
+  <script src="community-moderation.js" defer=""></script>
+<script src="user-page-content.js" defer=""></script>
+<script src="user-page.js" defer=""></script>  <meta name="wiki-build" content="development">
+  <link rel="stylesheet" href="update.css">
+  <script src="update.js" defer=""></script>
+</head>
+<body class="user-page">
+  <a class="skip-link" href="#content">跳至内容</a>
+  <aside class="sidebar" aria-label="手动导航">
+    <a class="brand" href="zh.html#main"><img class="brand-logo" src="assets/media/iconwiki.png" width="112" height="112" alt="LRCPlus wiki：带有 L 和加号的多语言银色地球仪"><img class="brand-wordmark" src="assets/media/logowiki.png" width="144" height="43" alt="LRCPlus wiki"><span>用户手册</span></a>
+    <nav>
+      <h2>导航</h2>
+      <a href="zh.html#main">主页</a>
+      <a href="zh.html#getting-started">开始使用</a>
+      <a href="zh.html#article-index">A-Z 文章索引</a>
+      <a href="zh.html#troubleshooting">故障排除</a>
+    <a href="zh-account.html#special-pages">特别页面</a></nav>
+    <nav class="language-switch" aria-label="Languages">
+<h2>Languages</h2>
+<a href="user.html" hreflang="en" lang="en">English</a>
+<a href="ja-user.html" hreflang="ja" lang="ja">日本語</a>
+<a href="ko-user.html" hreflang="ko" lang="ko">한국어</a>
+<a href="yue-user.html" hreflang="yue-Hant" lang="yue-Hant">粵語</a>
+<a href="zh-user.html" hreflang="zh" lang="zh" aria-current="true">简体中文</a>
+<a href="cs-user.html" hreflang="cs" lang="cs">Čeština</a>
+<a href="vi-user.html" hreflang="vi" lang="vi">Tiếng Việt</a>
+</nav>
+      <div class="offline-note">用户手册<br>在线并与应用程序捆绑。</div>
+</aside>
+  <div class="page">
+    <header class="page-header">
+      <div class="utility"><span class="account-state">未登录</span><nav class="account-links" aria-label="个人工具"><a href="zh-account.html#create-account">创建帐户</a><a href="zh-account.html#login">登录</a></nav></div>
+      <div class="toolbar"><div class="page-tabs"><a href="#content" id="user-tab" aria-current="page">用户页面</a></div><div class="tools"><div class="view-tabs"><button id="theme-toggle" type="button" aria-pressed="false" hidden="">深色模式</button></div></div></div>
+    </header>
+    <main id="content" tabindex="-1"><div class="special-return"><a href="zh.html#main" id="manual-return">返回手册</a></div><h1 id="user-heading">用户页面</h1>
+      <p id="user-status" role="status"></p>
+      <button id="user-retry" type="button" hidden="">刷新</button>
+      <section id="user-details" aria-labelledby="user-details-heading" hidden="">
+        <p id="user-introduction" class="note">该用户页面还没有介绍。</p>
+        <h2 id="user-details-heading">公众号信息</h2>
+        <dl class="user-details"><dt id="user-username-label">公共用户名</dt><dd><span id="user-username"></span> <span id="user-role"></span></dd></dl>
+      </section>
+      <noscript><p class="note" lang="zh">需要 JavaScript 来加载公共用户信息。</p></noscript></main>
+    <footer>LRCPlus wiki</footer>
+  </div>
+
+
+
+</body></html>

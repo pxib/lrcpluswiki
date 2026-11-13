@@ -9,13 +9,18 @@ const editions = [
   ['account.html', 'index.html', 'Special pages'],
   ['ja-account.html', 'ja.html', '特別ページ'],
   ['ko-account.html', 'ko.html', '특수 문서'],
-  ['yue-account.html', 'yue.html', '特殊頁面']
+  ['yue-account.html', 'yue.html', '特殊頁面'],
+  ['zh-account.html', 'zh.html', '特殊页面'],
+  ['cs-account.html', 'cs.html', 'Speciální stránky'],
+  ['vi-account.html', 'vi.html', 'Trang đặc biệt']
 ];
 function page(name, mode) {
   const dom = new JSDOM(read(name), {
     url: `https://example.com/manual/${name}?return=%23ayami%2Ftalk#${mode}`,
     runScripts: 'outside-only'
   });
+  const localeScript = dom.window.document.querySelector('script[src^="locales/"]');
+  if (localeScript) dom.window.eval(read(localeScript.getAttribute('src')));
   dom.window.eval(read('community-i18n.js'));
   dom.window.ManualCommunity = {ready: Promise.resolve(), client: null, notice: 'Offline', recovery: false};
   dom.window.eval(read('account.js'));

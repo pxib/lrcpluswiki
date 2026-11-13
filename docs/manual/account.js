@@ -1,19 +1,20 @@
 ﻿'use strict';
 (() => {
+  const l = window.ManualLocale?.text || (value => value);
   const t = window.ManualCommunityText;
   const api = window.ManualCommunity;
   const lang = document.documentElement.lang;
-  const manual = lang.startsWith('yue') ? 'yue.html' : lang === 'ko' ? 'ko.html' : lang === 'ja' ? 'ja.html' : 'index.html';
+  const manual = window.ManualLocale?.manual || (lang.startsWith('yue') ? 'yue.html' : lang === 'ko' ? 'ko.html' : lang === 'ja' ? 'ja.html' : 'index.html');
   const query = new URLSearchParams(location.search);
   const requested = query.get('return');
   const returnHash = requested?.startsWith('#') ? requested : '#main';
   const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings', 'moderation', 'special-pages'];
   const specialText = {
-    en: ['Special pages', 'Users and accounts', 'Lists of pages', 'Restricted pages', 'Tools available on this wiki.'],
+    en: [l('Special pages'), l('Users and accounts'), l('Lists of pages'), l('Restricted pages'), l('Tools available on this wiki.')],
     ja: ['特別ページ', '利用者とアカウント', 'ページ一覧', '権限が必要なページ', 'このウィキで利用できるツールです。'],
     ko: ['특수 문서', '사용자와 계정', '문서 목록', '제한된 문서', '이 위키에서 사용할 수 있는 도구입니다.'],
     yue: ['特殊頁面', '用戶同帳戶', '頁面列表', '受限制頁面', '呢個維基提供嘅工具。']
-  }[lang.startsWith('yue') ? 'yue' : lang] || ['Special pages', 'Users and accounts', 'Lists of pages', 'Restricted pages', 'Tools available on this wiki.'];
+  }[lang.startsWith('yue') ? 'yue' : lang] || [l('Special pages'), l('Users and accounts'), l('Lists of pages'), l('Restricted pages'), l('Tools available on this wiki.')];
   let busy = false;
   let currentMode = 'login';
   const panels = {};

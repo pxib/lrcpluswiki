@@ -26,7 +26,7 @@
   function loginLink() {
     const a = el('a', t.loginToPost);
     const lang = document.documentElement.lang;
-    const file = lang.startsWith('yue') ? 'yue-account.html' : lang === 'ko' ? 'ko-account.html' : lang === 'ja' ? 'ja-account.html' : 'account.html';
+    const file = window.ManualLocale?.account || (lang.startsWith('yue') ? 'yue-account.html' : lang === 'ko' ? 'ko-account.html' : lang === 'ja' ? 'ja-account.html' : 'account.html');
     const url = new URL(file, location.href);
     url.searchParams.set('return', location.hash);
     url.hash = 'login';
@@ -123,6 +123,12 @@
     const number = new Intl.NumberFormat(lang);
     const c = number.format(comments);
     const p = number.format(people);
+    if (window.ManualLocale) {
+      const l = window.ManualLocale.text;
+      const commentKey = lang === 'cs' && comments === 1 ? '{count} comment' : lang === 'cs' && comments >= 2 && comments <= 4 ? '{count} comments (few)' : '{count} comments';
+      const peopleKey = lang === 'cs' && people === 1 ? '{count} person in discussion' : lang === 'cs' && people >= 2 && people <= 4 ? '{count} people in discussion (few)' : '{count} people in discussion';
+      return [l(commentKey).replace('{count}', c), l(peopleKey).replace('{count}', p)];
+    }
     if (lang === 'ja') return [`${c}件のコメント`, `${p}人が議論に参加`];
     if (lang === 'ko') return [`댓글 ${c}개`, `토론 참여자 ${p}명`];
     if (lang.startsWith('yue')) return [`${c}個留言`, `${p}人參與討論`];

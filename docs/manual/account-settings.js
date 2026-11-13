@@ -1,5 +1,6 @@
 'use strict';
 (() => {
+  const l = window.ManualLocale?.text || (value => value);
   const api = window.ManualCommunity;
   const t = window.ManualCommunityText;
   const panel = document.getElementById('settings-panel');
@@ -78,7 +79,7 @@
   sessions.form.append(sessions.submit);
   // Preferences uses a horizontal section selector, as in MediaWiki's Help:Preferences.
   const labels = {
-    en: ['User profile', 'Password and security'],
+    en: [l('User profile'), l('Password and security')],
     ja: ['利用者情報', 'パスワードとセキュリティ'],
     ko: ['사용자 정보', '비밀번호 및 보안'],
     yue: ['用戶資料', '密碼同保安']

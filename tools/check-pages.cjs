@@ -11,7 +11,7 @@ function check(file, reference) {
     errors.push(`${path.relative(root, file)}: missing published resource ${reference}`);
   }
 }
-for (const name of ['index.html', 'ja.html', 'ko.html', 'yue.html', 'account.html', 'ja-account.html', 'ko-account.html', 'yue-account.html', 'user.html', 'ja-user.html', 'ko-user.html', 'yue-user.html']) {
+for (const name of fs.readdirSync(root).filter(name => name.endsWith('.html'))) {
   const file = path.join(root, name);
   const html = fs.readFileSync(file, 'utf8');
   for (const [tag] of html.matchAll(/<(?:script|img|link)\b[^>]*>/gi)) {

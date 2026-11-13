@@ -1,17 +1,18 @@
 'use strict';
 (() => {
+  const l = window.ManualLocale?.text || (value => value);
   const api = window.ManualCommunity;
   const t = window.ManualCommunityText;
   const lang = document.documentElement.lang;
   const labels = {
-    en: ['User page', 'User', 'This user page has no introduction yet.', 'No user selected.', 'User not found.', 'Public account information'],
+    en: [l('User page'), l('User'), l('This user page has no introduction yet.'), l('No user selected.'), l('User not found.'), l('Public account information')],
     ja: ['利用者ページ', '利用者', 'この利用者ページにはまだ自己紹介がありません。', '利用者が選択されていません。', '利用者が見つかりません。', '公開アカウント情報'],
     ko: ['사용자 문서', '사용자', '이 사용자 문서에는 아직 소개가 없습니다.', '사용자가 선택되지 않았습니다.', '사용자를 찾을 수 없습니다.', '공개 계정 정보'],
     yue: ['用戶頁面', '用戶', '呢個用戶頁面暫時未有自我介紹。', '未選擇用戶。', '搵唔到呢個用戶。', '公開帳戶資料']
   };
   const text = labels[lang.startsWith('yue') ? 'yue' : lang] || labels.en;
   const translations = {
-    en: ['Joined', 'Edit', 'Preview', 'Publish', 'Introduction', 'Supports headings (#), lists (-), **bold**, *italic*, and [links](https://example.com). Your introduction is public.', 'Another edit changed this page. Copy your draft, then refresh before publishing.', 'This page changed after it was reported. Review the current page or dismiss the old report.', 'Leave without saving your changes?'],
+    en: [l('Joined'), l('Edit'), l('Preview'), l('Publish'), l('Introduction'), l('Supports headings (#), lists (-), **bold**, *italic*, and [links](https://example.com). Your introduction is public.'), l('Another edit changed this page. Copy your draft, then refresh before publishing.'), l('This page changed after it was reported. Review the current page or dismiss the old report.'), l('Leave without saving your changes?')],
     ja: ['登録日', '編集', 'プレビュー', '公開', '自己紹介', '見出し（#）、箇条書き（-）、**太字**、*斜体*、[リンク](https://example.com)に対応しています。自己紹介は公開されます。', 'ページが変更されました。下書きをコピーし、再読み込みしてから公開してください。', '報告後にページが変更されました。現在のページを確認するか、古い報告を却下してください。', '変更を保存せずに閉じますか？'],
     ko: ['가입일', '편집', '미리 보기', '게시', '소개', '제목(#), 목록(-), **굵게**, *기울임*, [링크](https://example.com)를 지원합니다. 소개는 공개됩니다.', '문서가 변경되었습니다. 초안을 복사한 후 새로고침하고 게시하세요.', '신고 이후 문서가 변경되었습니다. 현재 문서를 확인하거나 이전 신고를 기각하세요.', '변경 사항을 저장하지 않고 닫을까요?'],
     yue: ['加入日期', '編輯', '預覽', '發佈', '自我介紹', '支援標題（#）、列表（-）、**粗體**、*斜體*同[連結](https://example.com)。自我介紹會公開。', '頁面已經改咗。請先複製草稿，再重新整理後發佈。', '舉報後頁面已經改咗。請查看而家嘅頁面，或者駁回舊舉報。', '唔儲存修改就離開？']
@@ -47,11 +48,11 @@
   joined.hidden = joinedLabel.hidden = true;
   document.querySelector('.user-details').append(joinedLabel, joined);
   const menuWords = {
-    en: ['Copy link', 'Link copied.', 'Select the link below to copy it.', 'User page permalink', 'More user page options'],
+    en: [l('Copy link'), l('Link copied.'), l('Select the link below to copy it.'), l('User page permalink'), l('More user page options')],
     ja: ['リンクをコピー', 'コピーしました。', 'リンクを選択してコピーしてください。', '利用者ページの固定リンク', '利用者ページのその他の操作'],
     ko: ['링크 복사', '링크를 복사했습니다.', '아래 링크를 선택하여 복사하세요.', '사용자 문서 고유 링크', '사용자 문서 추가 작업'],
     yue: ['複製連結', '已複製連結。', '請選取下面嘅連結再複製。', '用戶頁面固定連結', '更多用戶頁面操作']
-  }[lang.startsWith('yue') ? 'yue' : lang] || ['Copy link', 'Link copied.', 'Select the link below to copy it.', 'User page permalink', 'More user page options'];
+  }[lang.startsWith('yue') ? 'yue' : lang] || [l('Copy link'), l('Link copied.'), l('Select the link below to copy it.'), l('User page permalink'), l('More user page options')];
   const titleRow = node('div', '', 'user-page-title');
   const menu = node('details', '', 'talk-comment-menu');
   const summary = node('summary', '•••');

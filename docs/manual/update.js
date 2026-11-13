@@ -1,13 +1,14 @@
 /* Compare the loaded document with the currently published deployment. */
 'use strict';
 (() => {
+  const l = window.ManualLocale?.text || (value => value);
   const current = document.querySelector('meta[name="wiki-build"]')?.content;
   if (!current || !/^https?:$/.test(location.protocol)) return;
   const lang = document.documentElement.lang;
   const text = lang === 'ja' ? ['更新があります。', '再読み込み']
     : lang === 'ko' ? ['업데이트가 있습니다.', '새로고침']
     : lang.startsWith('yue') ? ['有新版本。', '重新載入']
-    : ['An update is available.', 'Refresh'];
+    : [l('An update is available.'), l('Refresh')];
   let checking = false;
   let announced = false;
   let lastCheck = 0;
