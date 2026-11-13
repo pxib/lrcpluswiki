@@ -6,6 +6,7 @@
   const api = window.ManualCommunity = { client: null, session: null, recovery: false, error: null, ready: null };
   api.notice = location.protocol === 'file:' ? t.offline : t.unconfigured;
   api.errorText = error => {
+    if (error?.message?.includes('report_outdated')) return t.reportOutdated;
     for (const [code,key] of Object.entries({posting_too_fast:'rateLimit',already_reported:'alreadyReported',account_restricted:'restricted',staff_required:'staffRequired',target_not_found:'notFound',topic_locked:'locked',cannot_change_self:'cannotSelf',staff_member_protected:'protectedStaff',word_filtered:'wordFiltered',comment_delete_forbidden:'deleteForbidden',filter_limit:'filterLimit'})) {
       if (error?.message?.includes(code)) return t[key];
     }

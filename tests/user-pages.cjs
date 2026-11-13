@@ -24,18 +24,22 @@ function page(file = 'user.html', query = `?id=${id}`, options = {}) {
         eq(key, value) {request.eq = [key, value]; return this;},
         ilike(key, value) {request.ilike = [key, value]; return this;},
         async maybeSingle() {
+          if (table === 'user_pages') return {data: options.page || null, error: options.pageError || null};
           if (options.fetch) return options.fetch();
-          return {data: options.missing ? null : {id, username: options.username || 'ExampleUser'}, error: options.error || null};
+          return {data: options.missing ? null : {id, username: options.username || 'ExampleUser', joined_on: '2025-03-09'}, error: options.error || null};
         }
       };
     },
     async rpc(name, payload) {
       requests.push({rpc: name, payload});
+      if (options.rpc) return options.rpc(name, payload);
       if (options.roleError) throw new Error('Missing migration');
       return {data: [{user_id: id, role: options.role || 'moderator'}], error: null};
     }
   };
   api.notice = 'Offline';
+  if (options.owner) api.session = {user: {id}};
+  w.eval(read('user-page-content.js'));
   w.eval(read('user-page.js'));
   return {dom, requests, api};
 }
@@ -50,8 +54,9 @@ test('public user pages load only public profile columns in all four languages',
     assert.equal(doc.getElementById('user-username').textContent, 'ExampleUser');
     assert.ok(doc.querySelector('.community-staff-moderator'));
     assert.equal(doc.getElementById('special-tab'), null);
-    assert.equal(doc.querySelectorAll('form,textarea').length, 0);
-    assert.deepEqual(requests[0], {table: 'profiles', columns: 'id,username', eq: ['id', id]});
+    assert.equal(doc.querySelector('.user-page-editor').hidden, true);
+    assert.equal(doc.querySelector('.user-details time').dateTime, '2025-03-09');
+    assert.deepEqual(requests[0], {table: 'profiles', columns: 'id,username,joined_on', eq: ['id', id]});
     for (const link of doc.querySelectorAll('.language-switch a')) assert.equal(new URL(link.href).searchParams.get('id'), id);
     dom.window.close();
   }
@@ -115,4 +120,91 @@ test('user links use localized files and stable IDs and leave deleted users unli
     assert.equal(api.userLink(null).nodeType, 3);
     dom.window.close();
   }
+});
+test('owners preview safe Markdown and publish using the loaded revision in all languages', async () => {
+  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html']) {
+    const options = {owner: true, page: {body: 'Old introduction', revision: 4}, rpc: async name => ({data: name === 'community_save_user_page' ? 5 : [], error: null})};
+    const {dom, requests} = page(file, `?id=${id}`, options);
+    await flush();
+    const doc = dom.window.document;
+    const edit = doc.querySelector('[aria-controls="user-page-editor"]');
+    assert.equal(edit.hidden, false);
+    edit.click();
+    const editor = doc.querySelector('.user-page-editor');
+    assert.equal(editor.hidden, false);
+    const draft = editor.querySelector('textarea');
+    assert.equal(draft.value, 'Old introduction');
+    draft.value = '# Hello\n- **Bold** and *italic*\n[unsafe](javascript:alert)\n<img src=x onerror=alert(1)>';
+    editor.querySelector('button[type="button"]').click();
+    const preview = editor.querySelector('.user-page-preview');
+    assert.equal(preview.querySelector('h2').textContent, 'Hello');
+    assert.ok(preview.querySelector('li strong'));
+    assert.equal(preview.querySelector('img,a'), null);
+    assert.match(preview.textContent, /<img/);
+    editor.dispatchEvent(new dom.window.Event('submit', {cancelable:true}));
+    await flush();
+    assert.equal(editor.hidden, true);
+    assert.equal(doc.querySelector('#user-introduction h2').textContent, 'Hello');
+    const save = requests.find(request => request.rpc === 'community_save_user_page');
+    assert.equal(save.payload.p_revision, 4);
+    assert.equal(save.payload.p_body.startsWith('# Hello'), true);
+    dom.window.close();
+  }
+});
+test('conflicts preserve drafts and signing out clears the editor', async () => {
+  const {dom, api} = page('user.html', `?id=${id}`, {owner:true, page:{body:'Original',revision:1}, rpc:async name => ({data:[], error:name==='community_save_user_page'?{message:'edit_conflict'}:null})});
+  await flush();
+  const doc = dom.window.document;
+  doc.querySelector('[aria-controls="user-page-editor"]').click();
+  const editor = doc.querySelector('.user-page-editor');
+  editor.querySelector('textarea').value = 'Keep this draft';
+  doc.querySelector('[aria-controls="user-page-editor"]').click();
+  assert.equal(editor.querySelector('textarea').value,'Keep this draft');
+  editor.dispatchEvent(new dom.window.Event('submit',{cancelable:true}));
+  await flush();
+  assert.equal(editor.hidden,false);
+  assert.equal(editor.querySelector('textarea').value,'Keep this draft');
+  assert.match(editor.querySelector('[role="status"]').textContent,/Another edit/);
+  assert.equal(doc.getElementById('user-introduction').textContent,'Original');
+  api.session=null;
+  dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+  assert.equal(editor.hidden,true);
+  assert.equal(editor.querySelector('textarea').value,'');
+  assert.equal(doc.querySelector('[aria-controls="user-page-editor"]').hidden,true);
+  dom.window.close();
+});
+test('reports target the public user page and clear private drafts on account changes', async () => {
+  const {dom, api, requests} = page('user.html', `?id=${id}`, {page:{body:'Reported content',revision:2}, rpc:async name=>({data:name==='community_report'?'report-id':[],error:null})});
+  await flush();
+  const doc=dom.window.document;
+  const report=doc.querySelector('.community-toolbar button');
+  assert.equal(report.hidden,true);
+  api.session={user:{id:'other-user'}};
+  dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+  assert.equal(doc.querySelector('[aria-controls="user-page-editor"]').hidden,true);
+  report.click();
+  let form=doc.querySelector('.user-page-report form');
+  form.querySelector('textarea').value='Private details';
+  form.dispatchEvent(new dom.window.Event('submit',{cancelable:true}));
+  await flush();
+  const sent=requests.find(request=>request.rpc==='community_report');
+  assert.deepEqual({...sent.payload},{p_type:'user_page',p_target:id,p_reason:'spam',p_details:'Private details'});
+  assert.equal(form.querySelector('button[type="submit"]').hidden,true);
+  assert.doesNotMatch(doc.getElementById('user-introduction').textContent,/Private details/);
+  report.click();
+  form=doc.querySelector('.user-page-report form');
+  form.querySelector('textarea').value='Unsaved private details';
+  api.session={user:{id:'different-user'}};
+  dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+  assert.equal(doc.querySelector('.user-page-report').textContent,'');
+  dom.window.close();
+});
+test('missing user-page migration retains profile viewing and disables editing', async () => {
+  const {dom} = page('user.html', `?id=${id}`, {owner:true,pageError:{code:'42P01'}});
+  await flush();
+  const doc=dom.window.document;
+  assert.equal(doc.getElementById('user-details').hidden,false);
+  assert.equal(doc.querySelector('[aria-controls="user-page-editor"]').hidden,true);
+  assert.match(doc.getElementById('user-status').textContent,/not available yet/);
+  dom.window.close();
 });

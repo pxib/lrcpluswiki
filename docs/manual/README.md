@@ -6,11 +6,15 @@ Use **View source** beside Read to inspect the current article's HTML offline. T
 
 ## Public user pages
 
-`user.html` (and the `ja-`, `ko-`, and `yue-` editions) displays public accounts using `?id=<profile UUID>` or a case-insensitive `?name=<username>` lookup. Talk signatures and signed-in header names link by stable profile ID; moderation reporter names use the username lookup. Pages read only `id,username` from the existing protected `profiles` table and optional verified staff badges from `community_staff_indicators`. No database migration is needed.
+`user.html` (and the `ja-`, `ko-`, and `yue-` editions) displays public accounts using `?id=<profile UUID>` or a case-insensitive `?name=<username>` lookup. Talk signatures and signed-in header names link by stable profile ID; moderation reporter names use the username lookup. Pages read `id,username,joined_on` from the protected `profiles` table, introductions from `user_pages`, and optional verified staff badges from `community_staff_indicators`. Apply `supabase/user-pages.sql` after `community.sql`, `moderation.sql`, and `content-controls.sql` before deploying these features.
 
-This first version is read-only: there is an empty introduction notice and public account information, with no editor, online tracking, email address, or fabricated account dates. Unknown users, invalid links, unavailable services, and offline copies have explicit states. User pages are ordinary user pages, separate from the Special pages directory.
+Joined dates are the UTC date of the original authentication account creation, backfilled for existing users. Only the date is published. Unknown users, invalid links, unavailable services, and offline copies have explicit states. User pages are ordinary user pages, separate from the Special pages directory. Profiles remain readable if the new migration is missing; joined dates and editing require it.
 
-Run `node --test tests/user-pages.cjs tests/community.cjs tests/special-pages.cjs` to check public lookups, localized user links, untrusted text rendering, retry/stale responses, and the existing community flows.
+Owners can select **Edit**, enter up to 10,000 characters, preview, and publish. The small Markdown subset supports headings, bullet lists, bold, italic, and HTTP(S) links; raw HTML is displayed as text. Previews and published introductions use the same renderer. Cancel confirms before discarding changes, and signing out or changing accounts clears drafts. Unsaved edits warn before leaving the page. Concurrent saves are rejected with a message preserving the draft; copy the draft and refresh before trying again. The server requires a verified, unrestricted account, enforces the existing word filters and posting cooldown, and derives the owner from the session.
+
+Signed-in readers can report nonempty introductions. Reports use the existing private queue and capture the content and revision at report time. Moderators can dismiss or remove reported content; removal clears the introduction without deleting the account or joined date. A changed revision cannot be removed through an old report: review the current page, dismiss the old report, and report the current revision if needed. Removed snapshots remain private for moderation evidence. No public revision archive is introduced.
+
+Run `node --test tests/user-pages.cjs tests/user-pages-sql.cjs tests/community.cjs tests/special-pages.cjs` to check public lookups, localized user links, safe rendering, owner controls, conflicts, private reporting, database permissions, retry/stale responses, and the existing community flows. Browser rendering has not been verified in this session.
 
 ## Editing articles
 

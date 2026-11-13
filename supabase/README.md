@@ -6,11 +6,22 @@ Run SQL files in Supabase's SQL Editor as the project owner, in this order:
 2. `moderation.sql` — staff roles, private reports, restrictions, and topic locks.
 3. `content-controls.sql` — word filters and reply deletion.
 4. `talk-performance.sql` — batched public topic counts.
+5. `user-pages.sql` — public joined dates, owner-edited introductions, and user-page reports (requires content-controls).
 
 Each file is a one-time transactional migration. For an existing installation,
 run only the migrations you have not applied, then push the website changes.
 The content-controls migration preserves existing discussion text and starts
 with an empty word-filter list.
+
+## User pages
+
+Apply `user-pages.sql` before deploying the joined-date/editor/reporting client. It backfills `profiles.joined_on` from `auth.users.created_at` as a UTC date and updates the signup trigger for future accounts. It never publishes emails or the authentication table. Introductions start empty; there is no fabricated join date or biography.
+
+`user_pages` allows public reads and no direct client writes. `community_save_user_page(text,bigint)` derives the owner from the verified session, checks restrictions, the 10,000-character limit, word filters and the existing posting cooldown. A revision check prevents overwrites from another tab or a moderator removal. Blank introductions are supported.
+
+Reports reuse `community_report` with type `user_page` and the profile UUID. The migration preserves discussion reporting, extends the target constraint, and permits null article/topic fields for user pages. Private snapshots include the reported revision. The existing moderation queue links these reports to the public user page. Removal clears the introduction, advances its revision, closes matching reports, and logs the action. It preserves the account and joined date. If the introduction has changed, removal rejects with `report_outdated`; staff must review the current page and dismiss the outdated report before a new report can be filed by that reporter. Report records and snapshots remain inaccessible to public readers.
+
+Run `node --test tests/user-pages-sql.cjs tests/user-pages.cjs` for the database and UI checks. Apply the migration in the live project separately; local checks do not change the hosted database.
 
 Also apply `staff-indicators.sql` after `moderation.sql` to enable public staff
 labels in Talk signatures. It exposes only user IDs and current admin/moderator

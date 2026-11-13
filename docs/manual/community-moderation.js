@@ -231,8 +231,10 @@
           metadata.append(timestamp,document.createTextNode(` · ${t.reporter}: `),api.userLink(row.reporter),document.createTextNode(` · ${t.author}: `),api.userLink(row.author, row.author_id));
           item.append(metadata);
           item.append(el('blockquote',row.content,'community-message'),el('p',row.details,'community-message'));
-          const url = new URL(document.getElementById('manual-return').href);
-          url.hash = `#${row.article_id}/talk/community-${row.target_type}-${row.target_id}`;
+          const url = row.target_type === 'user_page'
+            ? new URL(api.userLink(row.author, row.target_id).href)
+            : new URL(document.getElementById('manual-return').href);
+          if (row.target_type !== 'user_page') url.hash = `#${row.article_id}/talk/community-${row.target_type}-${row.target_id}`;
           const link = el('a',t.back);
           link.href = url.href;
           item.append(link);

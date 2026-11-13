@@ -34,6 +34,7 @@
   };
   const content = contentTranslations[lang.startsWith('yue') ? 'yue' : lang] || contentTranslations.en;
   window.ManualCommunityText = Object.freeze({
+    reportOutdated: lang.startsWith('yue') ? '舉報後頁面已經改咗。請查看而家嘅頁面，或者駁回舊舉報。' : lang === 'ja' ? '報告後にページが変更されました。現在のページを確認するか、古い報告を却下してください。' : lang === 'ko' ? '신고 이후 문서가 변경되었습니다. 현재 문서를 확인하거나 이전 신고를 기각하세요.' : 'This page changed after it was reported. Review the current page or dismiss the old report.',
     ...Object.fromEntries(keys.map((key, i) => [key, values[i]])),
     ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]])),
     ...Object.fromEntries(moderationKeys.map((key, i) => [key, moderation[i]])),
