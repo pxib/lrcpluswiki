@@ -119,10 +119,11 @@ No wiki article editing is enabled. Posts are plain text, with 160-character
 titles and 10,000-character bodies. Topics and replies use pagination; refresh
 to see other people's new posts.
 
-Moderation is initially owner-operated in Supabase's Table Editor: delete spam
-comments or topics (deleting a topic also deletes its replies), and ban abusive
-accounts in Authentication. There are no public moderator controls or user
-editing/deletion yet. Deleting an Auth user removes their profile and retains
+For in-site reporting and staff tools, follow [MODERATION-SETUP.md](MODERATION-SETUP.md)
+to run the separate moderation migration and assign your first admin. Without
+that migration, moderation remains owner-operated in Supabase's Table Editor:
+delete spam comments or topics, and ban abusive accounts in Authentication.
+Deleting an Auth user removes their profile and retains
 their posts with a “Deleted user” label. Add newly created manual article IDs to
 `community_articles` before allowing discussions on them. Back up the database
 and review SMTP and Auth rate limits before public use.

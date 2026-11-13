@@ -63,12 +63,14 @@
     permalink.hash = hash;
     const actions = document.createElement('div');
     actions.className = 'talk-actions';
-    const reply = document.createElement(onReply ? 'button' : 'a');
+    const reply = document.createElement('a');
+    reply.href = replyHref || hash;
     if (onReply) {
-      reply.type = 'button';
-      reply.addEventListener('click', onReply);
+      reply.addEventListener('click', event => {
+        event.preventDefault();
+        onReply();
+      });
     } else {
-      reply.href = replyHref || hash;
       if (!replyHref) {
         reply.setAttribute('aria-disabled', 'true');
         reply.addEventListener('click', event => event.preventDefault());
@@ -83,13 +85,14 @@
     summary.setAttribute('aria-label', cantonese ? '更多留言操作' : korean ? '댓글 추가 작업' : japanese ? 'コメントのその他の操作' : 'More comment options');
     const popup = document.createElement('div');
     popup.className = 'talk-comment-popup';
-    const copy = document.createElement('button');
-    copy.type = 'button';
+    const copy = document.createElement('a');
+    copy.href = permalink.href;
     copy.textContent = cantonese ? '複製連結' : korean ? '링크 복사' : japanese ? 'リンクをコピー' : 'Copy link';
     const status = document.createElement('span');
     status.className = 'talk-copy-status';
     status.setAttribute('role', 'status');
-    copy.addEventListener('click', async () => {
+    copy.addEventListener('click', async event => {
+      event.preventDefault();
       let copied = false;
       try {
         await navigator.clipboard.writeText(permalink.href);

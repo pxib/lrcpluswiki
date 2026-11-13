@@ -129,3 +129,9 @@ edition. The `#settings` view shows the protected public username, private email
 address, and email verification status. It supports email and password changes
 after checking the current password, plus signing out other devices. Public
 usernames remain fixed. Strings for these controls live in `community-i18n.js`.
+
+Live posts have a **Report** option in their three-dot menu. Reports are private
+to staff and do not automatically remove content. Moderators can review reports
+and lock topics; admins can also manage roles and posting restrictions. Follow
+[MODERATION-SETUP.md](MODERATION-SETUP.md) to apply the moderation migration and
+assign the first admin account.

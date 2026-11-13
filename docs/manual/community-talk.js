@@ -10,6 +10,7 @@
   let generation = 0;
   let activeArticle = '';
   let lastUser = null;
+  let lastStaffRole = null;
   function el(tag, text, className) {
     const node = document.createElement(tag);
     if (text) node.textContent = text;
@@ -82,10 +83,10 @@
   }
   function signature(row, article, id) {
     const p = el('p', '', 'talk-signature');
-    p.append(el('b', row.profiles?.username || t.deleted), ' · ');
+    p.append('— ', el('b', row.profiles?.username || t.deleted), ' ');
     const a = el('a');
     a.href = `#${article}/talk/${id}`;
-    const time = el('time', new Intl.DateTimeFormat(document.documentElement.lang, {dateStyle: 'medium', timeStyle: 'short'}).format(new Date(row.created_at)));
+    const time = el('time', window.ManualTalkTimestamps.format(new Date(row.created_at), document.documentElement.lang));
     time.dateTime = row.created_at;
     a.append(time);
     p.append(a);
@@ -97,6 +98,16 @@
       const target = document.getElementById(id);
       if (target && live.contains(target)) target.scrollIntoView();
     }
+  }
+  function metadataLabels(comments, people) {
+    const lang = document.documentElement.lang;
+    const number = new Intl.NumberFormat(lang);
+    const c = number.format(comments);
+    const p = number.format(people);
+    if (lang === 'ja') return [`${c}件のコメント`, `${p}人が議論に参加`];
+    if (lang === 'ko') return [`댓글 ${c}개`, `토론 참여자 ${p}명`];
+    if (lang.startsWith('yue')) return [`${c}個留言`, `${p}人參與討論`];
+    return [`${c} comment${comments === 1 ? '' : 's'}`, `${p} ${people === 1 ? 'person' : 'people'} in discussion`];
   }
   async function render() {
     const version = ++generation;
@@ -113,6 +124,7 @@
     await api.ready;
     if (version !== generation) return;
     lastUser = api.session?.user.id || null;
+    lastStaffRole = api.staffRole || null;
     if (!api.client) { notice.textContent = api.notice; return; }
     notice.textContent = '';
     const toolbar = el('div', '', 'community-toolbar');
@@ -137,7 +149,7 @@
       notice.textContent = t.loading;
       try {
         const { data, error } = await api.client.from('community_topics')
-          .select('id,title,body,created_at,profiles(username)').eq('article_id', article)
+          .select('*,profiles(username)').eq('article_id', article)
           .order('created_at', {ascending: true}).order('id', {ascending: true}).range(offset, offset + 19);
         if (error) throw error;
         if (version !== generation) return;
@@ -158,13 +170,21 @@
           permalink.href = topicLink.href;
           permalink.setAttribute('aria-label', `${window.ManualTalkUI.permalink}: ${row.title}`);
           heading.append(' ', permalink);
+          const metadata = el('p', '', 'talk-meta');
+          metadata.hidden = true;
           const opening = el('div', '', 'talk-comment talk-depth-0');
           opening.append(el('p', row.body, 'community-message'), signature(row, article, section.id));
-          const replyOptions = api.session
-            ? { onReply: () => composer(section, article, row.id, version, () => loadReplies(true)) }
+          const replyOptions = row.locked ? {} : api.session
+            ? { onReply: () => composer(section, article, row.id, version, () => Promise.all([loadReplies(true), loadMetadata()])) }
             : { replyHref: loginLink().href };
           window.ManualTalkUI.addCommentActions(opening, topicLink.hash, replyOptions);
-          section.append(heading, opening);
+          window.ManualCommunityModeration?.addReport(opening, 'topic', row.id);
+          section.append(heading, metadata, opening);
+          if (row.locked) {
+            section.append(el('p', t.locked, 'note'));
+            opening.querySelector('.talk-actions > a').title = t.locked;
+          }
+          window.ManualCommunityModeration?.addTopicControls(section, row, render);
           const replies = el('div');
           section.append(replies);
           let replyOffset = 0;
@@ -172,6 +192,26 @@
           replyStatus.setAttribute('role', 'status');
           const moreReplies = button(t.more, loadReplies);
           section.append(replyStatus, moreReplies);
+          async function loadMetadata() {
+            // Fetch only attribution, across all pages, so totals do not depend on visible replies.
+            let count = 1;
+            let offset = 0;
+            const authors = new Set(row.author_id ? [row.author_id] : []);
+            try {
+              while (true) {
+                const { data, error } = await api.client.from('community_comments').select('author_id')
+                  .eq('topic_id', row.id).order('id', {ascending: true}).range(offset, offset + 999);
+                if (error) throw error;
+                if (version !== generation) return;
+                count += data.length;
+                data.forEach(reply => { if (reply.author_id) authors.add(reply.author_id); });
+                offset += data.length;
+                if (data.length < 1000) break;
+              }
+              metadata.replaceChildren(...metadataLabels(count, authors.size).map(label => el('span', label, 'talk-meta-item')));
+              metadata.hidden = false;
+            } catch { metadata.hidden = true; }
+          }
           async function loadReplies(reset = false) {
             moreReplies.disabled = true;
             if (reset) { replyOffset = 0; replies.replaceChildren(); }
@@ -188,6 +228,8 @@
                 comment.id = `community-comment-${reply.id}`;
                 comment.append(el('p', reply.body, 'community-message'), signature(reply, article, comment.id));
                 window.ManualTalkUI.addCommentActions(comment, `#${article}/talk/${comment.id}`, replyOptions);
+                window.ManualCommunityModeration?.addReport(comment, 'comment', reply.id);
+                if (row.locked) comment.querySelector('.talk-actions > a').title = t.locked;
                 replies.append(comment);
               }
               scrollToRequested();
@@ -196,7 +238,7 @@
             finally { moreReplies.disabled = false; }
           }
           topics.append(section);
-          await loadReplies();
+          await Promise.all([loadReplies(), loadMetadata()]);
           if (version !== generation) return;
         }
         scrollToRequested();
@@ -210,6 +252,9 @@
   window.addEventListener('manualroutechange', render);
   window.addEventListener('communitychange', () => {
     if (activeArticle && lastUser !== (api.session?.user.id || null)) render();
+  });
+  window.addEventListener('moderationchange', () => {
+    if (activeArticle && lastStaffRole !== (api.staffRole || null)) render();
   });
   const browse = document.getElementById('talk-browse-link');
   browse.addEventListener('click', event => {

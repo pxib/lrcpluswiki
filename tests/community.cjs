@@ -276,8 +276,8 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   const { emit } = mockAuth(dom);
   await dom.window.ManualCommunity.ready;
   const api = dom.window.ManualCommunity;
-  const topic = { id: 'topic-1', title: '<img src=x onerror=alert(1)>', body: '<script>alert(1)</script>', created_at: '2026-01-01T00:00:00Z', profiles: {username:'Alice'} };
-  const comment = { id: 'comment-1', body: '<b>Plain text reply</b>', created_at: topic.created_at, profiles: {username:'Bob'} };
+  const topic = { id: 'topic-1', author_id: 'alice', title: '<img src=x onerror=alert(1)>', body: '<script>alert(1)</script>', created_at: '2026-01-01T00:00:00Z', profiles: {username:'Alice'} };
+  const comment = { id: 'comment-1', author_id: 'bob', body: '<b>Plain text reply</b>', created_at: topic.created_at, profiles: {username:'Bob'} };
   let reads = 0;
   const posted = [];
   api.client.from = table => {
@@ -302,10 +302,15 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(live.querySelector('#community-contents a').hash, '#main/talk/community-topic-topic-1');
   assert.equal(live.querySelector('.section-link').hash, '#main/talk/community-topic-topic-1');
   assert.equal(live.querySelectorAll('.talk-actions').length, 2);
+  assert.equal(live.querySelector('.talk-meta').hidden, false);
+  assert.deepEqual([...live.querySelectorAll('.talk-meta-item')].map(node => node.textContent), ['2 comments', '2 people in discussion']);
+  assert.equal(live.querySelector('.talk-depth-0 .talk-signature').textContent, '— Alice 1 January 2026 at 00:00 (UTC)');
+  assert.equal(live.querySelector('.talk-depth-1 .talk-signature').textContent, '— Bob 1 January 2026 at 00:00 (UTC)');
   assert.ok(live.querySelector('.talk-actions a[href*="account.html"]'));
   let copied;
   Object.defineProperty(dom.window.navigator, 'clipboard', {value: {async writeText(value) { copied = value; }}});
-  live.querySelector('.talk-depth-1 .talk-comment-popup button').click();
+  assert.equal(live.querySelectorAll('.talk-comment-popup button').length, 0);
+  live.querySelector('.talk-depth-1 .talk-comment-popup a').click();
   await flush();
   assert.equal(new URL(copied).hash, '#main/talk/community-comment-comment-1');
   assert.match(live.textContent, /<script>alert\(1\)<\/script>/);
@@ -314,7 +319,8 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(doc.querySelectorAll('.community-scripted-label').length, 1);
   emit('SIGNED_IN', {user:{id:'alice',user_metadata:{username:'Alice'}}});
   await flush();
-  assert.equal(live.querySelectorAll('.talk-actions > button').length, 2);
+  assert.equal(live.querySelectorAll('.talk-actions > a').length, 2);
+  assert.equal(live.querySelectorAll('.talk-actions > button').length, 0);
   assert.equal(live.querySelectorAll('.talk-actions [aria-disabled]').length, 0);
   const topicButton = [...live.querySelectorAll('button')].find(b => b.textContent === 'Start a new topic');
   topicButton.click();
@@ -330,7 +336,7 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(posted[0].name, 'community_start_topic');
   assert.equal(posted[0].payload.p_article, 'main');
   assert.equal(posted[0].payload.p_title, 'A new topic');
-  const reply = [...live.querySelectorAll('button')].find(b => b.textContent === 'Reply');
+  const reply = live.querySelector('.talk-actions > a');
   reply.click();
   form = live.querySelector('form');
   form.querySelector('textarea').value = 'A real reply';
@@ -339,6 +345,34 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(posted[1].name, 'community_reply');
   assert.equal(posted[1].payload.p_topic, 'topic-1');
   assert.equal(doc.querySelectorAll('.community-scripted-label').length, 1);
+  dom.window.close();
+});
+
+test('community metadata counts all reply pages and distinct participants', async () => {
+  const dom = page('index.html', '#main/talk');
+  mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const topic = {id: 'paged', author_id: 'alice', title: 'Paged topic', body: 'Opening', created_at: '2026-01-01T00:00:00Z', profiles: {username: 'Alice'}};
+  let replies = Array.from({length: 1001}, (_, i) => ({
+    id: `reply-${i}`, author_id: i % 2 ? 'alice' : 'bob', body: 'Reply',
+    created_at: topic.created_at, profiles: {username: i % 2 ? 'Alice' : 'Bob'}
+  }));
+  dom.window.ManualCommunity.client.from = table => ({
+    select() { return this; }, eq() { return this; }, order() { return this; },
+    async range(start, end) { return {data: (table === 'community_topics' ? [topic] : replies).slice(start, end + 1), error: null}; }
+  });
+  evalScript(dom, 'talk-timestamps.js');
+  evalScript(dom, 'manual.js');
+  evalScript(dom, 'community-talk.js');
+  await flush();
+  const doc = dom.window.document;
+  const labels = () => [...doc.querySelectorAll('.community-talk .talk-meta-item')].map(node => node.textContent);
+  assert.deepEqual(labels(), ['1,002 comments', '2 people in discussion']);
+  assert.equal(doc.querySelectorAll('.community-talk .talk-depth-1').length, 50);
+  replies = [];
+  [...doc.querySelectorAll('.community-toolbar button')].find(node => node.textContent === 'Refresh').click();
+  await flush();
+  assert.deepEqual(labels(), ['1 comment', '1 person in discussion']);
   dom.window.close();
 });
 
@@ -388,4 +422,157 @@ test('PostgreSQL enforces public reads, protected attribution, verification and 
     await db.exec(`delete from community_topics where id = '${topic}'`);
     assert.equal((await db.query('select * from community_comments')).rows.length, 0);
   } finally { await db.close(); }
+});
+
+test('moderation SQL keeps reports private and enforces roles, locks, restrictions, and review history', async () => {
+  const db = new PGlite();
+  const admin='10000000-0000-0000-0000-000000000001';
+  const moderator='10000000-0000-0000-0000-000000000002';
+  const member='10000000-0000-0000-0000-000000000003';
+  const author='10000000-0000-0000-0000-000000000004';
+  const unverified='10000000-0000-0000-0000-000000000005';
+  async function as(id) {await db.exec(`reset role; set role authenticated; set request.jwt.claim.sub='${id}'`);}
+  try {
+    await db.exec(`create role anon;create role authenticated;create schema auth;
+      create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email_confirmed_at timestamptz,banned_until timestamptz);
+      create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      grant usage on schema public,auth to anon,authenticated;`);
+    await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/community.sql'),'utf8'));
+    await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/moderation.sql'),'utf8'));
+    await db.exec(`insert into auth.users values
+      ('${admin}','{"username":"AdminUser"}',now(),null),
+      ('${moderator}','{"username":"ModUser"}',now(),null),
+      ('${member}','{"username":"MemberUser","role":"admin"}',now(),null),
+      ('${author}','{"username":"AuthorUser"}',now(),null),
+      ('${unverified}','{"username":"Unverified"}',null,null);
+      insert into community_staff values('${admin}','admin'),('${moderator}','moderator');`);
+    await as(author);
+    const topic=(await db.query("select community_start_topic('main','A reported topic','Original content') as id")).rows[0].id;
+    await db.exec('reset role');
+    const comment=(await db.query('insert into community_comments(topic_id,author_id,body) values($1,$2,$3) returning id',[topic,author,'A reported reply'])).rows[0].id;
+    await db.exec('set role anon');
+    await assert.rejects(db.query('select * from community_reports'),/permission denied/);
+    await assert.rejects(db.query(`select community_report('topic','${topic}','spam','')`),/permission denied/);
+    await as(unverified);
+    await assert.rejects(db.query(`select community_report('topic','${topic}','spam','')`),/verified_account_required/);
+    await as(member);
+    assert.equal((await db.query('select community_staff_role() as role')).rows[0].role,null);
+    for(const table of ['community_reports','community_staff','community_restrictions','community_moderation_log']) {
+      await assert.rejects(db.query(`select * from ${table}`),/permission denied/);
+    }
+    await assert.rejects(db.query(`insert into community_staff values('${member}','admin')`),/permission denied/);
+    await assert.rejects(db.query('select * from community_report_queue()'),/staff_required/);
+    await assert.rejects(db.query(`select community_manage_member('AuthorUser','block','abuse')`),/staff_required/);
+    await assert.rejects(db.query(`select community_report('topic','${topic}','invalid','')`),/check constraint/);
+    const report=(await db.query(`select community_report('topic','${topic}','spam','Private context') as id`)).rows[0].id;
+    await assert.rejects(db.query(`select community_report('topic','${topic}','spam','again')`),/already_reported/);
+    await assert.rejects(db.query(`select community_report('comment','${comment}','spam','')`),/posting_too_fast/);
+    // Reporting does not consume the member's independent posting allowance.
+    await db.query("select community_start_topic('main','Independent post','body')");
+    await assert.rejects(db.query(`select community_review_report('${report}','remove')`),/staff_required/);
+    await assert.rejects(db.query(`select community_lock_topic('${topic}',true)`),/staff_required/);
+    await as(moderator);
+    const queue=(await db.query('select * from community_report_queue()')).rows;
+    assert.equal(queue[0].reporter,'MemberUser');
+    assert.equal(queue[0].content,'A reported topic\n\nOriginal content');
+    assert.equal(queue[0].details,'Private context');
+    assert.equal(queue[0].email,undefined);
+    await assert.rejects(db.query("select community_manage_member('MemberUser','admin','')"),/staff_required/);
+    await db.query(`select community_lock_topic('${topic}',true)`);
+    await db.exec("reset role;update community_post_limits set last_post_at=now()-interval '2 minutes'");
+    await as(member);
+    await assert.rejects(db.query(`select community_reply('${topic}','blocked reply')`),/topic_locked/);
+    await db.exec("reset role;update community_reports set created_at=now()-interval '2 minutes'");
+    await as(member);
+    await db.query(`select community_report('comment','${comment}','harassment','context')`);
+    await as(moderator);
+    await db.query(`select community_review_report('${report}','remove')`);
+    assert.equal((await db.query("select * from community_report_queue('removed',0)")).rows.length,2);
+    assert.equal((await db.query('select * from community_comments')).rows.length,0);
+    await as(admin);
+    await assert.rejects(db.query("select community_manage_member('AdminUser','member','')"),/cannot_change_self/);
+    await assert.rejects(db.query("select community_manage_member('ModUser','block','abuse')"),/staff_member_protected/);
+    await db.query("select community_manage_member('MemberUser','block','Repeated abuse')");
+    await as(member);
+    await assert.rejects(db.query("select community_start_topic('main','bypass','body')"),/account_restricted/);
+    await assert.rejects(db.query(`select community_report('topic','${topic}','spam','')`),/account_restricted/);
+    await as(admin);
+    await db.query("select community_manage_member('MemberUser','unblock','')");
+    await db.query("select community_manage_member('ModUser','member','')");
+    await as(moderator);
+    assert.equal((await db.query('select community_staff_role() as role')).rows[0].role,null);
+    await assert.rejects(db.query('select * from community_report_queue()'),/staff_required/);
+    await db.exec('reset role');
+    assert.ok((await db.query('select * from community_moderation_log')).rows.length>=5);
+  } finally {await db.close();}
+});
+
+test('live post Report submits a private report and leaves the content visible', async () => {
+  const dom=page('index.html','#main/talk');
+  const {emit}=mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api=dom.window.ManualCommunity;
+  emit('SIGNED_IN',{user:{id:'member',user_metadata:{username:'Member'}}});
+  api.client.from=table=>({select(){return this;},eq(){return this;},order(){return this;},async range(){return {data:table==='community_topics'?[{id:'reported-topic',title:'A topic',body:'Keep this visible',created_at:'2026-01-01',author_id:'author',profiles:{username:'Author'}}]:[],error:null};}});
+  const calls=[];
+  api.client.rpc=async(name,payload)=>{calls.push({name,payload});return {data:name==='community_staff_role'?null:'report-id',error:null};};
+  evalScript(dom,'talk-timestamps.js');
+  evalScript(dom,'manual.js');
+  evalScript(dom,'community-moderation.js');
+  evalScript(dom,'community-talk.js');
+  await flush();
+  const doc=dom.window.document;
+  assert.equal(doc.querySelector('#talk-body .community-report'),null);
+  const report=[...doc.querySelectorAll('.community-talk .talk-comment-popup button')].find(node=>node.textContent==='Report');
+  assert.ok(report);
+  report.click();
+  const form=doc.querySelector('.community-report');
+  assert.match(form.textContent,/Only moderators and admins/);
+  form.querySelector('select').value='harassment';
+  form.querySelector('textarea').value='Private context';
+  form.dispatchEvent(new dom.window.Event('submit',{cancelable:true}));
+  await flush();
+  const sent=calls.find(call=>call.name==='community_report');
+  assert.equal(sent.payload.p_type,'topic');
+  assert.equal(sent.payload.p_target,'reported-topic');
+  assert.equal(sent.payload.p_reason,'harassment');
+  assert.equal(sent.payload.p_details,'Private context');
+  assert.match(form.textContent,/Report received/);
+  assert.equal(form.querySelector('button[type="submit"]').hidden,true);
+  assert.match(doc.querySelector('.community-talk').textContent,/Keep this visible/);
+  dom.window.close();
+});
+
+test('moderation queue renders text safely, limits admin controls, and clears on logout', async () => {
+  const dom=page('account.html','#moderation');
+  const {emit}=mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api=dom.window.ManualCommunity;
+  const calls=[];
+  let reviewed=false;
+  api.client.rpc=async(name,payload)=>{
+    calls.push({name,payload});
+    if(name==='community_staff_role')return {data:'moderator',error:null};
+    if(name==='community_report_queue')return {data:reviewed?[]:[{id:'report-1',reporter:'Reporter',author:'Author',target_type:'topic',target_id:'topic-1',article_id:'main',content:'<img src=x onerror=alert(1)>',reason:'spam',details:'Private details',status:'open',created_at:'2026-01-01'}],error:null};
+    if(name==='community_review_report')reviewed=true;
+    return {data:null,error:null};
+  };
+  emit('SIGNED_IN',{user:{id:'mod',user_metadata:{username:'Moderator'}}});
+  evalScript(dom,'account.js');
+  evalScript(dom,'community-moderation.js');
+  await flush();
+  const panel=dom.window.document.getElementById('moderation-panel');
+  assert.match(panel.textContent,/Private details/);
+  assert.match(panel.textContent,/<img src=x/);
+  assert.equal(panel.querySelector('img'),null);
+  assert.doesNotMatch(panel.textContent,/Manage members/);
+  assert.equal(dom.window.document.querySelector('[data-moderation]').hidden,false);
+  [...panel.querySelectorAll('button')].find(node=>node.textContent==='Dismiss report').click();
+  await flush();
+  assert.equal(calls.find(call=>call.name==='community_review_report').payload.p_action,'dismiss');
+  emit('SIGNED_OUT',null);
+  assert.doesNotMatch(panel.textContent,/Private details/);
+  await flush();
+  assert.equal(dom.window.document.querySelector('[data-moderation]').hidden,true);
+  dom.window.close();
 });

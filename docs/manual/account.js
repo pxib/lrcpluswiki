@@ -7,7 +7,7 @@
   const query = new URLSearchParams(location.search);
   const requested = query.get('return');
   const returnHash = requested?.startsWith('#') ? requested : '#main';
-  const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings'];
+  const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings', 'moderation'];
   let busy = false;
   let currentMode = 'login';
   const panels = {};
@@ -38,7 +38,7 @@
     p.append(a);
     parent.append(p);
   }
-  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword, settings: t.settings };
+  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword, settings: t.settings, moderation: t.moderation };
   for (const mode of modes) {
     let panel = document.getElementById(`${mode}-panel`);
     if (!panel) {
@@ -48,7 +48,7 @@
     }
     panel.replaceChildren();
     panel.setAttribute('aria-labelledby', `${mode}-heading`);
-    if (mode === 'settings') { panel.hidden = true; continue; }
+    if (mode === 'settings' || mode === 'moderation') { panel.hidden = true; continue; }
     const heading = document.createElement('h1');
     heading.id = `${mode}-heading`;
     heading.textContent = titles[mode];
@@ -147,6 +147,7 @@
       if (panel.hidden && !busy) form.reset();
     }
     document.getElementById('settings-panel').hidden = currentMode !== 'settings';
+    document.getElementById('moderation-panel').hidden = currentMode !== 'moderation';
     document.title = `${titles[currentMode]} — LRCPlus wiki`;
     document.getElementById('special-tab').href = `#${currentMode}`;
     document.getElementById('manual-return').href = manual + returnHash;

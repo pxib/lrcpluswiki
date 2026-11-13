@@ -5,15 +5,19 @@
   const config = window.ManualCommunityConfig || {};
   const api = window.ManualCommunity = { client: null, session: null, recovery: false, error: null, ready: null };
   api.notice = location.protocol === 'file:' ? t.offline : t.unconfigured;
-  api.errorText = error => error?.message?.includes('posting_too_fast') || error?.status === 429 ? t.rateLimit
-    : error?.code === 'invalid_credentials' ? t.invalid : t.failed;
+  api.errorText = error => {
+    for (const [code,key] of Object.entries({posting_too_fast:'rateLimit',already_reported:'alreadyReported',account_restricted:'restricted',staff_required:'staffRequired',target_not_found:'notFound',topic_locked:'locked',cannot_change_self:'cannotSelf',staff_member_protected:'protectedStaff'})) {
+      if (error?.message?.includes(code)) return t[key];
+    }
+    return error?.status === 429 ? t.rateLimit : error?.code === 'PGRST202' ? t.reportsUnavailable : error?.code === 'invalid_credentials' ? t.invalid : t.failed;
+  };
   const notify = () => window.dispatchEvent(new Event('communitychange'));
   function header() {
     document.querySelectorAll('.account-state').forEach(node => {
       node.textContent = api.session ? api.session.user.user_metadata?.username || t.username : t.loggedOut;
     });
     document.querySelectorAll('.account-links').forEach(nav => {
-      nav.querySelectorAll('a').forEach(link => { link.hidden = link.dataset.accountSettings ? !api.session : Boolean(api.session); });
+      nav.querySelectorAll('a').forEach(link => { link.hidden = link.dataset.moderation ? !api.staffRole : link.dataset.accountSettings ? !api.session : Boolean(api.session); });
       let settings = nav.querySelector('[data-account-settings]');
       if (!settings) {
         settings = document.createElement('a');
@@ -28,6 +32,17 @@
         nav.append(settings);
       }
       settings.hidden = !api.session;
+      let moderation = nav.querySelector('[data-moderation]');
+      if (!moderation && api.staffRole) {
+        moderation = document.createElement('a');
+        moderation.dataset.moderation = 'true';
+        moderation.textContent = t.moderation;
+        const url = new URL(settings.href);
+        url.hash = 'moderation';
+        moderation.href = url.href;
+        nav.append(moderation);
+      }
+      if (moderation) moderation.hidden = !api.staffRole;
       let button = nav.querySelector('button');
       if (!button) {
         button = document.createElement('button');
@@ -47,6 +62,7 @@
     });
   }
   window.addEventListener('communitychange', header);
+  window.addEventListener('moderationchange', header);
   api.ready = (async () => {
     if (location.protocol === 'file:' || !config.supabaseUrl || !config.publishableKey) return;
     try {
@@ -70,6 +86,7 @@
         global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal || AbortSignal.timeout(20000) }) }
       });
       api.client.auth.onAuthStateChange((event, session) => {
+        if (api.session?.user.id !== session?.user.id) api.staffRole = null;
         api.session = session;
         if (event === 'PASSWORD_RECOVERY') api.recovery = true;
         if (event === 'SIGNED_OUT') api.recovery = false;

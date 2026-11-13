@@ -102,8 +102,8 @@ figcaption{padding:7px 5px 3px;font-size:12px;color:var(--muted);line-height:1.5
 .talk-comment-menu summary::-webkit-details-marker{display:none}
 .talk-comment-menu summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .talk-comment-popup{position:absolute;top:100%;left:0;z-index:3;background:var(--surface);border:1px solid var(--border);box-shadow:0 2px 6px #0003;padding:6px;width: min(250px,55vw);letter-spacing:normal}
-.talk-comment-popup button{display:block;width:100%;text-align:left;color:var(--link);background:transparent;border:0;padding:6px 8px;font-size:13px}
-.talk-comment-popup button:hover{background:var(--panel)}
+.talk-comment-popup a{display:block;text-align:left;color:var(--link);padding:6px 8px;font-size:13px}
+.talk-comment-popup a:hover{background:var(--panel)}
 .talk-copy-status{display:block;font-size:12px;padding:0 8px;color:var(--muted)}
 .talk-comment-popup input{display:block;border:1px solid var(--border);margin-top:6px;color:var(--text)}
 .talk-signature time{color:var(--muted)}
@@ -197,13 +197,16 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .community-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
 .community-talk button:not(.talk-actions button){width:auto;padding:5px 10px;margin:4px 8px 4px 0;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
 .community-talk button:disabled{opacity:.6;cursor:default}
-.community-talk .talk-actions>button{border:0;background:transparent;color:var(--link);padding:0;margin:0;font-size:inherit;font-weight:bold}
-.community-talk .talk-actions>button:hover{text-decoration:underline}
 .community-message{white-space:pre-wrap;overflow-wrap:anywhere}
 .community-composer{display:block;width:100%;max-width:640px;height:auto;margin:16px 0;padding:14px;border:1px solid var(--border);background:var(--panel)}
 .community-composer label{display:block;font-weight:bold;margin:0 0 12px}
 .community-composer input,.community-composer textarea{display:block;width:100%;max-width:100%;margin-top:5px;padding:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
 .community-composer textarea{resize:vertical;min-height:100px}
+.community-composer select{display:block;width:100%;padding:8px;margin-top:5px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+.community-composer button,.moderation-report button,#moderation-panel .community-toolbar button{width:auto;padding:5px 10px;margin:4px 8px 4px 0;border:1px solid var(--border);background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
+.community-composer button:disabled,.moderation-report button:disabled{opacity:.6;cursor:default}
+.moderation-report{border-bottom:1px solid var(--border);padding:12px 0}
+.moderation-report blockquote{margin:12px 0;padding:12px;border-left:3px solid var(--border);background:var(--panel)}
 .talk-actions a[aria-disabled="true"]{color:var(--muted);cursor:default;text-decoration:none}
 [hidden]{display:none!important}
 @media print{.community-toolbar,.community-composer,.community-talk button,.account-links{display:none!important}}

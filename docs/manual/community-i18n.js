@@ -17,8 +17,18 @@
     yue: ['帳戶設定', '帳戶資料', '更改電郵', '新電郵', '請開確認電郵完成更改。確認之前，現有電郵仍然有效。', '更改密碼', '現有密碼', '新密碼', '密碼已更改。', '登出其他裝置', '其他裝置已登出。現有登入可能仲會維持一陣。', '請登入管理帳戶。', '公開用戶名用嚟識別討論留言，喺呢度改唔到。', '電郵已驗證', '電郵未驗證']
   };
   const settings = settingsTranslations[lang.startsWith('yue') ? 'yue' : lang] || settingsTranslations.en;
+  const moderationKeys = ['report','reason','spam','harassment','inaccurate','other','reportDetails','sendReport','reportSent','reportPrivacy','alreadyReported','reportsUnavailable','moderation','open','dismissed','removed','reporter','author','dismiss','remove','confirmRemove','lock','unlock','locked','manageMembers','memberAction','member','moderator','admin','block','unblock','apply','saved','restricted','staffRequired','notFound','cannotSelf','protectedStaff'];
+  const moderationTranslations = {
+    en: ['Report','Reason','Spam','Harassment or abuse','Inaccurate or misleading','Other','Additional details (optional)','Send report','Report received. Staff will review it.','Only moderators and admins can see this report. Reporting does not automatically remove content.','You already have an open report for this post.','Reporting is not available yet.','Moderation','Open','Dismissed','Removed','Reported by','Author','Dismiss report','Remove content','Remove this content? Removing a topic also removes all its replies.','Lock topic','Unlock topic','This topic is locked.','Manage members','Action','Member','Moderator','Admin','Restrict posting','Restore posting','Apply','Saved.','This account is restricted from posting and reporting.','Staff access is required.','The requested content or account was not found.','You cannot change your own role or restriction.','Remove the staff role before restricting this account.'],
+    ja: ['報告','理由','スパム','嫌がらせ・暴言','不正確・誤解を招く内容','その他','補足（任意）','報告を送信','報告を受け付けました。スタッフが確認します。','報告はモデレーターと管理者だけに表示されます。報告だけで投稿は削除されません。','この投稿はすでに報告済みで、確認待ちです。','報告機能はまだ利用できません。','モデレーション','未処理','却下済み','削除済み','報告者','投稿者','報告を却下','投稿を削除','この投稿を削除しますか？話題を削除すると返信もすべて削除されます。','話題をロック','ロックを解除','この話題はロックされています。','メンバー管理','操作','メンバー','モデレーター','管理者','投稿を制限','投稿制限を解除','適用','保存しました。','このアカウントは投稿と報告が制限されています。','スタッフ権限が必要です。','指定された投稿またはアカウントが見つかりません。','自分の権限や制限は変更できません。','このアカウントを制限する前にスタッフ権限を解除してください。'],
+    ko: ['신고','사유','스팸','괴롭힘 또는 욕설','부정확하거나 오해를 부르는 내용','기타','추가 설명 (선택)','신고 보내기','신고를 접수했습니다. 운영진이 검토합니다.','신고는 관리자와 운영자만 볼 수 있습니다. 신고만으로 게시물이 삭제되지 않습니다.','이미 이 게시물에 대한 신고가 검토 중입니다.','신고 기능은 아직 사용할 수 없습니다.','신고 관리','대기 중','기각됨','삭제됨','신고자','작성자','신고 기각','내용 삭제','이 내용을 삭제할까요? 주제를 삭제하면 모든 답글도 삭제됩니다.','주제 잠금','잠금 해제','잠긴 주제입니다.','회원 관리','작업','회원','운영자','관리자','게시 제한','게시 제한 해제','적용','저장되었습니다.','이 계정은 게시와 신고가 제한되어 있습니다.','운영진 권한이 필요합니다.','요청한 내용 또는 계정을 찾을 수 없습니다.','본인의 권한이나 제한은 변경할 수 없습니다.','이 계정을 제한하려면 먼저 운영진 권한을 해제하세요.'],
+    yue: ['舉報','原因','垃圾內容','騷擾或辱罵','錯誤或誤導內容','其他','補充資料（可選）','送出舉報','收到舉報，管理團隊會審查。','只有版主同管理員睇到舉報。舉報唔會自動刪除內容。','你已經舉報過呢個留言，仲等緊審查。','舉報功能暫時未開放。','管理舉報','待處理','已駁回','已移除','舉報人','作者','駁回舉報','移除內容','移除呢段內容？移除話題亦會刪除全部回覆。','鎖定話題','解鎖話題','呢個話題已鎖定。','管理用戶','操作','用戶','版主','管理員','限制發文','解除發文限制','套用','已儲存。','呢個帳戶已被限制發文同舉報。','需要管理權限。','搵唔到指定內容或帳戶。','你唔可以更改自己嘅權限或限制。','限制呢個帳戶之前，請先移除管理權限。']
+  };
+  const moderation = moderationTranslations[lang.startsWith('yue') ? 'yue' : lang] || moderationTranslations.en;
   window.ManualCommunityText = Object.freeze({
     ...Object.fromEntries(keys.map((key, i) => [key, values[i]])),
-    ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]]))
+    ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]])),
+    ...Object.fromEntries(moderationKeys.map((key, i) => [key, moderation[i]])),
+    noReports: lang.startsWith('yue') ? '呢個分類暫時冇舉報。' : lang === 'ko' ? '이 상태의 신고가 없습니다.' : lang === 'ja' ? 'この状態の報告はありません。' : 'No reports with this status.'
   });
 })();
