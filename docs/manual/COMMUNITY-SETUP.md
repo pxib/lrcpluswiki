@@ -81,6 +81,31 @@ SDK from jsDelivr; manual reading has no dependency on that CDN.
 
 ## Permissions and maintenance
 
+### Account settings
+
+Signed-in users can open **Account settings** in the header (for example,
+`account.html#settings`). The page reads the current user from Supabase Auth
+and the public username from the protected `profiles` table. It offers email
+changes, password changes, and **Sign out other devices**. No SQL migration is
+needed for these controls.
+
+Keep **Secure email change** enabled in Supabase Authentication settings so
+changing email requires confirmation at both addresses. The callback returns to
+the localized account page's `#settings` route using the existing redirect
+allowlist. Verify this with an account you control: request a change, confirm
+the emails, then check the new address in settings and log in with it.
+
+Password changes check the current password before submitting the new password.
+Test both a wrong current password and a successful change. Signing out other
+devices revokes their refresh sessions; existing access tokens remain valid
+until expiry. The current browser session stays signed in. Usernames remain
+fixed, and private account details are cleared from the page on logout.
+
+These controls use Supabase's [updateUser](https://supabase.com/docs/reference/javascript/auth-updateuser)
+and [signOut](https://supabase.com/docs/reference/javascript/auth-signout) APIs.
+
+### Discussion data
+
 Email addresses and passwords remain in Supabase Auth and are never exposed by
 the discussion tables. Public profiles contain only user IDs and usernames.
 Usernames are unique ignoring case, fixed at signup, and copied to a protected

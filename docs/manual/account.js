@@ -7,7 +7,7 @@
   const query = new URLSearchParams(location.search);
   const requested = query.get('return');
   const returnHash = requested?.startsWith('#') ? requested : '#main';
-  const modes = ['login', 'create-account', 'password-reset', 'new-password'];
+  const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings'];
   let busy = false;
   let currentMode = 'login';
   const panels = {};
@@ -38,7 +38,7 @@
     p.append(a);
     parent.append(p);
   }
-  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword };
+  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword, settings: t.settings };
   for (const mode of modes) {
     let panel = document.getElementById(`${mode}-panel`);
     if (!panel) {
@@ -48,6 +48,7 @@
     }
     panel.replaceChildren();
     panel.setAttribute('aria-labelledby', `${mode}-heading`);
+    if (mode === 'settings') { panel.hidden = true; continue; }
     const heading = document.createElement('h1');
     heading.id = `${mode}-heading`;
     heading.textContent = titles[mode];
@@ -117,7 +118,10 @@
           if (signedOut.error) throw signedOut.error;
           api.recovery = false;
         }
-        if (mode === 'login' || (mode === 'create-account' && result.data?.session)) location.assign(manual + returnHash);
+        if (mode === 'login' || (mode === 'create-account' && result.data?.session)) {
+          if (query.get('next') === 'settings') location.assign(`${location.pathname}?return=${encodeURIComponent(returnHash)}#settings`);
+          else location.assign(manual + returnHash);
+        }
       } catch (error) {
         status.textContent = api.errorText(error);
       } finally {
@@ -142,6 +146,7 @@
       panel.hidden = mode !== currentMode;
       if (panel.hidden && !busy) form.reset();
     }
+    document.getElementById('settings-panel').hidden = currentMode !== 'settings';
     document.title = `${titles[currentMode]} — LRCPlus wiki`;
     document.getElementById('special-tab').href = `#${currentMode}`;
     document.getElementById('manual-return').href = manual + returnHash;
@@ -152,6 +157,7 @@
       a.href = url.href;
     });
     controls();
+    window.dispatchEvent(new Event('accountmodechange'));
   }
   window.addEventListener('hashchange', render);
   window.addEventListener('communitychange', () => { if (api.recovery) render(); else controls(); });
@@ -159,7 +165,7 @@
   render();
   api.ready.then(() => {
     render();
-    if (!api.client) panels[currentMode].status.textContent = api.notice;
+    if (!api.client && panels[currentMode]) panels[currentMode].status.textContent = api.notice;
     else if (currentMode === 'new-password' && !api.recovery) panels[currentMode].status.textContent = t.recoveryRequired;
   });
 })();

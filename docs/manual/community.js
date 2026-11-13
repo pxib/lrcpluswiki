@@ -13,7 +13,21 @@
       node.textContent = api.session ? api.session.user.user_metadata?.username || t.username : t.loggedOut;
     });
     document.querySelectorAll('.account-links').forEach(nav => {
-      nav.querySelectorAll('a').forEach(link => { link.hidden = Boolean(api.session); });
+      nav.querySelectorAll('a').forEach(link => { link.hidden = link.dataset.accountSettings ? !api.session : Boolean(api.session); });
+      let settings = nav.querySelector('[data-account-settings]');
+      if (!settings) {
+        settings = document.createElement('a');
+        settings.dataset.accountSettings = 'true';
+        settings.textContent = t.settings;
+        const lang = document.documentElement.lang;
+        const file = lang.startsWith('yue') ? 'yue-account.html' : lang === 'ko' ? 'ko-account.html' : lang === 'ja' ? 'ja-account.html' : 'account.html';
+        const url = new URL(file, location.href);
+        url.searchParams.set('return', new URLSearchParams(location.search).get('return') || location.hash || '#main');
+        url.hash = 'settings';
+        settings.href = url.href;
+        nav.append(settings);
+      }
+      settings.hidden = !api.session;
       let button = nav.querySelector('button');
       if (!button) {
         button = document.createElement('button');

@@ -149,6 +149,128 @@ test('failed login preserves inputs and displays a useful error', async () => {
   dom.window.close();
 });
 
+async function settingsPage(name = 'account.html') {
+  const dom = page(name, '?return=%23ayami%2Ftalk#settings');
+  const mock = mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const user = {id:'settings-user',email:'person@example.com',email_confirmed_at:'2026-01-01',user_metadata:{username:'UntrustedMetadata'}};
+  mock.auth.getUser = async () => ({data:{user},error:null});
+  dom.window.ManualCommunity.client.from = table => {
+    assert.equal(table, 'profiles');
+    return {select() { return this; }, eq(key, id) { assert.equal(key,'id'); assert.equal(id,user.id); return this; }, async single() { return {data:{username:'Public_Name'},error:null}; }};
+  };
+  mock.emit('SIGNED_IN', {user});
+  evalScript(dom, 'account.js');
+  evalScript(dom, 'account-settings.js');
+  await flush();
+  return {dom, user, ...mock};
+}
+async function settingsSubmit(dom, form, values) {
+  for (const [id, value] of Object.entries(values)) dom.window.document.getElementById(id).value = value;
+  dom.window.document.getElementById(`settings-${form}-form`).dispatchEvent(new dom.window.Event('submit', {cancelable:true}));
+  await flush();
+}
+
+test('settings are localized, use the protected profile, and clear private data on logout', async () => {
+  for (const name of ['account.html','ja-account.html','ko-account.html','yue-account.html']) {
+    const {dom, emit} = await settingsPage(name);
+    const doc = dom.window.document;
+    assert.equal(doc.getElementById('settings-panel').hidden, false);
+    assert.equal(doc.getElementById('login-panel').hidden, true);
+    assert.match(doc.querySelector('.account-details').textContent, /Public_Name/);
+    assert.doesNotMatch(doc.querySelector('.account-details').textContent, /UntrustedMetadata/);
+    const link = doc.querySelector('[data-account-settings]');
+    assert.equal(link.hidden, false);
+    assert.equal(new URL(link.href).hash, '#settings');
+    assert.equal(new URL(link.href).searchParams.get('return'), '#ayami/talk');
+    emit('SIGNED_OUT', null);
+    await flush();
+    assert.equal(doc.querySelector('.account-settings').hidden, true);
+    assert.doesNotMatch(doc.querySelector('.account-details').textContent, /person@example.com/);
+    assert.equal(doc.getElementById('settings-email').disabled, true);
+    assert.equal(link.hidden, true);
+    dom.window.close();
+  }
+});
+
+test('password settings validate confirmation, require the current password, and preserve drafts across auth events', async () => {
+  const {dom, user, auth, calls, emit} = await settingsPage();
+  const values = {'settings-current-password':'current-password','settings-new-password':'new-long-password','settings-confirm-password':'different-password'};
+  await settingsSubmit(dom,'password',values);
+  assert.equal(calls.length,0);
+  auth.signInWithPassword = async () => ({error:{code:'invalid_credentials'}});
+  values['settings-confirm-password'] = values['settings-new-password'];
+  await settingsSubmit(dom,'password',values);
+  assert.equal(calls.length,0);
+  assert.match(dom.window.document.querySelector('#settings-password-form').previousSibling.textContent, /Check your email/);
+  auth.signInWithPassword = async payload => {
+    assert.equal(payload.email,user.email);
+    assert.equal(payload.password,'current-password');
+    emit('SIGNED_IN',{user});
+    return {data:{user},error:null};
+  };
+  await settingsSubmit(dom,'password',values);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].method,'updateUser');
+  assert.equal(calls[0].payload.password,'new-long-password');
+  assert.equal(dom.window.document.getElementById('settings-new-password').value,'');
+  assert.match(dom.window.document.querySelector('#settings-password-form').previousSibling.textContent, /has been changed/);
+  dom.window.close();
+});
+
+test('email changes request confirmation and other-device logout retains the current session', async () => {
+  const {dom, user, auth, calls} = await settingsPage();
+  auth.signInWithPassword = async () => ({data:{user},error:null});
+  await settingsSubmit(dom,'email',{'settings-email':'new@example.com','settings-email-password':'current-password'});
+  assert.equal(calls[0].method,'updateUser');
+  assert.equal(calls[0].payload.email,'new@example.com');
+  assert.equal(new URL(calls[0].options.emailRedirectTo).hash,'#settings');
+  assert.match(dom.window.document.querySelector('#settings-email-form').previousSibling.textContent, /confirmation emails/);
+  assert.match(dom.window.document.querySelector('.account-details').textContent,/person@example.com/);
+  await settingsSubmit(dom,'sessions',{});
+  assert.equal(calls[1].method,'signOut');
+  assert.equal(calls[1].payload.scope,'others');
+  assert.equal(dom.window.ManualCommunity.session.user.id,user.id);
+  dom.window.close();
+});
+
+test('settings discard stale profile responses after logout', async () => {
+  const {dom, auth, emit} = await settingsPage();
+  dom.window.location.hash = '#login';
+  dom.window.dispatchEvent(new dom.window.Event('hashchange'));
+  let resolve;
+  auth.getUser = () => new Promise(done => { resolve = done; });
+  dom.window.location.hash = '#settings';
+  dom.window.dispatchEvent(new dom.window.Event('hashchange'));
+  await flush();
+  emit('SIGNED_OUT', null);
+  await flush();
+  resolve({data:{user:{id:'settings-user',email:'private@example.com'}},error:null});
+  await flush();
+  assert.equal(dom.window.document.querySelector('.account-settings').hidden,true);
+  assert.doesNotMatch(dom.window.document.getElementById('settings-panel').textContent,/private@example.com/);
+  dom.window.close();
+});
+
+test('settings reload after a browser history restore and block unavailable accounts', async () => {
+  const {dom} = await settingsPage();
+  dom.window.dispatchEvent(new dom.window.Event('pagehide'));
+  assert.equal(dom.window.document.querySelector('.account-settings').hidden,true);
+  dom.window.dispatchEvent(new dom.window.Event('pageshow'));
+  await flush();
+  assert.equal(dom.window.document.querySelector('.account-settings').hidden,false);
+  dom.window.close();
+  const offline = page('account.html','#settings','file:');
+  mockAuth(offline,false);
+  evalScript(offline,'account.js');
+  evalScript(offline,'account-settings.js');
+  await offline.window.ManualCommunity.ready;
+  await flush();
+  assert.equal(offline.window.document.getElementById('settings-email').disabled,true);
+  assert.match(offline.window.document.getElementById('settings-panel').textContent,/online version/);
+  offline.window.close();
+});
+
 test('Talk renders untrusted text safely and verified sessions can compose topics and replies', async () => {
   const dom = page('index.html', '#main/talk');
   const { emit } = mockAuth(dom);

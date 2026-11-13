@@ -9,5 +9,16 @@
   };
   const lang = document.documentElement.lang;
   const values = translations[lang.startsWith('yue') ? 'yue' : lang] || translations.en;
-  window.ManualCommunityText = Object.freeze(Object.fromEntries(keys.map((key, i) => [key, values[i]])));
+  const settingsKeys = ['settings', 'accountDetails', 'changeEmail', 'newEmail', 'emailPending', 'changePassword', 'currentPassword', 'newPassword', 'passwordChanged', 'otherSessions', 'otherSessionsEnded', 'signInRequired', 'usernameFixed', 'verified', 'unverified'];
+  const settingsTranslations = {
+    en: ['Account settings', 'Account details', 'Change email', 'New email', 'Check the confirmation emails to finish changing your address. Your current email stays active until confirmation.', 'Change password', 'Current password', 'New password', 'Your password has been changed.', 'Sign out other devices', 'Other devices have been signed out. Existing sessions may stay active briefly.', 'Log in to manage your account.', 'Your public username identifies your Talk posts and cannot be changed here.', 'Email verified', 'Email not verified'],
+    ja: ['アカウント設定', 'アカウント情報', 'メールアドレスを変更', '新しいメールアドレス', '確認メールを開いて変更を完了してください。確認が終わるまで現在のアドレスが有効です。', 'パスワードを変更', '現在のパスワード', '新しいパスワード', 'パスワードを変更しました。', '他の端末からログアウト', '他の端末をログアウトしました。既存のセッションはしばらく有効な場合があります。', 'ログインしてアカウントを管理してください。', '公開ユーザー名はノートの投稿を識別するため、ここでは変更できません。', 'メール認証済み', 'メール未認証'],
+    ko: ['계정 설정', '계정 정보', '이메일 변경', '새 이메일', '확인 이메일을 열어 변경을 완료하세요. 확인 전까지 현재 이메일이 유지됩니다.', '비밀번호 변경', '현재 비밀번호', '새 비밀번호', '비밀번호가 변경되었습니다.', '다른 기기에서 로그아웃', '다른 기기에서 로그아웃했습니다. 기존 세션은 잠시 유지될 수 있습니다.', '계정을 관리하려면 로그인하세요.', '공개 사용자 이름은 토론 게시물을 식별하며 여기서는 변경할 수 없습니다.', '이메일 인증됨', '이메일 인증되지 않음'],
+    yue: ['帳戶設定', '帳戶資料', '更改電郵', '新電郵', '請開確認電郵完成更改。確認之前，現有電郵仍然有效。', '更改密碼', '現有密碼', '新密碼', '密碼已更改。', '登出其他裝置', '其他裝置已登出。現有登入可能仲會維持一陣。', '請登入管理帳戶。', '公開用戶名用嚟識別討論留言，喺呢度改唔到。', '電郵已驗證', '電郵未驗證']
+  };
+  const settings = settingsTranslations[lang.startsWith('yue') ? 'yue' : lang] || settingsTranslations.en;
+  window.ManualCommunityText = Object.freeze({
+    ...Object.fromEntries(keys.map((key, i) => [key, values[i]])),
+    ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]]))
+  });
 })();
