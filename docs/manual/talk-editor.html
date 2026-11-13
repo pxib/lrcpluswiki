@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Talk editor · LRCPlus manual</title>
+  <link rel="stylesheet" href="manual.css">
+  <link rel="stylesheet" href="talk-editor.css">
+  <script src="talk-timestamps.js" defer></script>
+  <script src="talk-editor.js" defer></script>
+</head>
+<body>
+  <header class="editor-header">
+    <div><p class="eyebrow">LRCPlus manual · Local authoring</p><h1>Talk editor</h1></div>
+    <nav aria-label="Editor actions"><button id="theme" type="button" aria-pressed="false">Dark mode</button><button id="reload" type="button" disabled>Reload files</button><button id="save" type="button" disabled>Save to manual</button></nav>
+  </header>
+  <main class="editor-main">
+    <p class="editor-intro">Edit the Markdown, see the discussion take shape, then save both language files and the manual together.</p>
+    <p id="connection" class="note" role="status">Connecting… If you opened this file directly, run <code>Scripts/python.exe tools/edit_manual_talk.py</code> and use the address it prints.</p>
+    <div class="editor-controls">
+      <div role="group" aria-label="Editing language"><button id="en" type="button" aria-pressed="true" disabled>English</button><button id="ja" type="button" aria-pressed="false" disabled>日本語</button></div>
+      <label for="article">Preview article <select id="article" disabled></select></label>
+      <a id="open-manual" href="index.html#main/talk" target="_blank" rel="noopener">Open saved manual ↗</a>
+    </div>
+    <div class="editor-panes">
+      <section class="source-pane" aria-labelledby="source-label"><div class="pane-heading"><h2 id="source-label">Markdown</h2><span id="dirty">No unsaved changes</span></div><label class="visually-hidden" for="markdown">Discussion Markdown</label><textarea id="markdown" spellcheck="false" disabled></textarea></section>
+      <section class="preview-pane" aria-labelledby="preview-label"><div class="pane-heading"><h2 id="preview-label">Live preview</h2><span id="preview-status" role="status"></span></div><div id="preview" aria-busy="false"><p>Open a source file to start.</p></div></section>
+    </div>
+    <details class="syntax"><summary>Writing a discussion</summary><p><code># article-id</code> selects an article. <code>## Title {topic-id}</code> starts a topic; optionally append <code>| Open</code> or another status to show a badge. Use <code>### Author</code> for comments and add one <code>#</code> for each deeper reply: <code>####</code>, <code>#####</code>, <code>######</code>, and beyond. Do not skip a level when nesting; you can return to any earlier level. Indentation stops growing after depth four, with deeper replies showing their depth as a label. Blank lines separate paragraphs. Bodies are plain text.</p><p>Place <code>[random4mo]</code> on its own line before a comment heading for a repeatable random jump of up to four months. Replace 4 with 1–120 months. Timestamps never go past the current time; once they reach that limit, later comments can share a timestamp.</p><p>Japanese translations are optional. Missing topics use English in the preview and saved manual; leave the Japanese tab blank to use English throughout. Translated topics must keep the English article and topic IDs. Your edits stay in each tab when you switch languages. Saving updates the Markdown sources and generated HTML; refresh any manual tabs to see the result. The preview shows fictional timestamps and omits posting controls.</p></details>
+  </main>
+</body>
+</html>
