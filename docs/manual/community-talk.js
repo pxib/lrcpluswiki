@@ -84,7 +84,10 @@
   function signature(row, article, id) {
     const p = el('p', '', 'talk-signature');
     if (row.author_id && !row.deleted_at) p.dataset.authorId = row.author_id;
-    p.append('— ', el('b', row.profiles?.username || t.deleted), ' ');
+    const name = el('b');
+    if (row.author_id && row.profiles?.username && !row.deleted_at) name.append(api.userLink(row.profiles.username, row.author_id));
+    else name.textContent = row.profiles?.username || t.deleted;
+    p.append('— ', name, ' ');
     const a = el('a');
     a.href = `#${article}/talk/${id}`;
     const time = el('time', window.ManualTalkTimestamps.format(new Date(row.created_at), document.documentElement.lang));

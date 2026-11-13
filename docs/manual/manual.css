@@ -256,3 +256,9 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .account-page .moderation-report button:hover{text-decoration:underline}
 @media(max-width:760px){.preferences-tabs{padding-left:0}.preferences-tabs button{padding:8px 10px}.preferences-panel{padding:4px 10px 12px}.special-page-groups{columns:1}.account-page .sidebar nav{margin-top:8px}.account-page .special-navigation h2:first-child{display:none}}
 @media print{.special-return,.preferences-tabs{display:none!important}.preferences-panel[hidden]{display:block!important}}
+.user-page main>h1{margin-bottom:12px}
+.user-page .user-details{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 18px}
+.user-page .user-details dt{font-weight:bold}
+.user-page .user-details dd{margin:0;overflow-wrap:anywhere}
+.user-page #user-status:empty{display:none}
+.user-page #user-retry{padding:5px 10px;border:1px solid var(--border);background:var(--panel);color:var(--link);font:inherit}

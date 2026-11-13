@@ -228,7 +228,7 @@
           const metadata = el('p','','moderation-metadata');
           const timestamp = el('time',new Date(row.created_at).toLocaleString(document.documentElement.lang));
           timestamp.dateTime = row.created_at;
-          metadata.append(timestamp,document.createTextNode(` · ${t.reporter}: ${row.reporter || t.deleted} · ${t.author}: ${row.author || t.deleted}`));
+          metadata.append(timestamp,document.createTextNode(` · ${t.reporter}: `),api.userLink(row.reporter),document.createTextNode(` · ${t.author}: `),api.userLink(row.author, row.author_id));
           item.append(metadata);
           item.append(el('blockquote',row.content,'community-message'),el('p',row.details,'community-message'));
           const url = new URL(document.getElementById('manual-return').href);

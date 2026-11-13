@@ -12,6 +12,19 @@
     return error?.status === 429 ? t.rateLimit : error?.code === 'PGRST202' ? t.featureUnavailable : error?.code === 'invalid_credentials' ? t.invalid : t.failed;
   };
   const notify = () => window.dispatchEvent(new Event('communitychange'));
+  api.userLink = (username, id) => {
+    const label = username || t.deleted;
+    if (!id && !/^[A-Za-z0-9_]{3,30}$/.test(username || '')) return document.createTextNode(label);
+    const lang = document.documentElement.lang;
+    const file = lang.startsWith('yue') ? 'yue-user.html' : lang === 'ko' ? 'ko-user.html' : lang === 'ja' ? 'ja-user.html' : 'user.html';
+    const url = new URL(file, location.href);
+    url.searchParams.set(id ? 'id' : 'name', id || username);
+    const link = document.createElement('a');
+    link.className = 'community-user-link';
+    link.href = url.href;
+    link.textContent = label;
+    return link;
+  };
   api.staffIndicator = role => {
     if (!['admin', 'moderator'].includes(role)) return null;
     const label = document.createElement('span');
@@ -22,6 +35,7 @@
   function header() {
     document.querySelectorAll('.account-state').forEach(node => {
       node.textContent = api.session ? api.session.user.user_metadata?.username || t.username : t.loggedOut;
+      if (api.session) node.replaceChildren(api.userLink(node.textContent, api.session.user.id));
       const indicator = api.session && api.staffIndicator(api.staffRole);
       if (indicator) node.append(' ', indicator);
     });

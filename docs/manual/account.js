@@ -17,6 +17,7 @@
   let busy = false;
   let currentMode = 'login';
   const panels = {};
+  const guestModes = new Set(['login', 'create-account', 'password-reset']);
   function field(form, id, label, type, autocomplete) {
     const wrapper = document.createElement('div');
     wrapper.className = 'account-field';
@@ -91,7 +92,7 @@
     panels[mode] = { panel, status, form, submit };
     form.addEventListener('submit', async event => {
       event.preventDefault();
-      if (busy || !api.client || !form.reportValidity()) return;
+      if (busy || !api.client || (api.session && guestModes.has(mode)) || !form.reportValidity()) return;
       const value = suffix => document.getElementById(`${mode}-${suffix}`)?.value || '';
       if (mode === 'create-account' || mode === 'new-password') {
         if (value('password') !== value('confirm')) { status.textContent = t.mismatch; return; }
@@ -164,8 +165,6 @@
     return group;
   }
   directoryGroup(specialText[1], [[t.login, '#login'], [t.signup, '#create-account'], [t.reset, '#password-reset'], [t.settings, '#settings']]);
-  const indexLink = document.querySelector('.sidebar a[href$="#article-index"]');
-  if (indexLink) directoryGroup(specialText[2], [[indexLink.textContent, manual + '#article-index']]);
   const restrictedGroup = directoryGroup(specialText[3], [[t.moderation, '#moderation']]);
   restrictedGroup.append(Object.assign(document.createElement('p'), {textContent: t.staffRequired, className: 'account-notice'}));
   directory.append(directoryHeading, directoryIntro, groups);
@@ -189,8 +188,11 @@
   }
   document.querySelector('.language-switch').before(toolsNav);
   function controls() {
+    directory.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.parentElement.hidden = Boolean(api.session) && guestModes.has(anchor.hash.slice(1));
+    });
     for (const [mode, {form, submit}] of Object.entries(panels)) {
-      const disabled = busy || !api.client || (mode === 'new-password' && !api.recovery);
+      const disabled = busy || !api.client || (api.session && guestModes.has(mode)) || (mode === 'new-password' && !api.recovery);
       form.querySelectorAll('input, button').forEach(input => { input.disabled = disabled; });
       submit.textContent = busy && mode === currentMode ? t.busy : titles[mode];
     }
@@ -198,6 +200,12 @@
   function render() {
     const hash = location.hash.slice(1);
     currentMode = api.recovery ? 'new-password' : modes.includes(hash) ? hash : query.has('recovery') ? 'new-password' : 'login';
+    if (api.session && guestModes.has(currentMode)) {
+      currentMode = 'settings';
+      const url = new URL(location.href);
+      url.hash = currentMode;
+      history.replaceState(null, '', url.href);
+    }
     for (const [mode, {panel, form}] of Object.entries(panels)) {
       panel.hidden = mode !== currentMode;
       if (panel.hidden && !busy) form.reset();
@@ -218,7 +226,10 @@
     window.dispatchEvent(new Event('accountmodechange'));
   }
   window.addEventListener('hashchange', render);
-  window.addEventListener('communitychange', () => { if (api.recovery) render(); else controls(); });
+  window.addEventListener('communitychange', () => {
+    if (api.recovery || (api.session && guestModes.has(currentMode))) render();
+    else controls();
+  });
   window.addEventListener('pagehide', () => Object.values(panels).forEach(({form}) => form.reset()));
   render();
   api.ready.then(() => {

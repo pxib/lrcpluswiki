@@ -28,7 +28,9 @@ test('all editions expose a working special-page directory and retain return/lan
     const doc = dom.window.document;
     assert.equal(doc.getElementById('special-pages-panel').hidden, false);
     assert.equal(doc.getElementById('special-pages-heading').textContent, title);
-    assert.equal(doc.querySelectorAll('.special-page-groups>section').length, 3);
+    assert.equal(doc.querySelectorAll('.special-page-groups>section').length, 2);
+    assert.equal(doc.querySelector('.special-page-groups a[href$="#article-index"]'), null);
+    assert.ok(doc.querySelector('.sidebar a[href$="#article-index"]'));
     assert.equal(doc.getElementById('login-panel').hidden, true);
     assert.equal(doc.querySelectorAll('.page-tabs a').length, 1);
     assert.equal(doc.getElementById('manual-return').closest('.special-return')?.tagName, 'DIV');
@@ -72,6 +74,48 @@ test('preferences tabs support keyboard selection and retain field drafts in all
     tabs[0].click();
     assert.equal(tabs[0].getAttribute('aria-selected'), 'true');
     assert.ok(panels[0].contains(doc.getElementById('settings-email-form')));
+    dom.window.close();
+  }
+});
+test('signed-in sessions cannot use guest forms through directory links or direct routes', async () => {
+  for (const [account] of editions) {
+    const dom = page(account, 'special-pages');
+    await new Promise(resolve => setImmediate(resolve));
+    const api = dom.window.ManualCommunity;
+    const doc = dom.window.document;
+    const calls = [];
+    api.client = {auth: {
+      signInWithPassword: () => calls.push('login'),
+      signUp: () => calls.push('signup'),
+      resetPasswordForEmail: () => calls.push('reset')
+    }};
+    api.session = {user: {id: 'signed-in-user'}};
+    dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+    for (const mode of ['login', 'create-account', 'password-reset']) {
+      assert.equal(doc.querySelector(`.special-page-groups a[href="#${mode}"]`).parentElement.hidden, true);
+      dom.window.location.hash = mode;
+      dom.window.dispatchEvent(new dom.window.Event('hashchange'));
+      assert.equal(dom.window.location.hash, '#settings');
+      assert.equal(doc.getElementById('settings-panel').hidden, false);
+      assert.equal(doc.getElementById(`${mode}-panel`).hidden, true);
+      const form = doc.getElementById(`${mode}-form`);
+      assert.ok([...form.querySelectorAll('input,button')].every(input => input.disabled));
+      form.dispatchEvent(new dom.window.Event('submit', {cancelable: true}));
+    }
+    assert.deepEqual(calls, []);
+    // Recovery links must still work even though recovery establishes a session.
+    api.recovery = true;
+    dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+    assert.equal(doc.getElementById('new-password-panel').hidden, false);
+    assert.equal(doc.getElementById('new-password-password').disabled, false);
+    api.session = null;
+    api.recovery = false;
+    dom.window.dispatchEvent(new dom.window.Event('communitychange'));
+    assert.equal(doc.querySelector('.special-page-groups a[href="#login"]').parentElement.hidden, false);
+    dom.window.location.hash = 'login';
+    dom.window.dispatchEvent(new dom.window.Event('hashchange'));
+    assert.equal(doc.getElementById('login-panel').hidden, false);
+    assert.equal(doc.getElementById('login-email').disabled, false);
     dom.window.close();
   }
 });

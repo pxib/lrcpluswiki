@@ -242,7 +242,7 @@ test('email changes request confirmation and other-device logout retains the cur
 
 test('settings discard stale profile responses after logout', async () => {
   const {dom, auth, emit} = await settingsPage();
-  dom.window.location.hash = '#login';
+  dom.window.location.hash = '#special-pages';
   dom.window.dispatchEvent(new dom.window.Event('hashchange'));
   let resolve;
   auth.getUser = () => new Promise(done => { resolve = done; });

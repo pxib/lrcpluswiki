@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Content-Security-Policy" content="form-action 'none'; connect-src https://*.supabase.co">
+  <title>User page — LRCPlus wiki</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="manual.css">
+  <link rel="icon" type="image/png" href="assets/media/iconwiki.png">
+  <script src="community-config.js" defer=""></script>
+  <script src="community-i18n.js" defer=""></script>
+  <script src="community.js" defer=""></script>
+  <script src="community-moderation.js" defer=""></script>
+<script src="user-page.js" defer=""></script></head>
+<body class="user-page">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <aside class="sidebar" aria-label="Manual navigation">
+    <a class="brand" href="index.html#main"><img class="brand-logo" src="assets/media/iconwiki.png" width="112" height="112" alt="LRCPlus wiki: a multilingual silver globe with an L and plus sign"><img class="brand-wordmark" src="assets/media/logowiki.png" width="144" height="43" alt="LRCPlus wiki"><span>The user manual</span></a>
+    <nav>
+      <h2>Navigation</h2>
+      <a href="index.html#main">Main page</a>
+      <a href="index.html#getting-started">Getting started</a>
+      <a href="index.html#article-index">A–Z article index</a>
+      <a href="index.html#troubleshooting">Troubleshooting</a>
+    <a href="account.html#special-pages">Special page</a></nav>
+    <nav class="language-switch" aria-label="Languages">
+      <h2>Languages</h2>
+      <a href="user.html" lang="en" hreflang="en" aria-current="true">English</a>
+      <a href="ja-user.html" lang="ja" hreflang="ja">日本語</a>
+      <a href="ko-user.html" lang="ko" hreflang="ko">한국어</a>
+      <a href="yue-user.html" lang="yue-Hant" hreflang="yue-Hant">粵語</a>
+    </nav>
+      <div class="offline-note">User manual<br>Online and bundled with the app.</div>
+</aside>
+  <div class="page">
+    <header class="page-header">
+      <div class="utility"><span class="account-state">Not logged in</span><nav class="account-links" aria-label="Personal tools"><a href="account.html#create-account">Create account</a><a href="account.html#login">Log in</a></nav></div>
+      <div class="toolbar"><div class="page-tabs"><a href="#content" id="user-tab" aria-current="page">User page</a></div><div class="tools"><div class="view-tabs"><button id="theme-toggle" type="button" aria-pressed="false" hidden="">Dark mode</button></div></div></div>
+    </header>
+    <main id="content" tabindex="-1"><div class="special-return"><a href="index.html#main" id="manual-return">Return to the manual</a></div><h1 id="user-heading">User page</h1>
+      <p id="user-status" role="status"></p>
+      <button id="user-retry" type="button" hidden="">Refresh</button>
+      <section id="user-details" aria-labelledby="user-details-heading" hidden="">
+        <p id="user-introduction" class="note">This user page has no introduction yet.</p>
+        <h2 id="user-details-heading">Public account information</h2>
+        <dl class="user-details"><dt id="user-username-label">Public username</dt><dd><span id="user-username"></span> <span id="user-role"></span></dd></dl>
+      </section>
+      <noscript><p class="note" lang="en">JavaScript is required to load public user information.</p></noscript></main>
+    <footer>LRCPlus wiki</footer>
+  </div>
+
+
+</body></html>

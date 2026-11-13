@@ -4,6 +4,14 @@ Use **Dark mode** beside Print to switch appearance. The manual initially follow
 
 Use **View source** beside Read to inspect the current article's HTML offline. The read-only view excludes generated contents, section links, and related links. Select **Read** to return to the article; source links such as `#getting-started/source` can be bookmarked. Source viewing requires JavaScript.
 
+## Public user pages
+
+`user.html` (and the `ja-`, `ko-`, and `yue-` editions) displays public accounts using `?id=<profile UUID>` or a case-insensitive `?name=<username>` lookup. Talk signatures and signed-in header names link by stable profile ID; moderation reporter names use the username lookup. Pages read only `id,username` from the existing protected `profiles` table and optional verified staff badges from `community_staff_indicators`. No database migration is needed.
+
+This first version is read-only: there is an empty introduction notice and public account information, with no editor, online tracking, email address, or fabricated account dates. Unknown users, invalid links, unavailable services, and offline copies have explicit states. User pages are ordinary user pages, separate from the Special pages directory.
+
+Run `node --test tests/user-pages.cjs tests/community.cjs tests/special-pages.cjs` to check public lookups, localized user links, untrusted text rendering, retry/stale responses, and the existing community flows.
+
 ## Editing articles
 
 Articles are ordinary HTML inside `#articles` in `index.html`. Each article needs a unique `id`, a `data-title`, an `h1`, and a `.subtitle` paragraph. Give section headings unique IDs. Links use `#article-id` or `#article-id/section-id`; they work when opened from disk.

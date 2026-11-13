@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Content-Security-Policy" content="form-action 'none'; connect-src https://*.supabase.co">
+  <title>利用者ページ — LRCPlus wiki</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="manual.css">
+  <link rel="icon" type="image/png" href="assets/media/iconwiki.png">
+  <script src="community-config.js" defer=""></script>
+  <script src="community-i18n.js" defer=""></script>
+  <script src="community.js" defer=""></script>
+  <script src="community-moderation.js" defer=""></script>
+<script src="user-page.js" defer=""></script></head>
+<body class="user-page">
+  <a class="skip-link" href="#content">本文へ移動</a>
+  <aside class="sidebar" aria-label="マニュアルのナビゲーション">
+    <a class="brand" href="ja.html#main"><img class="brand-logo" src="assets/media/iconwiki.png" width="112" height="112" alt="LRCPlus wiki：L とプラス記号のある多言語の銀色の地球"><img class="brand-wordmark" src="assets/media/logowiki.png" width="144" height="43" alt="LRCPlus wiki"><span>ユーザーマニュアル</span></a>
+    <nav>
+      <h2>ナビゲーション</h2>
+      <a href="ja.html#main">メインページ</a>
+      <a href="ja.html#getting-started">はじめに</a>
+      <a href="ja.html#article-index">記事索引</a>
+      <a href="ja.html#troubleshooting">トラブルシューティング</a>
+    <a href="ja-account.html#special-pages">特別ページ</a></nav>
+    <nav class="language-switch" aria-label="言語">
+      <h2>言語</h2>
+      <a href="user.html" lang="en" hreflang="en">English</a>
+      <a href="ja-user.html" lang="ja" hreflang="ja" aria-current="true">日本語</a>
+      <a href="ko-user.html" lang="ko" hreflang="ko">한국어</a>
+      <a href="yue-user.html" lang="yue-Hant" hreflang="yue-Hant">粵語</a>
+    </nav>
+      <div class="offline-note">ユーザーマニュアル<br>オンライン・アプリ同梱版</div>
+</aside>
+  <div class="page">
+    <header class="page-header">
+      <div class="utility"><span class="account-state">ログインしていません</span><nav class="account-links" aria-label="個人用ツール"><a href="ja-account.html#create-account">アカウント作成</a><a href="ja-account.html#login">ログイン</a></nav></div>
+      <div class="toolbar"><div class="page-tabs"><a href="#content" id="user-tab" aria-current="page">利用者ページ</a></div><div class="tools"><div class="view-tabs"><button id="theme-toggle" type="button" aria-pressed="false" hidden="">ダークモード</button></div></div></div>
+    </header>
+    <main id="content" tabindex="-1"><div class="special-return"><a href="ja.html#main" id="manual-return">マニュアルに戻る</a></div><h1 id="user-heading">利用者ページ</h1>
+      <p id="user-status" role="status"></p>
+      <button id="user-retry" type="button" hidden="">更新</button>
+      <section id="user-details" aria-labelledby="user-details-heading" hidden="">
+        <p id="user-introduction" class="note">この利用者ページにはまだ自己紹介がありません。</p>
+        <h2 id="user-details-heading">公開アカウント情報</h2>
+        <dl class="user-details"><dt id="user-username-label">公開ユーザー名</dt><dd><span id="user-username"></span> <span id="user-role"></span></dd></dl>
+      </section>
+      <noscript><p class="note" lang="en">JavaScript is required to load public user information.</p></noscript></main>
+    <footer>LRCPlus wiki</footer>
+  </div>
+
+
+</body></html>
