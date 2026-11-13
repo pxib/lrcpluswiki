@@ -12,9 +12,18 @@
     return error?.status === 429 ? t.rateLimit : error?.code === 'PGRST202' ? t.featureUnavailable : error?.code === 'invalid_credentials' ? t.invalid : t.failed;
   };
   const notify = () => window.dispatchEvent(new Event('communitychange'));
+  api.staffIndicator = role => {
+    if (!['admin', 'moderator'].includes(role)) return null;
+    const label = document.createElement('span');
+    label.className = `community-staff community-staff-${role}`;
+    label.textContent = `(${t[role].toLocaleLowerCase(document.documentElement.lang)})`;
+    return label;
+  };
   function header() {
     document.querySelectorAll('.account-state').forEach(node => {
       node.textContent = api.session ? api.session.user.user_metadata?.username || t.username : t.loggedOut;
+      const indicator = api.session && api.staffIndicator(api.staffRole);
+      if (indicator) node.append(' ', indicator);
     });
     document.querySelectorAll('.account-links').forEach(nav => {
       nav.querySelectorAll('a').forEach(link => { link.hidden = link.dataset.moderation ? !api.staffRole : link.dataset.accountSettings ? !api.session : Boolean(api.session); });

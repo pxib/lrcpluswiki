@@ -83,6 +83,7 @@
   }
   function signature(row, article, id) {
     const p = el('p', '', 'talk-signature');
+    if (row.author_id && !row.deleted_at) p.dataset.authorId = row.author_id;
     p.append('— ', el('b', row.profiles?.username || t.deleted), ' ');
     const a = el('a');
     a.href = `#${article}/talk/${id}`;
@@ -91,6 +92,21 @@
     a.append(time);
     p.append(a);
     return p;
+  }
+  async function loadStaff(rows, parent, version) {
+    const ids = [...new Set(rows.filter(row => !row.deleted_at).map(row => row.author_id).filter(Boolean))];
+    if (!ids.length) return;
+    try {
+      const { data, error } = await api.client.rpc('community_staff_indicators', { p_users: ids });
+      if (error || version !== generation || !Array.isArray(data)) return;
+      const roles = new Map(data.map(row => [row.user_id, row.role]));
+      parent.querySelectorAll('.talk-signature[data-author-id]').forEach(node => {
+        if (!ids.includes(node.dataset.authorId)) return;
+        node.querySelector('.community-staff')?.remove();
+        const indicator = api.staffIndicator(roles.get(node.dataset.authorId));
+        if (indicator) node.querySelector('b').after(indicator);
+      });
+    } catch { /* Discussions remain readable while the migration is pending. */ }
   }
   function scrollToRequested() {
     const id = location.hash.split('/')[2];
@@ -260,6 +276,7 @@
                 if (row.locked) comment.querySelector('.talk-actions > a').title = t.locked;
                 replies.append(comment);
               }
+              await loadStaff(result.data, replies, version);
               scrollToRequested();
             } catch { replyStatus.textContent = t.unavailable; moreReplies.hidden = false; }
             finally { moreReplies.disabled = false; repliesLoading = false; }
@@ -273,7 +290,7 @@
             } while (repliesLoaded && !moreReplies.hidden && !replyStatus.textContent && !document.getElementById(parts[2]));
           }
         }
-        await loadMetadata(addedIds);
+        await Promise.all([loadMetadata(addedIds), loadStaff(data, topics, version)]);
         scrollToRequested();
       } catch { if (version === generation) notice.textContent = t.unavailable; }
       finally { more.disabled = false; }

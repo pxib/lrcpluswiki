@@ -12,6 +12,14 @@ run only the migrations you have not applied, then push the website changes.
 The content-controls migration preserves existing discussion text and starts
 with an empty word-filter list.
 
+Also apply `staff-indicators.sql` after `moderation.sql` to enable public staff
+labels in Talk signatures. It exposes only user IDs and current admin/moderator
+roles for up to 50 displayed authors per request, including for signed-out
+readers. Private moderation tables remain inaccessible. Without this migration,
+discussions still load with plain signatures. The signed-in header uses the
+existing verified staff-role lookup. Labels are localized, with purple for
+admins and green for moderators in both themes; deleted replies have no label.
+
 ## Talk loading and counts
 
 Apply `talk-performance.sql` before deploying the updated Talk client. Its

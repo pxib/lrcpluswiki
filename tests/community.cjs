@@ -277,6 +277,58 @@ test('settings reload after a browser history restore and block unavailable acco
   offline.window.close();
 });
 
+test('staff labels use verified roles in localized headers and public Talk signatures', async () => {
+  for (const name of ['index.html','ja.html','ko.html','yue.html']) {
+    const dom = page(name, '#main/talk');
+    const {emit} = mockAuth(dom);
+    await dom.window.ManualCommunity.ready;
+    const api = dom.window.ManualCommunity;
+    const t = dom.window.ManualCommunityText;
+    const topic = {id:'staff-topic',author_id:'admin',title:'Staff topic',body:'Opening',created_at:'2026-01-01',profiles:{username:'AdminUser'}};
+    const replies = [
+      {id:'mod-reply',author_id:'mod',profiles:{username:'ModUser'}},
+      {id:'member-reply',author_id:'member',profiles:{username:'MemberUser',role:'admin'}},
+      {id:'deleted-reply',author_id:null,profiles:null,deleted_at:'2026-01-02'}
+    ].map(row => ({body:'Reply',created_at:'2026-01-01',...row}));
+    const lookups = [];
+    let unavailable = false;
+    api.client.from = table => ({select(){return this;},eq(){return this;},order(){return this;},async range(){return {data:table==='community_topics'?[topic]:replies,error:null};}});
+    api.client.rpc = async (name, payload) => {
+      if (name !== 'community_staff_indicators') return {data:[],error:null};
+      lookups.push([...payload.p_users]);
+      if (unavailable) return {data:null,error:{code:'PGRST202'}};
+      return {data:payload.p_users.filter(id => id !== 'member').map(id => ({user_id:id,role:id==='admin'?'admin':'moderator'})),error:null};
+    };
+    emit('SIGNED_IN',{user:{id:'member',user_metadata:{username:'MemberUser',role:'admin'}}});
+    assert.equal(dom.window.document.querySelector('.account-state .community-staff'),null);
+    api.staffRole = 'admin';
+    dom.window.dispatchEvent(new dom.window.Event('moderationchange'));
+    assert.equal(dom.window.document.querySelector('.account-state .community-staff').textContent,
+      `(${t.admin.toLocaleLowerCase(dom.window.document.documentElement.lang)})`);
+    evalScript(dom,'talk-timestamps.js');
+    evalScript(dom,'manual.js');
+    evalScript(dom,'community-talk.js');
+    await flush();
+    emit('SIGNED_OUT',null);
+    await flush();
+    assert.equal(dom.window.document.querySelector('.account-state .community-staff'),null);
+    await openReplies(dom);
+    const live = dom.window.document.querySelector('.community-talk');
+    assert.equal(live.querySelectorAll('.community-staff').length,2);
+    assert.equal(live.querySelector('.community-staff-admin').textContent,`(${t.admin.toLocaleLowerCase(dom.window.document.documentElement.lang)})`);
+    assert.equal(live.querySelector('.community-staff-moderator').textContent,`(${t.moderator.toLocaleLowerCase(dom.window.document.documentElement.lang)})`);
+    assert.equal(live.querySelector('#community-comment-member-reply .community-staff'),null);
+    assert.equal(live.querySelector('#community-comment-deleted-reply .community-staff'),null);
+    assert.deepEqual(lookups.at(-1),['mod','member']);
+    unavailable = true;
+    dom.window.dispatchEvent(new dom.window.Event('manualroutechange'));
+    await flush();
+    assert.ok(live.querySelector('.talk-signature b'));
+    assert.equal(live.querySelector('.community-staff'),null);
+    dom.window.close();
+  }
+});
+
 test('Talk renders untrusted text safely and verified sessions can compose topics and replies', async () => {
   const dom = page('index.html', '#main/talk');
   const { emit } = mockAuth(dom);
@@ -295,6 +347,7 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   };
   api.client.rpc = async (name, payload) => {
     if (name === 'community_topic_stats') return {data:[{topic_id:topic.id,comment_count:2,participant_count:2}],error:null};
+    if (name === 'community_staff_indicators') return {data:[],error:null};
     posted.push({name,payload}); return {data:'new-id',error:null};
   };
   evalScript(dom, 'talk-timestamps.js');
@@ -587,6 +640,7 @@ test('moderation SQL keeps reports private and enforces roles, locks, restrictio
       grant usage on schema public,auth to anon,authenticated;`);
     await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/community.sql'),'utf8'));
     await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/moderation.sql'),'utf8'));
+    await db.exec(fs.readFileSync(path.join(__dirname,'../supabase/staff-indicators.sql'),'utf8'));
     await db.exec(`insert into auth.users values
       ('${admin}','{"username":"AdminUser"}',now(),null),
       ('${moderator}','{"username":"ModUser"}',now(),null),
@@ -599,6 +653,10 @@ test('moderation SQL keeps reports private and enforces roles, locks, restrictio
     await db.exec('reset role');
     const comment=(await db.query('insert into community_comments(topic_id,author_id,body) values($1,$2,$3) returning id',[topic,author,'A reported reply'])).rows[0].id;
     await db.exec('set role anon');
+    assert.deepEqual((await db.query('select * from community_staff_indicators($1::uuid[]) order by user_id', [[admin,moderator,member]])).rows,
+      [{user_id:admin,role:'admin'},{user_id:moderator,role:'moderator'}]);
+    assert.equal((await db.query('select * from community_staff_indicators($1::uuid[])', [[]])).rows.length,0);
+    await assert.rejects(db.query('select * from community_staff_indicators($1::uuid[])', [Array(51).fill(admin)]),/too_many_users/);
     await assert.rejects(db.query('select * from community_reports'),/permission denied/);
     await assert.rejects(db.query(`select community_report('topic','${topic}','spam','')`),/permission denied/);
     await as(unverified);

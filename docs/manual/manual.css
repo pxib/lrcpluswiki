@@ -9,6 +9,7 @@
   --blue-border:#a3b0bf; --blue-panel:#f5faff; --blue-heading:#cedff2;
   --purple-border:#afa3bf; --purple-panel:#faf5ff; --purple-heading:#ddcef2;
   --talk-panel:#f8edc4; --talk-border:#c9be91;
+  --staff-admin:#7043a4; --staff-moderator:#176b4b;
 }
 /* Dark colors apply on screen only; printing always uses the light palette. */
 @media screen {
@@ -22,6 +23,7 @@
     --blue-border:#49657d; --blue-panel:#222e3a; --blue-heading:#30465c;
     --purple-border:#69567d; --purple-panel:#2c2635; --purple-heading:#453653;
     --talk-panel:#393421; --talk-border:#756b44;
+    --staff-admin:#c9a6ef; --staff-moderator:#7dd3ac;
   }
 }
 /* Local Vector Legacy interpretation. Reference: https://github.com/wikimedia/mediawiki-skins-Vector/tree/master/resources/skins.vector.styles.legacy */
@@ -173,6 +175,10 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 /* Personal tools and community account pages. */
 .page-header .utility{display:flex;align-items:center;flex-wrap:wrap;gap:12px;justify-content:flex-end}
 .utility .account-state{padding:0;color:var(--muted)}
+.community-staff{font-size:.9em;font-weight:normal;white-space:nowrap}
+.talk-signature .community-staff{margin-inline-start:.3em}
+.community-staff-admin{color:var(--staff-admin)}
+.community-staff-moderator{color:var(--staff-moderator)}
 .account-links{display:inline-flex;gap:12px}
 .account-links a[aria-current="page"]{font-weight:bold;color:var(--text)}
 .account-notice{max-width:520px;color:var(--muted);font-size:13px;margin:12px 0 20px}
