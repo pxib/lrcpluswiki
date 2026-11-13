@@ -35,9 +35,12 @@ without downloading reply bodies or author lists. Expand **Replies** to fetch
 its replies, and load through the linked comment. **Load more** continues to
 offer the rest of the article's topics without duplicating that topic.
 
-Posting and deleting a reply refresh that topic's aggregate. If the migration
-has not yet been applied, topics and replies still work; aggregate labels stay
-hidden instead of reverting to downloading complete author lists.
+Posting and deleting a reply refresh that topic's aggregate. If the aggregate
+function is missing, the client falls back to fetching only topic and author
+IDs for the displayed topics, in pages of 1,000 replies, to calculate accurate
+counts without downloading reply bodies. Apply `talk-performance.sql` to avoid
+these additional attribution requests. A failed count update after posting or
+deletion retains existing counts.
 
 To bootstrap the first admin, register/verify your own wiki account, copy its
 User UID from Supabase Authentication → Users, and run:

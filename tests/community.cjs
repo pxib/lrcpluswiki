@@ -445,6 +445,7 @@ test('community metadata uses a batched aggregate without downloading replies', 
   const doc = dom.window.document;
   const labels = () => [...doc.querySelectorAll('.community-talk .talk-meta-item')].map(node => node.textContent);
   assert.deepEqual(labels(), ['1,002 comments', '2 people in discussion']);
+  assert.equal(doc.querySelector('.community-replies').hidden,false);
   assert.equal(replyReads, 0);
   assert.equal(statsCalls.length, 1);
   assert.deepEqual(Array.from(statsCalls[0].p_topics), ['paged']);
@@ -460,7 +461,45 @@ test('community metadata uses a batched aggregate without downloading replies', 
   [...doc.querySelectorAll('.community-toolbar button')].find(node => node.textContent === 'Refresh').click();
   await flush();
   assert.deepEqual(labels(), ['1 comment', '1 person in discussion']);
+  assert.equal(doc.querySelector('.community-replies').hidden,true);
   assert.equal(replyReads, 2);
+  dom.window.close();
+});
+
+test('missing aggregate RPC restores exact counts with paginated attribution and no reply bodies', async () => {
+  const dom = page('index.html','#main/talk');
+  mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api = dom.window.ManualCommunity;
+  const topics = [
+    {id:'busy',author_id:'alice',title:'Busy',body:'Opening',created_at:'2026-01-01'},
+    {id:'empty',author_id:null,title:'Empty',body:'Opening',created_at:'2026-01-01'}
+  ];
+  const attribution = Array.from({length:1001}, (_,i) => ({topic_id:'busy',author_id:i===1000?'bob':i%2?'alice':null}));
+  const reads = [];
+  api.client.rpc = async () => ({data:null,error:{code:'PGRST202'}});
+  api.client.from = table => {
+    let columns;
+    return {
+      select(value){columns=value;return this;},eq(){return this;},order(){return this;},
+      in(column,ids){assert.equal(column,'topic_id');assert.deepEqual([...ids],['busy','empty']);return this;},
+      async range(start,end){
+        if(table==='community_topics')return {data:topics,error:null};
+        reads.push({columns,start,end});
+        return {data:attribution.slice(start,end+1),error:null};
+      }
+    };
+  };
+  evalScript(dom,'talk-timestamps.js');evalScript(dom,'manual.js');evalScript(dom,'community-talk.js');
+  await flush();
+  const doc = dom.window.document;
+  assert.deepEqual([...doc.querySelectorAll('.community-talk .talk-meta-item')].map(node=>node.textContent),
+    ['1,002 comments','2 people in discussion','1 comment','0 people in discussion']);
+  assert.equal(doc.querySelectorAll('.community-talk .talk-meta[hidden]').length,0);
+  assert.equal(doc.querySelector('.community-talk .talk-depth-1'),null);
+  assert.equal(doc.querySelector('#community-topic-busy .community-replies').hidden,false);
+  assert.equal(doc.querySelector('#community-topic-empty .community-replies').hidden,true);
+  assert.deepEqual(reads,[{columns:'topic_id,author_id',start:0,end:999},{columns:'topic_id,author_id',start:1000,end:1999}]);
   dom.window.close();
 });
 

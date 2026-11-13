@@ -222,3 +222,37 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .talk-actions a[aria-disabled="true"]{color:var(--muted);cursor:default;text-decoration:none}
 [hidden]{display:none!important}
 @media print{.community-toolbar,.community-composer,.community-talk button,.account-links{display:none!important}}
+/* Special-page adaptations of Vector Legacy and MediaWiki's account/preferences UI.
+   Reference links and intentional differences: SPECIAL-PAGES-REFERENCES.md. */
+.special-return{font-size:12px;line-height:1.4;margin:0 0 12px}
+.account-page main>section>h1{margin-bottom:12px}
+.account-page .special-navigation h2:first-child{display:block}
+.account-page .account-notice{margin:8px 0 16px}
+.account-page .account-alternative{width:290px;max-width:100%;text-align:center}
+.account-page .account-feedback:not(:empty),.account-page #settings-panel>p:not(:empty),.account-page #moderation-panel>p:not(:empty){max-width:640px;padding:8px 12px;border:1px solid var(--border);background:var(--panel);margin:12px 0;overflow-wrap:anywhere}
+.account-page .account-feedback:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.special-page-groups{columns:3 240px;column-gap:32px;margin-top:18px}
+.special-page-groups>section{break-inside:avoid;margin:0 0 24px}
+.special-page-groups h2{font:normal 18px/1.4 Arial,Helvetica,sans-serif;margin:0 0 8px;padding-bottom:3px}
+.special-page-groups ul{margin:0;padding-left:22px}
+.special-page-groups li{margin:3px 0}
+.preferences-tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border);margin-top:16px;padding-left:8px;background:var(--panel)}
+.preferences-tabs button{padding:9px 14px;margin:0 0 -1px;border:1px solid transparent;background:transparent;color:var(--link);font:inherit}
+.preferences-tabs button[aria-selected="true"]{border-color:var(--border);border-bottom-color:var(--surface);background:var(--surface);color:var(--text);font-weight:bold}
+.preferences-panel{padding:4px 16px 16px;border:1px solid var(--border);border-top:0}
+.preferences-panel h2{font-family:inherit;font-size:16px;font-weight:bold;border:0;margin-top:18px}
+.preferences-panel .account-details{display:grid;grid-template-columns:minmax(90px,max-content) minmax(0,1fr);gap:5px 18px;max-width:640px}
+.preferences-panel .account-details dt{font-weight:bold}
+.preferences-panel .account-details dd{margin:0;overflow-wrap:anywhere}
+.account-page .preferences-panel .account-submit{width:auto;max-width:100%}
+.account-page .moderation-filters{padding:8px 12px;border:1px solid var(--border);background:var(--panel);min-width:0}
+.moderation-filters legend{padding:0 5px;font-weight:bold}
+.moderation-filters select{max-width:100%;padding:4px 6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit}
+.account-page .moderation-report{padding:8px 0}
+.account-page .moderation-report h2{display:inline;font:bold 14px/1.6 Arial,Helvetica,sans-serif;border:0;margin:0}
+.moderation-metadata{font-size:12px;color:var(--muted);margin:2px 0}
+.account-page .moderation-report blockquote{margin:5px 0;padding:5px 10px}
+.account-page .moderation-report button{margin:4px 0 0 10px;padding:0;border:0;background:transparent;color:var(--link);font-size:13px}
+.account-page .moderation-report button:hover{text-decoration:underline}
+@media(max-width:760px){.preferences-tabs{padding-left:0}.preferences-tabs button{padding:8px 10px}.preferences-panel{padding:4px 10px 12px}.special-page-groups{columns:1}.account-page .sidebar nav{margin-top:8px}.account-page .special-navigation h2:first-child{display:none}}
+@media print{.special-return,.preferences-tabs{display:none!important}.preferences-panel[hidden]{display:block!important}}

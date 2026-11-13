@@ -76,6 +76,55 @@
   passwordSection.form.append(node('p', t.passwordHelp, 'account-notice'), passwordSection.submit);
   const sessions = section('sessions', t.otherSessions);
   sessions.form.append(sessions.submit);
+  // Preferences uses a horizontal section selector, as in MediaWiki's Help:Preferences.
+  const labels = {
+    en: ['User profile', 'Password and security'],
+    ja: ['利用者情報', 'パスワードとセキュリティ'],
+    ko: ['사용자 정보', '비밀번호 및 보안'],
+    yue: ['用戶資料', '密碼同保安']
+  };
+  const lang = document.documentElement.lang;
+  const captions = labels[lang.startsWith('yue') ? 'yue' : lang] || labels.en;
+  const tabs = node('div', '', 'preferences-tabs');
+  tabs.setAttribute('role', 'tablist');
+  tabs.setAttribute('aria-label', t.settings);
+  const profile = node('div', '', 'preferences-panel');
+  const security = node('div', '', 'preferences-panel');
+  profile.append(...details.childNodes);
+  security.append(passwordSection.form.parentElement, sessions.form.parentElement);
+  details.append(tabs, profile, security);
+  const sections = [profile, security];
+  const tabButtons = sections.map((section, index) => {
+    section.id = `preferences-panel-${index}`;
+    section.setAttribute('role', 'tabpanel');
+    section.setAttribute('aria-labelledby', `preferences-tab-${index}`);
+    const tab = node('button', captions[index]);
+    tab.type = 'button';
+    tab.id = `preferences-tab-${index}`;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', section.id);
+    tab.addEventListener('click', () => selectTab(index));
+    tab.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') next = 1 - index;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = 1;
+      if (next === undefined) return;
+      event.preventDefault();
+      selectTab(next);
+      tabButtons[next].focus();
+    });
+    tabs.append(tab);
+    return tab;
+  });
+  function selectTab(index) {
+    sections.forEach((section, i) => { section.hidden = i !== index; });
+    tabButtons.forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === index));
+      tab.tabIndex = i === index ? 0 : -1;
+    });
+  }
+  selectTab(0);
   function controls() {
     const disabled = busy || !user || !api.client || api.session?.user.id !== user.id || panel.hidden;
     forms.forEach(form => form.querySelectorAll('input,button').forEach(control => { control.disabled = disabled; }));

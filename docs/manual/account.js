@@ -7,7 +7,13 @@
   const query = new URLSearchParams(location.search);
   const requested = query.get('return');
   const returnHash = requested?.startsWith('#') ? requested : '#main';
-  const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings', 'moderation'];
+  const modes = ['login', 'create-account', 'password-reset', 'new-password', 'settings', 'moderation', 'special-pages'];
+  const specialText = {
+    en: ['Special pages', 'Users and accounts', 'Lists of pages', 'Restricted pages', 'Tools available on this wiki.'],
+    ja: ['特別ページ', '利用者とアカウント', 'ページ一覧', '権限が必要なページ', 'このウィキで利用できるツールです。'],
+    ko: ['특수 문서', '사용자와 계정', '문서 목록', '제한된 문서', '이 위키에서 사용할 수 있는 도구입니다.'],
+    yue: ['特殊頁面', '用戶同帳戶', '頁面列表', '受限制頁面', '呢個維基提供嘅工具。']
+  }[lang.startsWith('yue') ? 'yue' : lang] || ['Special pages', 'Users and accounts', 'Lists of pages', 'Restricted pages', 'Tools available on this wiki.'];
   let busy = false;
   let currentMode = 'login';
   const panels = {};
@@ -38,7 +44,7 @@
     p.append(a);
     parent.append(p);
   }
-  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword, settings: t.settings, moderation: t.moderation };
+  const titles = { login: t.login, 'create-account': t.signup, 'password-reset': t.reset, 'new-password': t.savePassword, settings: t.settings, moderation: t.moderation, 'special-pages': specialText[0] };
   for (const mode of modes) {
     let panel = document.getElementById(`${mode}-panel`);
     if (!panel) {
@@ -48,7 +54,7 @@
     }
     panel.replaceChildren();
     panel.setAttribute('aria-labelledby', `${mode}-heading`);
-    if (mode === 'settings' || mode === 'moderation') { panel.hidden = true; continue; }
+    if (mode === 'settings' || mode === 'moderation' || mode === 'special-pages') { panel.hidden = true; continue; }
     const heading = document.createElement('h1');
     heading.id = `${mode}-heading`;
     heading.textContent = titles[mode];
@@ -132,6 +138,56 @@
       }
     });
   }
+  const directory = document.getElementById('special-pages-panel');
+  const directoryHeading = document.createElement('h1');
+  directoryHeading.id = 'special-pages-heading';
+  directoryHeading.textContent = specialText[0];
+  const directoryIntro = document.createElement('p');
+  directoryIntro.textContent = specialText[4];
+  const groups = document.createElement('div');
+  groups.className = 'special-page-groups';
+  function directoryGroup(title, links) {
+    const group = document.createElement('section');
+    const heading = document.createElement('h2');
+    heading.textContent = title;
+    const list = document.createElement('ul');
+    for (const [label, href] of links) {
+      const item = document.createElement('li');
+      const anchor = document.createElement('a');
+      anchor.textContent = label;
+      anchor.href = href;
+      item.append(anchor);
+      list.append(item);
+    }
+    group.append(heading, list);
+    groups.append(group);
+    return group;
+  }
+  directoryGroup(specialText[1], [[t.login, '#login'], [t.signup, '#create-account'], [t.reset, '#password-reset'], [t.settings, '#settings']]);
+  const indexLink = document.querySelector('.sidebar a[href$="#article-index"]');
+  if (indexLink) directoryGroup(specialText[2], [[indexLink.textContent, manual + '#article-index']]);
+  const restrictedGroup = directoryGroup(specialText[3], [[t.moderation, '#moderation']]);
+  restrictedGroup.append(Object.assign(document.createElement('p'), {textContent: t.staffRequired, className: 'account-notice'}));
+  directory.append(directoryHeading, directoryIntro, groups);
+  // Keep the namespace tab separate from the ordinary return link.
+  const returnLink = document.getElementById('manual-return');
+  const returnLine = document.createElement('div');
+  returnLine.className = 'special-return';
+  returnLine.append(returnLink);
+  document.getElementById('content').prepend(returnLine);
+  const toolsNav = document.createElement('nav');
+  toolsNav.className = 'special-navigation';
+  toolsNav.setAttribute('aria-label', specialText[0]);
+  const toolsHeading = document.createElement('h2');
+  toolsHeading.textContent = specialText[0];
+  toolsNav.append(toolsHeading);
+  for (const [label, hash] of [[specialText[0], 'special-pages'], [t.settings, 'settings']]) {
+    const anchor = document.createElement('a');
+    anchor.href = `#${hash}`;
+    anchor.textContent = label;
+    toolsNav.append(anchor);
+  }
+  document.querySelector('.language-switch').before(toolsNav);
   function controls() {
     for (const [mode, {form, submit}] of Object.entries(panels)) {
       const disabled = busy || !api.client || (mode === 'new-password' && !api.recovery);
@@ -148,6 +204,7 @@
     }
     document.getElementById('settings-panel').hidden = currentMode !== 'settings';
     document.getElementById('moderation-panel').hidden = currentMode !== 'moderation';
+    directory.hidden = currentMode !== 'special-pages';
     document.title = `${titles[currentMode]} — LRCPlus wiki`;
     document.getElementById('special-tab').href = `#${currentMode}`;
     document.getElementById('manual-return').href = manual + returnHash;

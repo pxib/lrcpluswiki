@@ -161,12 +161,38 @@
     live.append(more);
     let offset = 0;
     const metadataNodes = new Map();
+    const replyDisclosures = new Map();
+    const topicAuthors = new Map();
     const renderedTopics = new Set();
+    async function fallbackStats(ids) {
+      const totals = new Map(ids.map(id => [id, {topic_id: id, comment_count: 1,
+        authors: new Set([topicAuthors.get(id)].filter(Boolean))}]));
+      // Older databases lack the aggregate RPC. Fetch only public attribution,
+      // never reply bodies, and paginate to avoid truncating larger discussions.
+      let start = 0;
+      while (true) {
+        const {data, error} = await api.client.from('community_comments')
+          .select('topic_id,author_id').in('topic_id', ids)
+          .order('id', {ascending: true}).range(start, start + 999);
+        if (error) throw error;
+        if (version !== generation) return [];
+        for (const row of data) {
+          const total = totals.get(row.topic_id);
+          if (!total) continue;
+          total.comment_count++;
+          if (row.author_id) total.authors.add(row.author_id);
+        }
+        if (data.length < 1000) break;
+        start += data.length;
+      }
+      return [...totals.values()].map(({authors, ...total}) => ({...total, participant_count: authors.size}));
+    }
     async function loadMetadata(ids) {
       if (!ids.length) return;
       try {
-        const { data, error } = await api.client.rpc('community_topic_stats', {p_topics: ids});
-        if (error) throw error;
+        let { data, error } = await api.client.rpc('community_topic_stats', {p_topics: ids});
+        if (error?.code === 'PGRST202') data = await fallbackStats(ids);
+        else if (error) throw error;
         if (version !== generation) return;
         for (const row of data || []) {
           const metadata = metadataNodes.get(row.topic_id);
@@ -174,10 +200,11 @@
           metadata.replaceChildren(...metadataLabels(Number(row.comment_count), Number(row.participant_count))
             .map(label => el('span', label, 'talk-meta-item')));
           metadata.hidden = false;
+          const disclosure = replyDisclosures.get(row.topic_id);
+          if (disclosure) disclosure.hidden = Number(row.comment_count) <= 1;
         }
       } catch {
-        // Older installations can still read/post while awaiting the migration.
-        ids.forEach(id => { const node = metadataNodes.get(id); if (node) node.hidden = true; });
+        // Keep any previously loaded counts when a refresh fails.
       }
     }
     async function loadTopics(preferredId) {
@@ -217,10 +244,12 @@
           const metadata = el('p', '', 'talk-meta');
           metadata.hidden = true;
           metadataNodes.set(row.id, metadata);
+          topicAuthors.set(row.id, row.author_id);
           const opening = el('div', '', 'talk-comment talk-depth-0');
           opening.append(el('p', row.body, 'community-message'), signature(row, article, section.id));
           const replyOptions = row.locked ? {} : api.session
             ? { onReply: () => composer(section, article, row.id, version, () => {
+              disclosure.hidden = false;
               disclosure.open = true;
               return Promise.all([loadReplies(true), loadMetadata([row.id])]);
             }) }
@@ -234,6 +263,7 @@
           }
           window.ManualCommunityModeration?.addTopicControls(section, row, render);
           const disclosure = el('details', '', 'community-replies');
+          replyDisclosures.set(row.id, disclosure);
           disclosure.append(el('summary', t.replies));
           const replies = el('div');
           disclosure.append(replies);
@@ -262,6 +292,7 @@
               if (version !== generation) return;
               repliesLoaded = true;
               replyOffset += result.data.length;
+              disclosure.hidden = replyOffset === 0;
               moreReplies.hidden = result.data.length < 50;
               replyStatus.textContent = '';
               for (const reply of result.data) {

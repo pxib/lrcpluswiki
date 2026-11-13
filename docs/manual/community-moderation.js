@@ -199,10 +199,10 @@
     panel.append(heading,status);
     if (!api.client || !api.session) { status.textContent = api.client ? t.signInRequired : api.notice; return; }
     if (!api.staffRole) { status.textContent = t.staffRequired; return; }
-    const toolbar = el('div','','community-toolbar');
+    const toolbar = el('fieldset','','community-toolbar moderation-filters');
     const filter = select(['open','dismissed','removed']);
     filter.setAttribute('aria-label',t.moderation);
-    toolbar.append(filter,button(t.refresh,()=>load(true)));
+    toolbar.append(el('legend',t.moderation),filter,button(t.refresh,()=>load(true)));
     const queue = el('div');
     const more = button(t.more,()=>load(false));
     panel.append(toolbar,queue,more);
@@ -225,8 +225,11 @@
         for (const row of data) {
           const item = el('section','','moderation-report');
           item.append(el('h2',t[row.reason] || t.other));
-          item.append(el('p',`${t.reporter}: ${row.reporter || t.deleted} · ${t.author}: ${row.author || t.deleted}`));
-          item.append(el('p',new Date(row.created_at).toLocaleString(document.documentElement.lang)));
+          const metadata = el('p','','moderation-metadata');
+          const timestamp = el('time',new Date(row.created_at).toLocaleString(document.documentElement.lang));
+          timestamp.dateTime = row.created_at;
+          metadata.append(timestamp,document.createTextNode(` · ${t.reporter}: ${row.reporter || t.deleted} · ${t.author}: ${row.author || t.deleted}`));
+          item.append(metadata);
           item.append(el('blockquote',row.content,'community-message'),el('p',row.details,'community-message'));
           const url = new URL(document.getElementById('manual-return').href);
           url.hash = `#${row.article_id}/talk/community-${row.target_type}-${row.target_id}`;
