@@ -11,6 +11,7 @@ const editions = [
   ['ko-account.html', 'ko.html', '특수 문서'],
   ['yue-account.html', 'yue.html', '特殊頁面'],
   ['zh-account.html', 'zh.html', '特殊页面'],
+  ['zh-hant-account.html', 'zh-hant.html', '特殊頁面'],
   ['cs-account.html', 'cs.html', 'Speciální stránky'],
   ['vi-account.html', 'vi.html', 'Trang đặc biệt']
 ];

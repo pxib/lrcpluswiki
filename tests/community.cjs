@@ -50,7 +50,7 @@ async function submit(dom, mode, values) {
 }
 
 test('all editions preserve script order, offline reading, and localized account forms', async () => {
-  for (const name of ['account.html','ja-account.html','ko-account.html','yue-account.html','zh-account.html','cs-account.html','vi-account.html']) {
+  for (const name of ['account.html','ja-account.html','ko-account.html','yue-account.html','zh-account.html','zh-hant-account.html','cs-account.html','vi-account.html']) {
     const dom = page(name);
     const { calls } = mockAuth(dom);
     evalScript(dom, 'account.js');
@@ -65,7 +65,7 @@ test('all editions preserve script order, offline reading, and localized account
     assert.deepEqual(calls, []);
     dom.window.close();
   }
-  for (const name of ['index.html','ja.html','ko.html','yue.html','zh.html','cs.html','vi.html']) {
+  for (const name of ['index.html','ja.html','ko.html','yue.html','zh.html','zh-hant.html','cs.html','vi.html']) {
     const dom = page(name, '#main', 'file:');
     let requests = 0;
     dom.window.fetch = () => { requests++; throw Error('Offline request'); };
@@ -180,7 +180,7 @@ async function settingsSubmit(dom, form, values) {
 }
 
 test('settings are localized, use the protected profile, and clear private data on logout', async () => {
-  for (const name of ['account.html','ja-account.html','ko-account.html','yue-account.html','zh-account.html','cs-account.html','vi-account.html']) {
+  for (const name of ['account.html','ja-account.html','ko-account.html','yue-account.html','zh-account.html','zh-hant-account.html','cs-account.html','vi-account.html']) {
     const {dom, emit} = await settingsPage(name);
     const doc = dom.window.document;
     assert.equal(doc.getElementById('settings-panel').hidden, false);
@@ -280,7 +280,7 @@ test('settings reload after a browser history restore and block unavailable acco
 });
 
 test('staff labels use verified roles in localized headers and public Talk signatures', async () => {
-  for (const name of ['index.html','ja.html','ko.html','yue.html','zh.html','cs.html','vi.html']) {
+  for (const name of ['index.html','ja.html','ko.html','yue.html','zh.html','zh-hant.html','cs.html','vi.html']) {
     const dom = page(name, '#main/talk');
     const {emit} = mockAuth(dom);
     await dom.window.ManualCommunity.ready;

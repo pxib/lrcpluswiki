@@ -42,7 +42,7 @@ window.ManualTalkTimestamps = (() => {
   }
 
   function format(date, language) {
-    const locale = {ja: 'ja-JP', ko: 'ko-KR', 'yue-Hant': 'zh-HK', zh: 'zh-CN', cs: 'cs-CZ', vi: 'vi-VN'}[language] || 'en-GB';
+    const locale = {ja: 'ja-JP', ko: 'ko-KR', 'yue-Hant': 'zh-HK', zh: 'zh-CN', 'zh-Hant': 'zh-TW', cs: 'cs-CZ', vi: 'vi-VN'}[language] || 'en-GB';
     return new Intl.DateTimeFormat(locale, {
       day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
       hourCycle: 'h23', timeZone: 'UTC'

@@ -1,0 +1,264 @@
+<!DOCTYPE html><html lang="zh-Hant"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LRCPlus使用者手冊：播放、同步歌詞、注音、編輯和故障排除。">
+  <title>LRCPlus 使用手冊</title>
+  <script src="locales/zh-hant.js"></script><script src="theme.js"></script>
+  <link rel="stylesheet" href="manual.css">
+  <link rel="icon" type="image/png" href="assets/media/iconwiki.png">
+  <script src="talk-timestamps.js" defer=""></script>
+  <script src="community-config.js" defer=""></script>
+  <script src="community-i18n.js" defer=""></script>
+  <script src="community.js" defer=""></script>
+  <script src="manual.js" defer=""></script>
+  <script src="community-moderation.js" defer=""></script>
+  <script src="community-talk.js" defer=""></script>
+  <meta name="wiki-build" content="development">
+  <link rel="stylesheet" href="update.css">
+  <script src="update.js" defer=""></script>
+  
+  
+  
+  
+  
+  
+  
+<link rel="alternate" hreflang="en" href="index.html">
+<link rel="alternate" hreflang="ja" href="ja.html">
+<link rel="alternate" hreflang="ko" href="ko.html">
+<link rel="alternate" hreflang="yue-Hant" href="yue.html">
+<link rel="alternate" hreflang="zh" href="zh.html">
+<link rel="alternate" hreflang="zh-Hant" href="zh-hant.html">
+<link rel="alternate" hreflang="cs" href="cs.html">
+<link rel="alternate" hreflang="vi" href="vi.html">
+</head>
+<body>
+  <a class="skip-link" href="#content">跳至內容</a>
+  <aside class="sidebar" aria-label="手動導航">
+    <a class="brand" href="#main"><img class="brand-logo" src="assets/media/iconwiki.png" width="112" height="112" alt="LRCPlus wiki：帶有 L 和加號的多語言銀色地球儀"><img class="brand-wordmark" src="assets/media/logowiki.png" width="144" height="43" alt="LRCPlus wiki"><span>使用手冊</span></a>
+    <nav>
+      <h2>導航</h2>
+      <a href="#main">首頁</a>
+      <a href="#installation">安裝和設定</a>
+      <a href="#getting-started">開始使用</a>
+      <a href="#interface">介面指南</a>
+      <a href="#playback">音樂和播放</a>
+      <h2>歌詞</h2>
+      <a href="#finding-lyrics">尋找歌詞</a>
+      <a href="#readings">振假名與注音</a>
+      <a href="#editor">編輯和計時</a>
+      <a href="#lrcx">LRCX參考</a>
+      <h2>參考和幫助</h2>
+      <a href="#settings-reference">設定參考</a>
+      <a href="#translations">翻譯</a>
+      <a href="#sharing">分享和影像卡</a>
+      <a href="#ayami">Ayami</a>
+      <a href="#companion">同伴指南</a>
+      <a href="#plugin-directory">外掛目錄</a>
+      <a href="#tutorials">工作教程</a>
+      <a href="#glossary">詞彙表</a>
+      <a href="#article-index">A-Z 文章索引</a>
+      <a href="#customization">定製化</a>
+      <a href="#plugins">外掛</a>
+      <a href="#troubleshooting">故障排除</a>
+      <a href="#shortcuts">鍵盤快捷鍵</a>
+          <a href="zh-hant-account.html#special-pages">特殊頁面</a>
+    </nav>
+    <nav class="language-switch" aria-label="Languages">
+<h2>Languages</h2>
+<a href="index.html" hreflang="en" lang="en">English</a>
+<a href="ja.html" hreflang="ja" lang="ja">日本語</a>
+<a href="ko.html" hreflang="ko" lang="ko">한국어</a>
+<a href="yue.html" hreflang="yue-Hant" lang="yue-Hant">粵語</a>
+<a href="zh.html" hreflang="zh" lang="zh">简体中文</a>
+<a href="zh-hant.html" hreflang="zh-Hant" lang="zh-Hant" aria-current="true">繁體中文</a>
+<a href="cs.html" hreflang="cs" lang="cs">Čeština</a>
+<a href="vi.html" hreflang="vi" lang="vi">Tiếng Việt</a>
+</nav>
+      <div class="offline-note">使用者手冊<br>線上並與應用程式捆綁。</div>
+</aside>
+  <div class="page">
+    <header class="page-header">
+      <div class="utility"><span class="account-state">尚未登入</span><nav class="account-links" aria-label="個人工具"><a href="zh-hant-account.html#create-account">建立帳號</a><a href="zh-hant-account.html#login">登入</a></nav></div>
+      <div class="toolbar">
+        <div class="page-tabs"><a href="#main" id="article-tab" aria-current="page">首頁</a><a href="#main/talk" id="talk-tab" hidden="">討論</a><a href="#main/main-contents" id="contents-tab">目錄</a></div>
+        <div class="tools"><div class="view-tabs"><a id="read-tab" href="#main" aria-current="page">閱讀</a><a id="source-tab" href="#main/source" hidden="">檢視原始碼</a><button id="print" type="button" hidden="">列印</button><button id="theme-toggle" type="button" aria-pressed="false" hidden="">深色模式</button></div><form id="search" role="search" hidden=""><label class="visually-hidden" for="query">搜尋</label><input id="query" type="search" placeholder="搜尋LRCPlus說明書" autocomplete="off"><button type="submit" aria-label="搜尋"><span class="search-icon" aria-hidden="true"></span></button></form></div>
+      </div>
+    </header>
+    <main id="content" tabindex="-1">
+      <nav id="breadcrumbs" aria-label="當前位置"></nav>
+      <div id="articles">
+        <article id="main" data-title="首頁">
+          <h1>首頁</h1><p class="subtitle">摘自LRCPlus使用者手冊</p>
+          <div class="welcome"><h2>歡迎使用 LRCPlus 手冊</h2><p>在 LRCPlus 中聆聽、跟隨並製作自己的歌詞的指南。</p><p>第一次使用 LRCPlus？請先閱讀<a href="#installation">安裝與初始設定</a>。</p><p>已經安裝了嗎？跟隨 <a href="#getting-started"> 開始使用 </a> 來播放你的第一首歌曲。已經在聽了嗎？學習<a href="#finding-lyrics">找到歌詞</a>或<a href="#editor">修復他們的時間</a>。</p></div>
+          <div class="portal-grid">
+            <section><h2>開始聆聽</h2><dl><dt><a href="#installation">安裝和設定</a></dt><dd>下載、解壓並完成初始設定。</dd><dt><a href="#getting-started">入門</a></dt><dd>開啟一首歌曲並顯示其歌詞。</dd><dt><a href="#playback">音樂與播放</a></dt><dd>構建庫、使用佇列並導航曲目。</dd><dt><a href="#finding-lyrics">找歌詞</a></dt><dd>線上搜尋或開啟本地歌詞檔案。</dd></dl></section>
+            <section><h2>遵循每一個字</h2><dl><dt><a href="#readings">注音假名和讀法</a></dt><dd>選擇日語注音或羅馬字。</dd><dt><a href="#editor">編輯與計時</a></dt><dd>正確的文本、臺詞計時和卡拉 OK 片段。</dd><dt><a href="#lrcx">LRCX 參考</a></dt><dd>瞭解時間戳、Ruby 和格式。</dd></dl></section>
+            <section><h2>讓它成為你的</h2><dl><dt><a href="#customization">定製</a></dt><dd>調整外觀、背景和歌詞顯示。</dd><dt><a href="#plugins">外掛</a></dt><dd>管理可選功能及其依賴項。</dd></dl></section>
+            <section><h2>獲得幫助</h2><dl><dt><a href="#troubleshooting">故障排除</a></dt><dd>解決無聲播放、漏歌詞、漏朗讀的問題。</dd><dt><a href="#shortcuts">鍵盤快捷鍵</a></dt><dd>供玩家和編輯者快速參考。</dd></dl></section>
+          </div>
+          <h2 id="main-guides">探索手冊</h2><p>瀏覽 <a href="#interface"> 介面瀏覽 </a>，瀏覽 <a href="#settings-reference"> 設定參考 </a>，或遵循 <a href="#tutorials"> 工作教程 </a>。更多指南涵蓋<a href="#translations">翻譯</a>、<a href="#sharing">影像卡</a>和<a href="#companion">同伴</a>。查詢 <a href="#article-index">A–Z 索引 </a> 中的每一頁。</p><h2 id="main-contents">關於本手冊</h2><p>本手冊描述了 LRCPlus 當前源版本中的控制元件。可用功能可能會因您的構建和啟用的外掛而異。 <b>Settings → Lyrics</b> 等選單路徑描述了在應用程式中單擊的內容。</p><p>本手冊可線上獲取並與應用程式捆綁在一起。捆綁副本支援離線閱讀和搜尋。檢索歌詞或使用線上注音服務的功能仍然需要網際網路連線。</p>
+        </article>
+        <article id="installation" data-title="安裝和設定" data-related="getting-started settings-reference plugin-directory troubleshooting">
+          <h1>安裝和設定</h1><p class="subtitle">從下載到您的第一首歌曲</p>
+          <p>安裝 LRCPlus，完成初始設定，並在新增可選功能之前檢查音樂是否播放。</p>
+          <h2 id="installation-requirements">開始之前</h2><p>釋出的下載是 <b>Windows x64</b> 版本。檢查發行說明以瞭解與您的 Windows 版本的要求和相容性。準備一個本地音訊檔案來測試播放。下載應用程式和使用線上服務需要連線網際網路；本地音樂、本地歌詞和捆綁的手冊可以離線使用。</p>
+          <h2 id="installation-download">下載並解壓</h2><ol><li>開啟<a href="https://github.com/pxib/lrcplus/releases/latest">官方最新版本</a>並閱讀其發行說明。使用穩定版本進行日常聆聽。</li><li>在 <b>Assets</b> 下，下載 <code>LRCPlus-&lt;version&gt;-Windows-x64.zip</code>。 GitHub <b>原始碼</b>檔案用於從原始碼執行或開發；它們不是打包的應用程式。</li><li>在檔案資源管理器中右鍵單擊下載的 ZIP，然後選擇 <b>Extract All…</b>。將整個存檔解壓縮到您可以寫入的資料夾，例如您的使用者帳號下的資料夾。</li><li>開啟解壓的資料夾並執行<code>LRCPlus.exe</code>。將其支援檔案和子資料夾放在一起；不要僅移動執行檔或從 ZIP 內部執行它。</li></ol><p>打包的應用程式包括其 Python 執行時；您無需單獨安裝 Python 即可啟動它。要從原始碼開始工作，請遵循 <a href="https://github.com/pxib/lrcplus"> 源儲存庫 </a> 及其依賴項說明。</p>
+          <h2 id="installation-wizard">完成首次執行設定</h2><p>如果出現設定嚮導，請按照 Ayami 的提示並選擇提供的外觀和歌詞首選項。您可以稍後在 <a href="#settings-reference">Settings</a> 中調整它們。同伴聊天是可選的：播放音樂不需要 AI 提供商或 API 金鑰。如果您想配置聊天，請參閱 <a href="#companion"> 配套指南 </a>。</p><ol><li><b>音樂庫：</b>如果您想在安裝過程中構建音樂庫，請新增一個音樂資料夾。</li><li><b>外觀：</b>選擇提供的主題和預設。</li><li><b>閱讀偏好</b>和<b>歌詞：</b>選擇您想要的閱讀輔助工具和歌詞顯示選項。請參閱 <a href="#readings">Furigana 和注音 </a> 瞭解提供商要求。</li><li>繼續<b>準備聆聽</b>，然後在播放器中測試播放。</li></ol><p>要重新訪問設定，請選擇 <b> 設定 → 常規 → 重新啟動向導 </b>。如果返回使用者伴隨視窗開啟，請選擇 <b> 再次執行設定 </b> 以返回到原始嚮導。</p>
+          <h2 id="installation-music">新增音樂並測試播放</h2><ol><li>選擇“<b>Open”→“開啟音訊...</b>（<kbd>Ctrl</kbd> + <kbd>O</kbd>）”，選擇本地音訊檔案，然後選擇“<b>Play</b>”。</li><li>對於音樂收藏，切換到 <b>Library</b>，選擇 <b> 新增音樂資料夾 </b>，然後選擇您的音樂資料夾。更改檔案後使用 <b>Rescan</b>。</li><li>按照<a href="#getting-started">入門</a> 附本地歌詞檔案或線上搜尋歌詞。</li></ol>
+          <h2 id="installation-optional">設定可選功能</h2><p>開啟 <b>Settings → Plugins</b> 檢視您的構建包含哪些外掛以及它們是否已啟用。檢查 <b>Settings → Dependencies</b> 或外掛的 <b>Dependencies</b> 按鈕是否缺少包和可用操作。按照 <a href="#plugin-directory"> 外掛指南 </a> 安裝所需功能的要求。線上提供商可能還需要連線、憑證或語言模型。</p><p>對於日語注音，請參閱 <a href="#readings">Furigana 和注音 </a>；歌詞翻譯請參見<a href="#translations">Translations</a>。</p>
+          <h2 id="installation-troubleshooting">如果設定不起作用</h2><ul><li><b> 應用程式無法開啟或報告丟失檔案：</b> 確保提取完成，然後嘗試將完整的 ZIP 提取到新資料夾中。將所有捆綁檔案放在一起，並檢查下載的內容是否與您的系統匹配。</li><li><b>音樂無聲播放：</b>檢查靜音、播放器音量和Windows混音器音量。在<b>設定→播放</b>中，嘗試將<b>System Default</b>作為輸出裝置，然後嘗試另一個音訊檔案。</li><li><b>A 外掛或注音服務不可用：</b> 檢查其啟用狀態、載入錯誤和依賴項。按照其指南進行任何外部服務設定。</li><li><b> 仍然卡住？</b> 請參閱 <a href="#troubleshooting"> 故障排除 </a>。對於啟動失敗，請包含釋出檔名、您的 Windows 版本以及確切的錯誤；如果應用程式開啟，還請包含 <b>Settings → About</b> 中的版本。</li></ul>
+        </article>
+        <article id="getting-started" data-title="開始使用">
+          <h1>開始使用</h1><p class="subtitle">你在《LRCPlus》中的第一首歌</p><p>第一次使用 LRCPlus？請先閱讀<a href="#installation">安裝與初始設定</a>。</p>
+          <p>LRCPlus 在同步歌詞的同時播放音樂，並配有可選的閱讀輔助工具和卡拉 OK 計時功能。您可以從單個音訊檔案開始。</p>
+          <h2 id="getting-started-first-song">播放你的第一首歌曲</h2><ol><li>啟動LRCPlus。如果出現安裝嚮導，請按照其提示進行操作。</li><li>選擇“<b>Open”→“開啟音訊...</b>”，或按“<kbd>Ctrl</kbd> + <kbd>O</kbd>”，然後選擇一個音訊檔案。</li><li>使用 <b>Play</b> 開始或暫停播放。</li><li>選擇 <b>Lyrics</b> 切換到歌詞顯示，或選擇 <b>Library</b> 返回到您的音樂。</li></ol>
+          <h2 id="getting-started-add-lyrics">新增歌詞</h2><p>如果您有匹配的歌詞檔案，請選擇 <b>Open → 開啟歌詞…</b> (<kbd>Ctrl</kbd> + <kbd>L</kbd>)。否則選擇 <b>LRC → 搜尋歌詞</b> 線上查詢。請參閱 <a href="#finding-lyrics"> 查詢歌詞 </a> 瞭解完整的工作流程。</p><div class="note"><b>嘗試匹配的檔名。</b> 保留 <code>Song.mp3</code> 和 <code>Song.lrc</code> （或 <code>Song.lrcx</code>）在一起。當兩種歌詞格式都存在時，LRCPlus 更喜歡 LRCX。</div>
+          <h2 id="getting-started-next">接下來怎麼辦？</h2><ul><li><a href="#playback">將音樂資料夾新增到庫中。</a></li><li><a href="#readings">開啟注音假名或羅馬字。</a></li><li><a href="#editor">修正歌詞。</a></li></ul><p>您可以從 <b> 設定 → 常規 → 重新啟動向導 </b> 重新開啟設定嚮導。</p>
+        </article>
+        <article id="playback" data-title="音樂和播放">
+          <h1>音樂和播放</h1><p class="subtitle">您的庫、佇列和播放控制元件</p>
+          <h2 id="playback-library">建立音樂庫</h2><ol><li>切換到 <b>Library</b>。</li><li>單擊 <b> 新增音樂資料夾 </b> 並選擇包含您的音樂的資料夾。</li><li>更改音樂資料夾中的檔案後，使用 <b>Rescan</b>。</li></ol><p>使用 <b>Remove Folder</b> 來管理哪些資料夾屬於該庫。</p>
+          <h2 id="playback-queue">使用佇列</h2><p>選擇 <b>Open → 新增到佇列…</b> (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>) 新增檔案。播放源選擇器提供<b>Library</b>和<b>Queue/Playlist</b>；如果玩家前進的曲目與您預期的不同，請檢查此選擇器。</p>
+          <h2 id="playback-controls">導航軌道</h2><table><thead><tr><th>控制</th><th>它的作用</th></tr></thead><tbody><tr><td>播放/暫停</td><td>開始或暫停當前曲目。</td></tr><tr><td>停止</td><td>停止播放。</td></tr><tr><td>&lt; 5 秒 / 5 秒 &gt;</td><td>向後或向前移動五秒。</td></tr><tr><td>&lt;&lt; / &gt;&gt;</td><td>移至上一個或下一個曲目。</td></tr><tr><td>音量/靜音</td><td>調整或靜音輸出。</td></tr></tbody></table>
+          <h2 id="playback-options">播放首選項</h2><p>在 <b> 設定 → 播放 </b> 中，選擇輸出裝置、曲目或專輯隨機播放，以及播放後發生的情況：下一曲目、停止、重複全部或重複曲目。如果您不確定要使用哪個裝置，請從 <b>System Default</b> 開始進行輸出。</p><p>請參閱 <a href="#shortcuts"> 鍵盤快捷鍵 </a> 以快速訪問播放和工作區控制元件。</p>
+        </article>
+        <article id="finding-lyrics" data-title="尋找歌詞">
+          <h1>尋找歌詞</h1><p class="subtitle">載入檔案或搜尋正確的版本</p>
+          <h2 id="finding-lyrics-local">開啟本地歌詞</h2><p>載入您的歌曲，然後選擇 <b>Open → 開啟歌詞…</b> 並選擇 <code>.lrc</code> 或 <code>.lrcx</code> 檔案。將檔名與音訊匹配有助於自動發現。您可以在 <b> 設定 → 檔案 </b> 中管理其他歌詞搜尋資料夾。</p>
+          <h2 id="finding-lyrics-search">網上搜索</h2><ol><li>載入您想要歌詞的歌曲。</li><li>選擇 <b>LRC → 搜尋歌詞</b>。</li><li>檢視搜尋詳情，然後單擊“<b>Search</b>”。</li><li>選擇一個結果並閱讀其預覽。檢查藝術家和歌曲版本，尤其是現場錄音和混音。</li><li>單擊“<b>使用所選歌詞</b>”以應用該結果。</li></ol><p>一些提供商需要憑據。 LRCLIB 整合支援同步和純文本歌詞。線上搜尋需要連線。</p>
+          <h2 id="finding-lyrics-sync">同步與純文本</h2><p>同步歌詞包含時間戳，告訴播放器每行何時開始。簡單的歌詞提供了沒有這些時間的歌詞。如果出現文本但未跟隨歌曲，請檢查結果是否包含時間戳。您可以將它們新增到<a href="#editor">歌詞編輯器</a>中。</p>
+          <h2 id="finding-lyrics-save">保留本地副本</h2><p>使用 <b>LRC → 另存為…</b> 將歌詞儲存到您選擇的檔案中。當您需要閱讀、卡拉 OK 計時或格式化時，首選 <code>.lrcx</code>。檢查您的儲存位置，以便您可以再次找到該檔案。</p>
+        </article>
+        <article id="readings" data-title="振假名與注音">
+          <h1>振假名與注音</h1><p class="subtitle">歌詞閱讀輔助工具</p>
+          <p>振假名是顯示在日語歌詞旁邊的小號注音。羅馬字使用拉丁字母表示讀音。儲存的 LRCX Ruby 標記也可以提供手動編寫的注音。</p>
+          <h2 id="readings-display">選擇注音顯示</h2><ol><li>開啟<b>設定→歌詞</b>。</li><li>選擇 <b>Global</b> 作為一般預設值，或選擇 <b>Local（檔案）</b> 作為當前檔案。</li><li>啟用 <b> 顯示注音假名 </b>、<b> 顯示羅馬字 </b> 或 <b> 所有羅馬字 </b>。這些模式是互斥的。</li><li>使用 <b>Ruby 位置 </b> 將注音放在歌詞上方或下方。</li></ol>
+          <h2 id="readings-provider">選擇自動解析器</h2><table><thead><tr><th>解析器</th><th>要求</th></tr></thead><tbody><tr><td>Yomi</td><td>線上日語注音服務，需要連線網際網路。</td></tr><tr><td>MeCab</td><td>本地可選解析器；需要fugashi和單獨安裝的字典。</td></tr></tbody></table><p>解析器選擇器位於歌詞設定中。請參閱 <b> 設定 → 依賴關係 </b> 以獲取依賴關係資訊。</p>
+          <h2 id="readings-generate">生成並糾正注音</h2><p>開啟 <b>LRC → 編輯 Lyrics</b>，然後使用 <b>Generation</b> 選項卡。選擇 <b> 生成所有歌詞的注音 </b> 或 <b> 生成此時間戳 </b>。自動讀取的名稱、異常拼寫和雙關語歌詞可能會出現錯誤；儲存前檢查它們。</p><p>要在 LRCX 中保留作者閱讀內容，請使用 <code>{base|reading}</code>，例如 <code>{君|きみ}</code>。請參閱 <a href="#lrcx">LRCX 參考 </a>。</p>
+        </article>
+        <article id="editor" data-title="編輯和計時">
+          <h1>編輯和計時</h1><p class="subtitle">糾正單詞並讓它們跟隨音樂</p>
+          <p>載入歌曲並選擇 <b>LRC → 編輯歌詞</b>。在進行重大時間更改之前儲存單獨的副本。</p>
+          <h2 id="editor-lines">編輯歌詞行</h2><p>在 <b>Lyrics</b> 選項卡中，選擇一行並編輯其文本。使用<b>+新增行</b>、<b>刪除行</b>、<b>上移</b>和<b>下移</b>來管理文件。格式控制元件包括粗體、斜體、刪除線、下劃線和 <b>Quote</b>。</p>
+          <h2 id="editor-timing">設定線路時序</h2><ol><li>選擇您想要計時的線路。</li><li>使用編輯器播放控制元件查詢該行的開始位置。 <b>Waveform</b> 控制元件可幫助您檢查音訊。</li><li>在行開頭使用 <b> 標記播放時間 </b>。這將更新所選行並前進到下一行。當調整臨時波形標記時，請使用 <b>Commit</b> 應用其時序。</li><li>再次播放該段落並檢查歌詞是否跟隨音樂。</li></ol><p>使用 <b>Shift Timing...</b> 進行一致的時序調整，並使用 <b>Validate Timing</b> 檢查時序問題。在應用廣泛的轉變之前測試一小部分。</p>
+          <h2 id="editor-karaoke">時間卡拉OK片段</h2><p>在 <b>Karaoke</b> 選項卡中，使用 <b> 自動分離 </b> 準備段邊界，檢查它們，然後選擇 <b> 應用分離 </b>。在處理片段時使用 <b>Mark 播放時間 [F]</b>。回聽以驗證結果；自動分離並不能保證準確的計時。</p>
+          <h2 id="editor-source">源文本與儲存</h2><p><b>Source</b> 選項卡顯示定時歌詞文本。 <b>Refresh Source</b> 和 <b>Reload from Source</b> 在結構化編輯器和源文本之間移動。在重新載入可能替換編輯的源之前儲存副本。</p><p>另存為 <code>.lrcx</code> 以保留 LRCX 功能。有關語法和示例，請參閱 <a href="#lrcx">LRCX 參考 </a>。</p>
+        </article>
+        <article id="lrcx" data-title="LRCX參考">
+          <h1>LRCX參考</h1><p class="subtitle">增強歌詞檔案的實用指南</p>
+          <p>LRCX 通過卡拉 OK 片段計時、Ruby 朗讀和文本格式擴充套件了 LRC。普通的 LRC 檔案仍然有效。</p>
+          <h2 id="lrcx-timestamps">時間戳</h2><pre><code>[00:12.500]The line begins here
+[00:16.000]&lt;00:16.000&gt;One &lt;00:16.500&gt;word &lt;00:17.000&gt;at a time</code></pre><p>方括號時間戳標記行開始。尖括號時間戳標記卡拉 OK 片段的開始。時間使用分鐘、秒和毫秒。</p>
+          <h2 id="lrcx-ruby">Ruby 注音</h2><pre><code>[00:12.500]{君|きみ}の声</code></pre><p><code>|</code>之前的文本是基礎歌詞；後面的文字就是閱讀內容。</p>
+          <h2 id="lrcx-formatting">設定行格式和顯示行</h2><table><thead><tr><th>語法</th><th>效果</th></tr></thead><tbody><tr><td><code>**bold**</code></td><td>大膽</td></tr><tr><td><code>*italic*</code></td><td>斜體</td></tr><tr><td><code>~~text~~</code></td><td>刪除線</td></tr><tr><td><code>&lt;u&gt;text&lt;/u&gt;</code></td><td>下劃線</td></tr><tr><td><code>{\n}</code></td><td>同一時間行中的新視覺行</td></tr><tr><td><code>&gt; text</code></td><td>緊接在行時間戳之後放置的塊引用</td></tr></tbody></table><pre><code>[00:12.500]**First row**{\n}Second row
+[00:16.000]&gt; A quoted lyric</code></pre><p>視覺換行標記是文字文本 <code>{\n}</code>，而不是新時間戳。在編輯器中，使用 <b>Insert Newline {\n}</b>。</p>
+          <h2 id="lrcx-metadata">後設資料和相容性</h2><pre><code>[ar:Artist]
+[ti:Song title]
+[al:Album]</code></pre><p>使用 <code>.lrcx</code> 擴充套件來保留這些增強功能。其他歌詞播放器可能無法理解副檔名。當您需要與其他播放器相容時，請保留普通的 LRC 副本。</p><p>有關完整的格式規範，請參閱專案源中的 <a href="../../LRCX_SPEC.md">LRCX_SPEC.md</a> （可能需要 Markdown 閱讀器）。</p>
+        </article>
+        <article id="customization" data-title="定製化">
+          <h1>定製化</h1><p class="subtitle">讓玩家輕鬆閱讀和使用</p>
+          <h2 id="customization-theme">外觀和背景</h2><p>開啟 <b> 設定 → 外觀 </b> 選擇淺色或深色主題，更改強調色以及儲存、匯入或匯出主題。高階顏色控制可讓您調整單獨的介面顏色。</p><p>在 <b> 設定 → 背景</b> 中，選擇藝術作品源或自定義背景資料夾並調整背景處理。如果歌詞文本難以閱讀，請從簡單的背景開始。</p>
+          <h2 id="customization-lyrics">歌詞佈局</h2><p>在 <b> 設定 → Lyrics</b> 中，選擇緊湊或滾動顯示、書寫方向、對齊方式、字型和閱讀選項。自動滾動遵循時間戳；連續滾動的移動獨立於它們。滾動行為控制當前歌詞如何保持在檢視中。</p><div class="note"><b>全球還是本地？</b> 使用 <b>全球</b> 滿足您的正常喜好。檢查 <b>本地（檔案）</b> 當一首歌曲的表現與其他歌曲不同時。</div>
+          <h2 id="customization-karaoke">卡拉OK外觀</h2><p>使用 <b> 設定 → Karaoke</b> 自定義卡拉 OK 顯示。逐字進行需要歌詞檔案中的分段計時；外觀設定無法新增缺失的計時。參見<a href="#editor">編輯和計時</a>。</p>
+          <h2 id="customization-extra">可選功能</h2><p>其他設定和控制元件可能來自外掛，包括可選的配套功能和整合。開啟 <b>Settings → Plugins</b> 檢視您的安裝中可用的外掛及其設定。</p>
+        </article>
+        <article id="plugins" data-title="外掛">
+          <h1>外掛</h1><p class="subtitle">管理可選功能</p>
+          <h2 id="plugins-manage">啟用並配置</h2><ol><li>開啟<b>設定→外掛</b>。</li><li>按名稱找到外掛並閱讀其說明。</li><li>使用其 <b>Enabled</b> 核取方塊來更改是否啟用。核心外掛無法停用。</li><li>如果出現 <b>Settings</b> 按鈕，請使用它來配置該外掛。</li></ol><p>某些更改可能需要重新啟動應用程式。如果應用設定後未出現預期的控制元件，請重新啟動 LRCPlus。</p>
+          <h2 id="plugins-dependencies">依賴關係和載入錯誤</h2><p>外掛可能需要額外的包。使用其 <b>Dependencies</b> 按鈕，或開啟 <b>Settings → Dependencies</b>，檢查依賴關係資訊。無法載入的外掛可能會在其設定條目中顯示錯誤；使用該訊息來識別缺失或衝突的需求。</p>
+          <h2 id="plugins-install">新增外掛</h2><p>外掛安裝特定於外掛和發行版。請遵循外掛作者的安裝說明。源專案從其 <code>plugins</code> 目錄中發現外掛；不要假設每個打包版本都公開相同的可寫位置。</p><p>對於外掛作者來說，單獨的 <a href="../../PLUGIN_API.md">Plugin API 文件</a> 涵蓋了開發（可能需要 Markdown 閱讀器）。</p>
+        </article>
+        <article id="troubleshooting" data-title="故障排除">
+          <h1>故障排除</h1><p class="subtitle">從您可以看到的症狀開始</p>
+          <h2 id="troubleshooting-audio">播放無聲</h2><ol><li>檢查播放是否正在執行且播放器未靜音。</li><li>檢查播放器音量和 Windows 混音器音量。</li><li>在 <b>Settings → Playback</b> 中，嘗試將 <b>System Default</b> 作為輸出裝置。</li><li>嘗試另一個已知有效的音訊檔案，看看問題是否特定於某首歌曲。</li></ol>
+          <h2 id="troubleshooting-missing">歌詞不出現</h2><p>切換到<b>歌詞</b>。使用 <kbd>Ctrl</kbd> + <kbd>L</kbd> 顯式開啟歌詞檔案，或使用 <b>LRC → 搜尋歌詞</b>。檢查 <b> 設定 → 檔案 </b> 下的檔名和搜尋資料夾。如果LRC和LRCX檔案都存在，則先檢查LRCX檔案，因為LRCX檔案優先。</p>
+          <h2 id="troubleshooting-timing">歌詞出現在錯誤的時間</h2><p>確認歌詞與錄音相符：現場版本、混音版和不同的前奏通常有不同的時間安排。檢查檔案是否有時間戳。在編輯器中使用 <b>Shift Timing...</b> 以獲得一致的偏移，或者當整首歌曲中的不匹配發生變化時糾正單獨的行。</p>
+          <h2 id="troubleshooting-readings">注音缺失或不正確</h2><p>檢查<b>設定→歌詞</b>中的注音模式，包括任何<b>本地（檔案）</b>設定。 Yomi需要連線； MeCab 需要其本地包和字典。當單詞需要特定閱讀時，檢視自動輸出並使用編寫的 LRCX Ruby。</p>
+          <h2 id="troubleshooting-plugin">外掛不可用</h2><p>檢視 <b>Settings → Plugins</b> 的啟用狀態和載入錯誤。檢查 <b>Dependency</b> 是否缺少所需的包。如果需要，配置更改後重新啟動。</p>
+          <h2 id="troubleshooting-report">報告問題</h2><p>包括 <b>Settings → About</b>、Windows 版本、重現步驟、預期行為以及發生的情況中的 LRCPlus 版本。請注意其他曲目是否出現此問題以及是否涉及可選外掛。當有助於解釋時間或渲染問題時，請包含一個小歌詞示例。</p>
+        </article>
+        <article id="shortcuts" data-title="鍵盤快捷鍵">
+          <h1>鍵盤快捷鍵</h1><p class="subtitle">快速參考</p>
+          <h2 id="shortcuts-player">主要球員</h2><table><thead><tr><th>快捷方式</th><th>操作</th></tr></thead><tbody><tr><td><kbd>Ctrl</kbd> + <kbd>O</kbd></td><td>開啟音訊</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd></td><td>將檔案新增到佇列</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>L</kbd></td><td>開啟歌詞</td></tr><tr><td><kbd>Space</kbd></td><td>播放/暫停</td></tr><tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>向後/向前搜尋五秒</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>M</kbd></td><td>靜音/取消靜音</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>1</kbd></td><td>顯示庫</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>2</kbd></td><td>顯示歌詞</td></tr></tbody></table>
+          <h2 id="shortcuts-editor">編輯器格式</h2><table><thead><tr><th>快捷方式</th><th>操作</th></tr></thead><tbody><tr><td><kbd>Ctrl</kbd> + <kbd>B</kbd></td><td>大膽</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>I</kbd></td><td>斜體</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd></td><td>刪除線</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>U</kbd></td><td>下劃線</td></tr></tbody></table><p>快捷方式取決於活動視窗和焦點控制元件。輸入文本或在對話方塊內工作時，如果播放器快捷方式不適用，請使用該對話方塊的控制元件。</p>
+        </article>
+<article id="interface" data-title="介面指南" data-related="getting-started settings-reference shortcuts"><h1>介面指南</h1><p class="subtitle">實際應用的編號之旅</p><p>使用這些編號檢視可以找到整個手冊中描述的控制元件。選擇藍色數字可跳轉至其說明。螢幕截圖顯示了帶有示例歌詞和獨立首選項的實際源介面；外掛和您的主題可能會新增或更改控制元件。</p><h2 id="interface-player">播放器和歌詞工作區</h2><figure class="interface-figure"><div class="screenshot"><img loading="lazy" src="assets/screenshots/player.png" width="1100" height="740" alt="歌詞工作區中的播放器，使用演示線且未載入音訊。"><a class="screenshot-pin" style="left:16.27%;top:4.05%" href="#interface/interface-player-1" aria-label="1：圖書館工作區">1</a><a class="screenshot-pin" style="left:71.18%;top:4.19%" href="#interface/interface-player-2" aria-label="2：LRC選單">2</a><a class="screenshot-pin" style="left:50.0%;top:27.3%" href="#interface/interface-player-3" aria-label="3：歌詞顯示">3</a><a class="screenshot-pin" style="left:50.0%;top:48.24%" href="#interface/interface-player-4" aria-label="4：線路列表">4</a><a class="screenshot-pin" style="left:68.91%;top:87.84%" href="#interface/interface-player-5" aria-label="5：搜尋欄">5</a><a class="screenshot-pin" style="left:18.36%;top:87.84%" href="#interface/interface-player-6" aria-label="6：播放或暫停">6</a><a class="screenshot-pin" style="left:87.09%;top:93.92%" href="#interface/interface-player-7" aria-label="7：音量">7</a></div><figcaption>歌詞工作區中的播放器，使用演示線且未載入音訊。 <a href="assets/screenshots/player.png">開啟全尺寸截圖</a>。</figcaption></figure><ol class="screenshot-legend"><li id="interface-player-1"><b>圖書館工作區。</b> 切換回您的音樂收藏；歌詞又回到了這個觀點。</li><li id="interface-player-2"><b>LRC 選單。</b> 單擊LRC 可以編輯當前歌詞。它的箭頭可開啟“搜尋歌詞”、“另存為”和其他歌詞操作。</li><li id="interface-player-3"><b> 歌詞顯示。</b> 此處出現同步歌詞。設定 → 歌詞控制顯示模式、字型、對齊方式和注音。</li><li id="interface-player-4"><b>行列表。</b> 展開或摺疊定時行列表。單擊展開列表中的一行可跳轉到其時間。</li><li id="interface-player-5"><b> 搜尋欄。</b> 移動到另一個播放位置。在未載入音訊的情況下，持續時間和搜尋範圍保持為零。</li><li id="interface-player-6"><b> 播放或暫停。</b> 暫停或恢復播放。相鄰按鈕可停止、跳過五秒或更改曲目。</li><li id="interface-player-7"><b>Volume.</b> 調節音量；靜音使輸出靜音，而不丟棄儲存的音量級別。</li></ol><h2 id="interface-library">圖書館工作區</h2><figure class="interface-figure"><div class="screenshot"><img loading="lazy" src="assets/screenshots/library.png" width="1100" height="740" alt="新增音樂資料夾之前的空庫工作區。"><a class="screenshot-pin" style="left:30.45%;top:11.62%" href="#interface/interface-library-1" aria-label="1：搜尋庫">1</a><a class="screenshot-pin" style="left:50.0%;top:44.73%" href="#interface/interface-library-2" aria-label="2：音樂庫">2</a><a class="screenshot-pin" style="left:65.18%;top:4.19%" href="#interface/interface-library-3" aria-label="3：開啟檔案">3</a><a class="screenshot-pin" style="left:95.18%;top:4.19%" href="#interface/interface-library-4" aria-label="4：設定">4</a><a class="screenshot-pin" style="left:18.36%;top:87.84%" href="#interface/interface-library-5" aria-label="5：播放控制">5</a></div><figcaption>新增音樂資料夾之前的空庫工作區。 <a href="assets/screenshots/library.png">開啟全尺寸截圖</a>。</figcaption></figure><ol class="screenshot-legend"><li id="interface-library-1"><b>搜尋庫。</b> 過濾您的庫而不更改其檔案。</li><li id="interface-library-2"><b>音樂庫。</b> 新增資料夾後，曲目將顯示在此處。雙擊曲目即可播放；右鍵單擊列標題可管理可見列。</li><li id="interface-library-3"><b>開啟檔案。</b>開啟音訊載入檔案；新增到佇列追加檔案；開啟歌詞會附加歌詞檔案。</li><li id="interface-library-4"><b>Settings.</b> 開啟首選項。使用類別列表和設定搜尋來查詢選項。</li><li id="interface-library-5"><b>播放控制元件。</b> 傳輸控制元件在兩個工作區中均保持可用。選中播放來源以選擇庫或佇列/播放列表。</li></ol><h2 id="interface-editor">歌詞編輯</h2><figure class="interface-figure"><div class="screenshot"><img loading="lazy" src="assets/screenshots/editor.png" width="1100" height="760" alt="編輯器的歌詞選項卡；可選的卡拉 OK 和翻譯選項卡取決於載入的提供商。"><a class="screenshot-pin" style="left:39.64%;top:3.29%" href="#interface/interface-editor-1" aria-label="1：編輯器工作區">1</a><a class="screenshot-pin" style="left:12.36%;top:51.97%" href="#interface/interface-editor-2" aria-label="2：定時歌詞">2</a><a class="screenshot-pin" style="left:80.73%;top:28.42%" href="#interface/interface-editor-3" aria-label="3：標記播放時間">3</a><a class="screenshot-pin" style="left:79.18%;top:96.84%" href="#interface/interface-editor-4" aria-label="4：儲存">4</a></div><figcaption>編輯器的歌詞選項卡；可選的卡拉 OK 和翻譯選項卡取決於載入的提供商。 <a href="assets/screenshots/editor.png">開啟全尺寸截圖</a>。</figcaption></figure><ol class="screenshot-legend"><li id="interface-editor-1"><b>編輯器工作區。</b> 在歌詞、生成、源、共享和高階之間切換。可選外掛可以新增工作區。</li><li id="interface-editor-2"><b> 定時歌詞行。</b> 選擇要編輯的行。搜尋、上一個、下一個和順序選擇器有助於導航長文件。</li><li id="interface-editor-3"><b>標記播放時間。</b> 在所選行上標記當前播放時間並前進到下一行。在計時之前載入音訊。</li><li id="interface-editor-4"><b>Save.</b> 儲存寫入更改並保持編輯器開啟。儲存並關閉寫入並退出；當沒有更改時，儲存將被停用。</li></ol><h2 id="interface-settings">設定視窗</h2><figure class="interface-figure"><div class="screenshot"><img loading="lazy" src="assets/screenshots/settings.png" width="880" height="640" alt="具有出廠預設值的播放設定類別。"><a class="screenshot-pin" style="left:12.05%;top:49.53%" href="#interface/interface-settings-1" aria-label="1：設定類別">1</a><a class="screenshot-pin" style="left:61.14%;top:15.78%" href="#interface/interface-settings-2" aria-label="2：無縫播放">2</a><a class="screenshot-pin" style="left:66.14%;top:62.66%" href="#interface/interface-settings-3" aria-label="3：輸出裝置">3</a></div><figcaption>具有出廠預設值的播放設定類別。 <a href="assets/screenshots/settings.png">開啟全尺寸截圖</a>。</figcaption></figure><ol class="screenshot-legend"><li id="interface-settings-1"><b>設定類別。</b> 選擇類別。類別上方的搜尋欄位可幫助按名稱查詢設定。</li><li id="interface-settings-2"><b>無間隙播放。</b> 啟用下一曲目預緩衝。這需要FFmpeg和正常的速度和音調；它在下一曲目上生效。</li><li id="interface-settings-3"><b> 輸出裝置。</b> 選擇輸出裝置。系統預設值遵循系統選擇的輸出。</li></ol></article>
+<article id="settings-reference" data-title="設定參考" data-related="interface customization readings troubleshooting"><h1>設定參考</h1><p class="subtitle">選項、出廠預設值及其適用範圍</p><p>此參考列出了播放器和歌詞控制元件及其出廠預設值。儲存的首選項、設定預設或每個檔案覆蓋可能會產生不同的值。開啟<b>Settings</b>並選擇命名類別；當您知道選項名稱時，請使用設定搜尋。</p><h2 id="settings-reference-scope">全域性設定和檔案覆蓋</h2><p>大多數類別都適用於該應用程式。 <b>Lyrics → Global</b> 提供歌詞顯示預設值，而 <b>Lyrics → Local (File)</b> 則覆蓋當前檔案的選定選項。沒有覆蓋的檔案繼承全域性值。自動日語解析器是 <b>global-only</b> 選擇。卡拉 OK 外觀和播放偏好也是應用範圍內的。</p><p>如果一個檔案看起來不同，請先檢查本地（檔案）。檔案覆蓋與其檔案路徑相關聯；它與 LRCX 文件中儲存的注音、時間戳和格式不同。</p><h2 id="settings-reference-general">一般</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">記住視窗大小和位置</th><td>開啟</td><td>應用</td><td>啟動時恢復先前的視窗幾何形狀。</td></tr><tr><th scope="row">恢復之前的播放列表</th><td>關閉</td><td>應用</td><td>在啟動時恢復之前儲存的播放列表。</td></tr></tbody></table></div><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">自動檢查更新</th><td>開啟</td><td>應用</td><td>允許自動更新檢查。</td></tr><tr><th scope="row">更新頻道</th><td>穩定</td><td>應用</td><td>選擇穩定版或預發行版。預發行版本可能包含實驗性更改。</td></tr></tbody></table></div><p><b>重新啟動向導</b>重新開啟設定。 <b>Check for Updates</b> 執行手動檢查；上次檢查顯示上次檢查時間。</p><h2 id="settings-reference-appearance">外觀與背景</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">色彩模式</th><td>淺色</td><td>應用</td><td>選擇淺色或深色。</td></tr><tr><th scope="row">表面風格</th><td>經典</td><td>應用</td><td>選擇經典或中性。</td></tr><tr><th scope="row">強調色</th><td>#3a9879</td><td>應用</td><td>設定整個介面使用的重音。</td></tr><tr><th scope="row">定製顏色</th><td>無</td><td>應用</td><td>為每種顏色模式分別覆蓋各個介面顏色。</td></tr><tr><th scope="row">顯示歌詞背後的藝術作品</th><td>開啟</td><td>應用</td><td>在歌詞區域後面展示藝術品。</td></tr><tr><th scope="row">背景佈局</th><td>適合</td><td>應用</td><td>擬合顯示整個影像；填充作物；中心保持原始尺寸；拉伸調整大小；瓷磚重複。</td></tr><tr><th scope="row">作品來源</th><td>首先是專輯封面（回退到 Booru）</td><td>應用</td><td>更喜歡帶有線上 Booru 後備的專輯封面。僅選擇專輯封面以避免這種後退。</td></tr><tr><th scope="row">自定義資料夾</th><td>無</td><td>應用</td><td>使用自定義圖稿源時提供影像資料夾。</td></tr><tr><th scope="row">Booru 的標籤</th><td>scenery</td><td>應用</td><td>設定線上背景藝術的查詢。</td></tr><tr><th scope="row">模糊模式</th><td>高品質（高斯）</td><td>應用</td><td>選擇高斯處理或較低質量的替代方案。</td></tr><tr><th scope="row">模糊量</th><td>12</td><td>應用</td><td>增加背景柔和度；範圍 0–30。</td></tr><tr><th scope="row">黑暗</th><td>155</td><td>應用</td><td>使背景變暗以形成對比；範圍 0–220。</td></tr><tr><th scope="row">模糊出血</th><td>關閉</td><td>應用</td><td>讓模糊處理向影像邊緣滲透。</td></tr><tr><th scope="row">空時間戳佔位符</th><td>開啟</td><td>應用</td><td>在空歌詞時間戳期間顯示佔位符。</td></tr><tr><th scope="row">佔位符文本</th><td>♪ {countdown}</td><td>應用</td><td>自定義空行文本； {countdown} 被倒計時取代。</td></tr></tbody></table></div><p>主題預設和 <b>Save current</b>、<b>Import…</b> 和 <b>Export…</b> 管理已儲存的主題。重置顏色可恢復該作用；重置自定義顏色會影響所選模式。</p><h2 id="settings-reference-playback">播放</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">無縫播放</th><td>關閉</td><td>應用</td><td>預緩衝下一個曲目。需要FFmpeg和正常的速度和音調；從下一曲目開始應用。</td></tr><tr><th scope="row">ReplayGain</th><td>關閉</td><td>應用</td><td>使用曲目或專輯響度標籤。未標記的曲目保持不變。</td></tr><tr><th scope="row">ReplayGain前置放大器</th><td>0分貝</td><td>應用</td><td>將響度從 −24 調整到 +24 dB。</td></tr><tr><th scope="row">使用 ReplayGain 峰值標籤防止削波</th><td>開啟</td><td>應用</td><td>使用可用的峰值後設資料來限制削波。</td></tr><tr><th scope="row">顯示播放波形</th><td>開啟</td><td>應用</td><td>當音訊解碼可用時顯示概述。</td></tr><tr><th scope="row">精確的時間戳顯示</th><td>30幀/秒</td><td>應用</td><td>以 15、30、60 或 120 FPS 重新整理精確的編輯器時鐘。</td></tr><tr><th scope="row">播放模式</th><td>圖書館</td><td>應用</td><td>選擇“庫”或“佇列”作為要播放的集合。</td></tr><tr><th scope="row">隨機播放</th><td>曲目</td><td>應用</td><td>選擇曲目或專輯。 Dock Shuffle 控制元件可啟用隨機播放。</td></tr><tr><th scope="row">播放後</th><td>下一曲目</td><td>應用</td><td>選擇下一曲目、停止、重複全部或重複曲目。</td></tr><tr><th scope="row">輸出裝置</th><td>系統預設值</td><td>應用</td><td>選擇音訊輸出。</td></tr></tbody></table></div><p>播放器底座還顯示音量（最初為 80%）、速度（100%）和音高（0 個半音）。這些是儲存的播放首選項，而不是每個檔案的歌詞覆蓋。</p><h2 id="settings-reference-lyrics">歌詞：顯示、間距和注音</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">顯示方式</th><td>緊湊型</td><td>全域性/檔案</td><td>選擇緊湊或滾動演示。</td></tr><tr><th scope="row">方向</th><td>臥式</td><td>全域性/檔案</td><td>選擇水平、垂直或自動（支援 CJK）。</td></tr><tr><th scope="row">歌詞對齊</th><td>中心</td><td>全域性/檔案</td><td>對齊歌詞塊。垂直模式限制了可用的選擇。</td></tr><tr><th scope="row">歌詞填充</th><td>8 畫素</td><td>全域性/檔案</td><td>設定歌詞間距；範圍 0–24 畫素。</td></tr><tr><th scope="row">垂直內邊距</th><td>0 畫素</td><td>全域性/檔案</td><td>在垂直歌詞中新增頂部和底部空間；範圍 0–200 畫素。</td></tr><tr><th scope="row">顯示注音假名</th><td>開啟</td><td>全域性/檔案</td><td>顯示閱讀註釋；與羅馬字模式互斥。</td></tr><tr><th scope="row">顯示羅馬字</th><td>關閉</td><td>全域性/檔案</td><td>顯示拉丁字母注音而不是注音假名。</td></tr><tr><th scope="row">所有羅馬字</th><td>關閉</td><td>全域性/檔案</td><td>使用全羅馬字顯示而不是其他注音模式。</td></tr><tr><th scope="row">注音位置</th><td>以上歌詞</td><td>全域性/檔案</td><td>將注音放在歌詞上方或下方。</td></tr><tr><th scope="row">MeCab解析</th><td>批次解析</td><td>全域性/檔案</td><td>批次速度更快；單獨的行有利於每行解析。需要 MeCab。</td></tr><tr><th scope="row">有限閱讀渲染</th><td>關閉</td><td>全域性/檔案</td><td>將渲染限制在活動歌詞周圍的範圍內。</td></tr><tr><th scope="row">讀取範圍</th><td>10</td><td>全域性/檔案</td><td>選擇有限渲染的範圍。</td></tr><tr><th scope="row">注音淡入淡出</th><td>開啟</td><td>全域性/檔案</td><td>動畫閱讀外觀。</td></tr><tr><th scope="row">注音間距</th><td>2 畫素</td><td>全域性/檔案</td><td>調整注音周圍的間距；範圍 0–18 畫素。</td></tr><tr><th scope="row">注音字號</th><td>18</td><td>全域性/檔案</td><td>設定閱讀文字大小。</td></tr><tr><th scope="row">字型家族</th><td>系統預設</td><td>全域性/檔案</td><td>選擇包含歌詞字元的字型。</td></tr><tr><th scope="row">字型大小</th><td>32</td><td>全域性/檔案</td><td>設定歌詞文本大小。</td></tr></tbody></table></div><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">自動解析器</th><td>Yomi（線上）</td><td>僅限全球</td><td>Yomi需要連線；本地MeCab需要fugashi和字典。</td></tr></tbody></table></div><h2 id="settings-reference-scrolling">歌詞：突出顯示和滾動</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">焦點轉換</th><td>開啟</td><td>全域性/檔案</td><td>對重點歌詞過渡進行動畫處理。</td></tr><tr><th scope="row">突出顯示當前歌詞</th><td>開啟</td><td>全域性/檔案</td><td>區分活躍的歌詞。</td></tr><tr><th scope="row">高亮動畫</th><td>無</td><td>全域性/檔案</td><td>選擇“無”、“淡入淡出”、“流行”、“縮放”或“滑動”；取決於顯示模式。</td></tr><tr><th scope="row">突出顯示動畫持續時間</th><td>300毫秒</td><td>全域性/檔案</td><td>設定傳入的突出顯示持續時間。</td></tr><tr><th scope="row">突出顯示持續時間</th><td>300毫秒</td><td>全域性/檔案</td><td>設定傳出突出顯示持續時間。</td></tr><tr><th scope="row">突出顯示緩動</th><td>出立方</td><td>全域性/檔案</td><td>選擇突出顯示的動畫節奏。</td></tr><tr><th scope="row">突出顯示顏色</th><td>#ffaa00</td><td>全域性/檔案</td><td>設定活動歌詞顏色。</td></tr><tr><th scope="row">歌詞顏色</th><td>#ffffff</td><td>全域性/檔案</td><td>設定普通歌詞文本顏色。</td></tr><tr><th scope="row">滾動模式</th><td>自動（時間戳驅動）</td><td>全域性/檔案</td><td>自動遵循時間戳；獨立連續動作。</td></tr><tr><th scope="row">連續速度</th><td>35</td><td>全域性/檔案</td><td>控制連續滾動運動。</td></tr><tr><th scope="row">基於持續時間的速度</th><td>開啟</td><td>全域性/檔案</td><td>根據軌道持續時間進行連續滾動。</td></tr><tr><th scope="row">微移當前歌詞</th><td>開啟</td><td>全域性/檔案</td><td>調整當前歌詞的連續移動。</td></tr><tr><th scope="row">滾動動畫持續時間</th><td>300毫秒</td><td>全域性/檔案</td><td>控制自動滾動過渡。</td></tr><tr><th scope="row">滾動緩動</th><td>出立方</td><td>全域性/檔案</td><td>選擇自動滾動加速。</td></tr><tr><th scope="row">滾動行為</th><td>居中當前歌詞</td><td>全域性/檔案</td><td>居中、聚焦、保持當前歌詞可見或停用自動滾動。</td></tr></tbody></table></div><p>不適用於所選模式的控制元件可能會被停用。選擇滾動動畫不會將緊湊顯示切換為滾動。</p><h2 id="settings-reference-karaoke">卡拉OK</h2><div class="table-scroll" role="region" aria-label="設定參考表" tabindex="0"><table class="settings-table"><thead><tr><th>選項</th><th>出廠預設值</th><th>適用範圍</th><th>它改變了什麼</th></tr></thead><tbody><tr><th scope="row">掃頻效果</th><td>經典</td><td>應用</td><td>選擇經典、柔和、發光、微光、彩虹、脈衝或聚光燈。</td></tr><tr><th scope="row">寬鬆</th><td>線性</td><td>應用</td><td>控制突出顯示進度。</td></tr><tr><th scope="row">卡拉OK掃FPS</th><td>60幀/秒</td><td>應用</td><td>以 15、30、60 或 120 FPS 重新整理。</td></tr><tr><th scope="row">邊緣柔軟度</th><td>8</td><td>應用</td><td>調整柔化效果；範圍 1–40。</td></tr><tr><th scope="row">發光強度</th><td>70</td><td>應用</td><td>設定發光強度；範圍 0–255。</td></tr><tr><th scope="row">發光擴散</th><td>1</td><td>應用</td><td>設定發光效果擴散；範圍 1–8。</td></tr><tr><th scope="row">閃光寬度</th><td>10</td><td>應用</td><td>設定閃光寬度；範圍 1–40。</td></tr><tr><th scope="row">最大掃描延遲</th><td>100毫秒</td><td>應用</td><td>上限高亮延遲；範圍 0–500 毫秒。</td></tr><tr><th scope="row">掃描延遲</th><td>10%</td><td>應用</td><td>相對於其段延遲掃描；範圍 0–40%。</td></tr><tr><th scope="row">線路入口</th><td>開啟</td><td>應用</td><td>輕輕向上漂移淡入一條新線。</td></tr><tr><th scope="row">字提升</th><td>開啟</td><td>應用</td><td>提起活躍的單詞和注音，然後解決它們。</td></tr></tbody></table></div><p>針對相關效果出現特定於效果的控制元件。卡拉 OK 突出顯示需要歌詞檔案中的分段計時。</p><h2 id="settings-reference-management">檔案、外掛、依賴項和關於</h2><dl><dt>檔案</dt><dd>管理歌詞搜尋資料夾。使用“庫”→“新增音樂資料夾”作為音樂資料夾。</dd><dt>外掛</dt><dd>切換可選外掛並開啟其設定。核心外掛無法停用。請參閱 <a href="#plugin-directory"> 外掛目錄 </a> 以獲取特定功能的指導。</dd><dt>依賴關係</dt><dd>檢查包要求和可用的依賴項操作。</dd><dt>關於</dt><dd>檢查相容性或報告問題時查詢版本。</dd></dl></article>
+<article id="translations" data-title="翻譯" data-related="finding-lyrics editor plugin-lyrics-translator"><h1>翻譯</h1><p class="subtitle">將原始歌詞和翻譯行放在一起</p><h2 id="translations-start">選擇提供商</h2><p>在設定 → 外掛中啟用 <b>Lyrics Translator</b>。載入帶有定時歌詞的歌曲並開啟 <b>LRC → 編輯歌詞 → 翻譯</b>。從提供商選擇器中選擇一個提供商。如果該選項卡不存在，請檢查翻譯提供程式是否已啟用並載入。</p><p>Argos 使用可選的本地包和下載的語言模型。雲提供商需要連線並且可能需要憑據。可用的提供商和語言路線顯示在應用程式中。</p><h2 id="translations-edit">翻譯、審閱並儲存</h2><ol><li>如果當前歌詞文件尚未顯示，請將其載入到面板中。</li><li>選擇源語言和目標語言，然後選擇要翻譯的行或缺失的行。</li><li>選擇 <b> 翻譯缺失的行 </b> 或 <b> 翻譯選定的行 </b>。讀取並編輯輸出；自動翻譯可能會漏掉名字、雙關語或上下文。</li><li>選擇<b>應用到歌詞編輯器</b>，然後使用<b>儲存</b>或<b>儲存並關閉</b>。</li></ol><p>使用翻譯顯示行時，保留原始行並另存為 LRCX。 “歌詞”選項卡還具有 <b> 插入翻譯 {\nt}</b>，用於在時間線內創作翻譯。</p><h2 id="translations-search">使用現有翻譯</h2><p>搜尋歌詞包括原始和翻譯預覽。當結果提供翻譯的歌詞時，對其進行檢視並使用 <b>Apply Only Translation</b> 保留當前的原始文本。</p><h2 id="translations-trouble">如果無法翻譯</h2><p>檢查提供商、語言路線、所需的型號或憑據以及連線。對於 Argos，檢查可選的依賴項和模型資料夾。對於雲服務，請注音服務錯誤。歌詞顯示語言和翻譯目標是單獨的選擇。</p></article>
+<article id="sharing" data-title="分享和影像卡" data-related="editor lrcx readings"><h1>分享和影像卡</h1><p class="subtitle">匯出文本或製作歌詞影像</p><h2 id="sharing-text">複製或匯出文本</h2><ol><li>開啟<b>LRC→編輯歌詞→分享→文本</b>。</li><li>對於單獨的單詞，選擇 <b> 純文本 </b>；對於定時行，選擇 <b> 帶行時間戳 </b>。</li><li>使用 <b>Copy</b> 作為剪貼簿，或使用 <b>Export…</b> 作為檔案。</li></ol><p>這共享歌詞文本，而不是音訊。使用編輯器儲存操作來儲存完整的可編輯 LRCX 文件。</p><h2 id="sharing-card">建立影像卡</h2><ol><li>在編輯器中開啟<b>Share → 圖片卡</b>。</li><li>使用選中的行選擇選擇摘錄並檢視預覽。</li><li>選擇佈局模板，然後調整文本、圖稿和背景設定。</li><li>使用卡控制元件匯出影像。</li></ol><p>模板包括經典、聚光燈、唱片套、寶麗來、編輯和影院。藝術品是可選的；電影院可以使用專輯封面作為模糊背景。</p><h2 id="sharing-format">閱讀和格式化</h2><p><b>保留 LRCX 格式</b> 保留內聯強調、引用樣式、視覺中斷和較小的翻譯行。漢字注音是單獨控制的，並使用創作的或已經生成的注音；影像卡不啟動注音服務。首先在編輯器中生成缺失的注音。</p><p>版式支援水平和垂直書寫。歌曲詳細資訊包括標題、藝術家或製作人員以及專輯。匯出前檢查預覽是否有被剪裁的文本或丟失的字型字元。卡上未列印時間戳和播放卡拉 OK 突出顯示。</p></article>
+<article id="ayami" class="character-article" data-toc="after-lead" data-title="Ayami" data-related="companion getting-started customization">
+  <h1>Ayami</h1><p class="subtitle">Sakurabayashi Ayami · 櫻林 純美（さくらばやし あやみ）</p>
+  <table class="character-profile infobox biography"><caption class="visually-hidden">Ayami</caption><tbody>
+    <tr><th colspan="2" class="infobox-above">Ayami<div class="infobox-subtitle" lang="ja"> 櫻林 純美</div></th></tr>
+    <tr><th scope="row" class="infobox-label">全名</th><td class="infobox-data" lang="ja">櫻林 純美</td></tr>
+    <tr><th scope="row" class="infobox-label">閱讀</th><td class="infobox-data" lang="ja">さくらばやしあやみ</td></tr>
+    <tr><th scope="row" class="infobox-label">羅馬化</th><td class="infobox-data">Sakurabayashi Ayami</td></tr>
+    <tr><th scope="row" class="infobox-label">代詞</th><td class="infobox-data">她/他們</td></tr>
+    <tr><th scope="row" class="infobox-label">生日</th><td class="infobox-data">11 月 6 日</td></tr>
+    <tr><th scope="row" class="infobox-label">角色</th><td class="infobox-data">LRCPlus 設定嚮導和音樂伴侶</td></tr>
+    <tr><th scope="row" class="infobox-label">最喜歡的審美</th><td class="infobox-data">櫻花（桜）</td></tr>
+    <tr><th scope="row" class="infobox-label">開發開始</th><td class="infobox-data">2026 年 11 月 6 日</td></tr>
+  </tbody></table>
+  <p><b>Sakurabayashi Ayami</b>（<span lang="ja">櫻林 純美</span>），通常稱為<b>Ayami</b>，是LRCPlus設定嚮導的擬人化虛構人物。她介紹了播放器，幫助進行初始配置，並作為可選的音樂伴侶返回。</p>
+  <p>她的角色簡介將她描述為一名電腦科學高中生。她的確切年齡未公開。她的姓氏由<span lang="ja">樱</span>（櫻花）和<span lang="ja">林</span>（樹林）組合而成，反映了她對櫻花的喜愛。</p>
+  <h2 id="ayami-personality">個性</h2>
+  <p>Ayami 性格外向、富有想像力、戲劇性、容易心慌。她認真對待幫助，即使簡單的解釋變成了用想像中的剪貼簿或提示卡進行的表演。她的聲音混合了技術解釋、隨意的網路俚語、乾巴巴的諷刺和偶爾的髒話。</p>
+  <p>她喜歡解釋音樂和計算機，有自己的觀點，而且會變得出乎意料的真誠。她與開發者的交流包括有趣的爭論和第四堵牆的笑話。她尊重使用者跳過解釋、不同意或離開的選擇。</p>
+  <h2 id="ayami-interests">興趣和偏好</h2>
+  <p>她的興趣包括音樂、櫻花、排版、詩歌、動漫、遊戲、繪畫和巧克力。喜歡辛辣的食物、零食、日本料理；她表示不喜歡黃瓜、餃子和泡菜。</p>
+  <p>她的愛好結合了創意和技術工作：歌曲創作、影片編輯、3D 建模、作業系統修補以及 Python 和 C++ 程式設計。</p>
+  <blockquote><p>“我更喜歡Sakura ngl。但這是你的球員，所以我的投票純粹是裝飾性的。”</p></blockquote>
+  <h2 id="ayami-in-player">在 LRCPlus 中遇見 Ayami</h2>
+  <p>在首次執行設定期間，Ayami 通過編寫的對話指導您完成配置。要再次見到她，請選擇“<b>設定”→“常規”→“重新啟動向導”</b>。從“設定”重新開啟進入返回使用者同伴視窗； <b>再次執行設定</b>返回到原來的嚮導。</p>
+  <p>伴隨視窗通過您配置的提供商提供可選的聊天。您可以使用 LRCPlus 來聽音樂，而無需設定聊天。有關提供商設定、儲存的對話和記憶體控制，請參閱 <a href="#companion"> 配套指南 </a>。</p>
+  <h2 id="ayami-dialogue">對話與記憶</h2>
+  <p>設定對話使用 LRCPlus 受 Ren'Py 啟發的指令碼引擎。編寫的分支和事件跟蹤讓 Ayami 對選擇、主題、視窗移動和其他支援的事件做出反應。此指令碼對話與可選的 AI 聊天分開，後者的回覆來自配置的模型。</p>
+  <p>指令碼變數和對話狀態也與儲存的聊天對話和記憶體事實分開。聊天使用提供的對話和啟用的記憶；它不會接收您的歌曲、歌詞或播放器設定，並且其回覆無法執行應用程式操作。請參閱 <a href="#companion/companion-memory"> 記憶體控制</a> 以選擇訊息中保留和包含的內容。</p>
+  <h2 id="ayami-development">人物背景</h2>
+  <p>Ayami 的建立是為了給入職體驗帶來一致的個性。開發於2026年11月6日開始；她的 11 月 6 日生日就是為了紀念這個日子。她的幽默、分支反應和富有表現力的反應都是這一特徵的一部分。</p>
+  <p>該專案的<a href="../../assets/onboarding/CANON_CHARACTER.md">人物簡介</a>記錄了她的背景和喜好。有關指令碼化入門和可選聊天之間的區別，請參閱 <a href="../onboarding-engine.md">onboarding 文件</a>（可能需要 Markdown 閱讀器）。</p>
+</article>
+<article id="companion" data-title="同伴指南" data-related="ayami settings-reference troubleshooting glossary"><h1>同伴指南</h1><p class="subtitle">Ayami 聊天、對話和儲存的記憶</p><h2 id="companion-open">開啟伴侶</h2><p><a href="#ayami">Ayami</a> 的可選聊天出現在啟用伴侶的設定嚮導中。使用 <b> 設定 → 常規 → 重新啟動向導 </b> 重新訪問設定。聊天與音樂播放是分開的，不需要配置來播放歌曲。</p><h2 id="companion-setup">配置聊天</h2><p>開啟 <b>AI 設定...</b> 並輸入相容提供商的 API 基本 URL、型號 ID 和金鑰。本地伺服器可能不需要金鑰。內建按鍵幫助解釋了提供程式設定。儲存，輸入訊息，然後選擇 <b>Send</b>。 <b>Regenerate</b> 請求另一個響應；停止取消正在執行的請求。</p><p>傳送與所選提供商共享對話、角色指令和啟用的記憶。不附帶歌曲、歌詞、設定。記住的金鑰和自定義標頭使用 Windows 帳號加密（如果可用）；否則它們仍僅用於會話。</p><h2 id="companion-conversations">儲存的對話</h2><p>使用儲存的對話選擇器來切換聊天。 <b>新對話</b>開始另一個對話； <b>Rename</b> 和 <b>Delete</b> 管理已儲存的對話。上一頁和下一頁導航較長回覆的頁面。</p><h2 id="companion-memory">控制儲存的記憶</h2><p>開啟 <b>Memories...</b> 編輯事實，每行一個，並選擇是否將它們包含在以後的訊息中。最多允許 20 個事實，每個事實 200 個字元。</p><p>自動記憶模式提供<b>關閉</b>、<b>建議批准</b>（預設）和<b>自動儲存普通偏好設定</b>。提取可以使用額外的提供者請求。使用“審查”接受或駁回建議，使用“來源”檢查其來源，使用“立即檢查”請求檢查，或使用“停止檢查”取消建議。</p></article>
+<article id="tutorials" data-title="工作教程" data-related="editor readings lrcx"><h1>工作教程</h1><p class="subtitle">三個小任務，從開始到結束</p><h2 id="tutorials-first">為你的第一首歌計時</h2><ol><li>開啟音訊，然後開啟編輯器並按文件順序新增歌詞行。</li><li>選擇第一行並使用編輯器控制元件開始播放。</li><li>在該演唱行的開頭，選擇 <b> 標記播放時間 </b>。編輯器對其進行標記並前進到下一行。</li><li>重複，然後回聽並糾正遲到或早到的分數。</li><li>選擇 <b>Validate Timing</b>，檢視結果並儲存副本。</li></ol><p>從三到四行開始。逐段卡拉 OK 計時是可選卡拉 OK 選項卡中的單獨通道。</p><h2 id="tutorials-offset">修復晚兩秒的歌詞</h2><p>如果歌詞始終在歌手開始後兩秒出現，請將其時間戳 <b>earlier 移動 2 秒</b>。</p><ol><li>儲存備份副本。</li><li>開啟 <b>Shift Timing…</b> 並選擇預期範圍，例如所有行。</li><li>使用對話方塊中顯示的單位輸入負的兩秒偏移（−2 秒或−2000 毫秒）。正值會稍後移動歌詞。</li><li>聽靠近開頭和結尾的地方。如果不匹配發生變化，請更正各個時間或查詢正確錄音的歌詞。</li><li>驗證並儲存。撤消可在編輯時反轉轉變。</li></ol><p>Shift Timing 改變時間戳；單獨的歌詞偏移量保持不變。 <code>[00:12.000]</code> 處的線在移動 -2 秒後變為 <code>[00:10.000]</code>。</p><h2 id="tutorials-ruby">新增自定義注音假名</h2><ol><li>開啟歌詞文件，切換到<b>Source</b>。</li><li>儲存備份，然後使用 <code>{base|reading}</code> 換行。</li><li>例如，將 <code>[00:12.500]君の声</code> 更改為 <code>[00:12.500]{君|きみ}の声</code>。</li><li>使用 Source 中的 <b>Reload 將源應用到結構化編輯器。</b></li><li>啟用<b>顯示注音假名</b>，檢查並儲存為<code>.lrcx</code>。</li></ol><p>撰寫的讀物可讓您糾正姓名和不尋常的發音。</p></article>
+<article id="glossary" data-title="詞彙表" data-related="lrcx readings settings-reference"><h1>詞彙表</h1><p class="subtitle">播放器和手冊中使用的術語</p><h2 id="glossary-terms">條款</h2><dl><dt>依賴性</dt><dd>功能或外掛所需的附加軟體包。</dd><dt>FFmpeg</dt><dd>用於波形解碼和無縫播放的外部音訊/影片工具。</dd><dt>檔案覆蓋</dt><dd>應用於一個檔案的歌詞首選項，而不是其全域性預設值。</dd><dt>振假名</dt><dd>顯示在原文旁邊的小號日語讀音註釋。</dd><dt>全域性設定</dt><dd>一般應用程式或歌詞預設值。</dd><dt>形象卡</dt><dd>渲染並匯出為影像的歌詞摘錄。</dd><dt>Jyutping / Yale</dt><dd>粵語拼音系統可通過粵語讀物獲得。</dd><dt>LRC</dt><dd>帶有行時間戳的歌詞格式，例如 [00:12.500]。</dd><dt>LRCX</dt><dd>一種擴充套件的歌詞格式，支援分段計時、ruby、格式和附加顯示行。</dd><dt>記憶體</dt><dd>本地儲存的伴隨事實，可以包含在傳送給您的提供商的訊息中。</dd><dt>偏移量</dt><dd>音訊時間線和歌詞時間線之間的調整，與編輯每個時間戳不同。</dd><dt>佇列</dt><dd>當播放來源設定為佇列/播放列表時使用的集合。</dd><dt>注音服務</dt><dd>生成發音或羅馬化注音的元件。</dd><dt>ReplayGain</dt><dd>用於平衡播放級別的響度和峰值後設資料。</dd><dt>羅馬字</dt><dd>使用拉丁字母表示的日語讀法。</dd><dt>Ruby 注音</dt><dd>包含基礎文本和注音的註釋，用 LRCX 編寫為 {base|reading}。</dd><dt>段</dt><dd>有自己的節奏的一個詞或一小段歌詞文本。</dd><dt>時間戳</dt><dd>曲目中的位置：行開始或卡拉 OK 片段開始。</dd><dt>翻譯提供商</dt><dd>生成翻譯文本而不是發音注音的元件。</dd></dl></article>
+<article id="plugin-anki-flashcards" data-title="Anki 抽認卡" data-related="plugin-directory plugins troubleshooting"><h1>Anki 抽認卡</h1><p class="subtitle">捆綁外掛指南</p><p>選擇歌詞並匯出 Anki 就緒的 TSV 抽認卡。</p><h2 id="plugin-anki-flashcards-setup">設定</h2><p>選擇歌詞，檢視抽認卡內容，然後匯出 Anki 就緒的 TSV 檔案。</p><h2 id="plugin-anki-flashcards-use">使用該功能</h2><p>載入歌詞後使用外掛的抽認卡操作。在匯入到 Anki 之前檢查匯出的欄位。這會匯出檔案而不是自動修改牌組。</p><h2 id="plugin-anki-flashcards-requirements">要求</h2><p>該外掛的清單中沒有宣告其他包。</p><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-cantonese-readings" data-title="粵語讀物" data-related="plugin-directory plugins readings"><h1>粵語讀物</h1><p class="subtitle">捆綁外掛指南</p><p>外掛 API v2 粵語閱讀：Jyutping 和 Yale 通過 PyCantonese。</p><h2 id="plugin-cantonese-readings-setup">設定</h2><p>安裝“設定”→“依賴項”中顯示的 PyCantonese 依賴項。</p><h2 id="plugin-cantonese-readings-use">使用該功能</h2><p>該外掛註冊 Jyutping 和 Yale 注音服務。為粵語內容選擇合適的注音模式。較長的歌詞可能會解析緩慢；如果出現提示，請選擇是立即生成還是載入而不生成。</p><h2 id="plugin-cantonese-readings-requirements">要求</h2><ul><li><code>pycantonese&gt;=3.4,&lt;4</code></li></ul><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-discord-rpc" data-title="不和諧豐富的存在" data-related="plugin-directory plugins troubleshooting"><h1>不和諧豐富的存在</h1><p class="subtitle">捆綁外掛指南</p><p>使用曲目後設資料、歌詞和專輯插圖自定義 Discord 活動。</p><h2 id="plugin-discord-rpc-setup">設定</h2><p>執行 Discord 並配置設定 → 外掛 → Discord Rich Presence → 設定。</p><h2 id="plugin-discord-rpc-use">使用該功能</h2><p>為您的 Discord 活動選擇曲目後設資料、歌詞和插圖。如果缺少活動，請檢查 Discord、外掛的啟用狀態及其依賴項。</p><h2 id="plugin-discord-rpc-requirements">要求</h2><ul><li><code>pypresence&gt;=4.6,&lt;5</code></li><li><code>requests&gt;=2,&lt;3</code></li><li><code>mutagen&gt;=1,&lt;2</code></li></ul><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-floating-lyrics" data-title="漂浮的歌詞" data-related="plugin-directory plugins troubleshooting"><h1>漂浮的歌詞</h1><p class="subtitle">捆綁外掛指南</p><p>帶有注音假名的可拆卸的始終位於頂部的歌詞視窗。</p><h2 id="plugin-floating-lyrics-setup">設定</h2><p>載入帶有歌詞的歌曲，然後選擇外掛 → 浮動歌詞。</p><h2 id="plugin-floating-lyrics-use">使用該功能</h2><p>其設定條目控制可拆卸的始終位於頂部的視窗。切換相同的選單操作以隱藏它；主要玩家仍然可用。</p><h2 id="plugin-floating-lyrics-requirements">要求</h2><p>該外掛的清單中沒有宣告其他包。</p><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-korean-romanization" data-title="韓語羅馬化" data-related="plugin-directory plugins readings"><h1>韓語羅馬化</h1><p class="subtitle">捆綁外掛指南</p><p>使用 Koroman 生成發音感知的修訂羅馬化注音。</p><h2 id="plugin-korean-romanization-setup">設定</h2><p>安裝為此外掛列出的 Koroman 依賴項。</p><h2 id="plugin-korean-romanization-use">使用該功能</h2><p>該外掛註冊韓語修訂羅馬化提供程式。選擇韓語閱讀生成並在儲存之前檢查發音輸出。</p><h2 id="plugin-korean-romanization-requirements">要求</h2><ul><li><code>koroman&gt;=1,&lt;2</code></li></ul><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-lyrics-translator" data-title="歌詞翻譯" data-related="plugin-directory plugins translations"><h1>歌詞翻譯</h1><p class="subtitle">捆綁外掛指南</p><p>使用可選的離線 Argos 或 Azure、Google Cloud、DeepL 和 MyMemory 翻譯歌詞行。</p><h2 id="plugin-lyrics-translator-setup">設定</h2><p>啟用外掛並在編輯器的“翻譯”選項卡中選擇一個提供程式。</p><h2 id="plugin-lyrics-translator-use">使用該功能</h2><p>Argos 需要可選的本地包和語言模型。雲路由需要提供商的連線和憑據。在儲存之前檢視輸出並將其應用到文件。</p><h2 id="plugin-lyrics-translator-requirements">要求</h2><ul><li><code>argostranslate==1.11.0 (optional)</code></li></ul><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-ytdlp-import" data-title="yt-dlp 音訊匯入" data-related="plugin-directory plugins troubleshooting"><h1>yt-dlp 音訊匯入</h1><p class="subtitle">捆綁外掛指南</p><p>搜尋 YouTube 或匯入 URL 音訊和字幕，以及可選的同步歌詞和 MusicBrainz 專輯封面。</p><h2 id="plugin-ytdlp-import-setup">設定</h2><p>開啟外掛 → 搜尋並匯入音訊...並選擇結果或提供支援的 URL。</p><h2 id="plugin-ytdlp-import-use">使用該功能</h2><p>下載前檢查匯入選項和目的地。該外掛可以匯入音訊和字幕以及可選的同步歌詞和專輯封面。如果匯入失敗，請檢查設定和依賴項錯誤。</p><h2 id="plugin-ytdlp-import-requirements">要求</h2><ul><li><code>yt-dlp[default]&gt;=2026.3.3</code></li><li><code>mutagen&gt;=1,&lt;2</code></li></ul><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-karaoke-screen" data-title="卡拉OK屏" data-related="plugin-directory plugins troubleshooting"><h1>卡拉OK屏</h1><p class="subtitle">捆綁外掛指南</p><p>全屏歌詞，帶有可選的 MIDI 音調指南。</p><h2 id="plugin-karaoke-screen-setup">設定</h2><p>載入卡拉 OK 屏幕後，使用 <b>Karaoke Screen</b> 播放器按鈕開啟全屏歌詞。其外掛設定標記為 <b>Karaoke Game</b>。</p><h2 id="plugin-karaoke-screen-use">使用該功能</h2><p>該外掛提供全屏歌詞和可選的 MIDI 音調指南。音高指南需要合適的 MIDI 資料；歌詞定時和 MIDI 音符是單獨的輸入。</p><h2 id="plugin-karaoke-screen-requirements">要求</h2><p>該外掛的清單中沒有宣告其他包。</p><p>檢查設定 → 外掛是否存在載入錯誤，以及檢查設定 → 依賴關係以瞭解包狀態。 Python 包單獨不配置外部服務。</p></article>
+<article id="plugin-directory" data-title="外掛目錄" data-related="plugins translations readings"><h1>外掛目錄</h1><p class="subtitle">查詢可選功能的指南</p><p>這些外掛包含在原始碼樹中。打包版本可能包含不同的選擇。檢查設定 → 外掛是否可用；每個連結的指南涵蓋設定、使用和宣告的依賴項。</p><h2 id="plugin-directory-list">捆綁外掛</h2><dl><dt><a href="#plugin-anki-flashcards">Anki 抽認卡</a></dt><dd>選擇歌詞並匯出 Anki 就緒的 TSV 抽認卡。</dd><dt><a href="#plugin-cantonese-readings">粵語讀物</a></dt><dd>外掛 API v2 粵語閱讀：Jyutping 和 Yale 通過 PyCantonese。</dd><dt><a href="#plugin-discord-rpc">Discord 豐富存在</a></dt><dd>使用曲目後設資料、歌詞和專輯插圖自定義 Discord 活動。</dd><dt><a href="#plugin-floating-lyrics">浮動歌詞</a></dt><dd>帶有注音假名的可拆卸的始終位於頂部的歌詞視窗。</dd><dt><a href="#plugin-karaoke-screen">卡拉OK屏</a></dt><dd>全屏歌詞，帶有可選的 MIDI 音調指南。</dd><dt><a href="#plugin-korean-romanization">韓語羅馬拼音</a></dt><dd>使用 Koroman 生成發音感知的修訂羅馬化注音。</dd><dt><a href="#plugin-lyrics-translator">歌詞翻譯</a></dt><dd>使用可選的離線 Argos 或 Azure、Google Cloud、DeepL 和 MyMemory 翻譯歌詞行。</dd><dt><a href="#plugin-ytdlp-import">yt-dlp音訊匯入</a></dt><dd>搜尋 YouTube 或匯入 URL 音訊和字幕，以及可選的同步歌詞和 MusicBrainz 專輯封面。</dd></dl></article>
+<article id="article-index" data-title="A-Z 文章索引" data-related="interface settings-reference glossary"><h1>A-Z 文章索引</h1><p class="subtitle">本地手冊中的每一篇文章</p><h2 id="article-index-list">所有文章</h2><ul class="article-index"><li><a href="#plugin-anki-flashcards">Anki 抽認卡</a></li><li><a href="#ayami">Ayami</a></li><li><a href="#plugin-cantonese-readings">粵語讀物</a></li><li><a href="#companion">同伴指南</a></li><li><a href="#customization">定製</a></li><li><a href="#plugin-discord-rpc">Discord 豐富存在</a></li><li><a href="#editor">編輯與計時</a></li><li><a href="#finding-lyrics">找歌詞</a></li><li><a href="#plugin-floating-lyrics">浮動歌詞</a></li><li><a href="#readings">注音假名和讀法</a></li><li><a href="#getting-started">入門</a></li><li><a href="#glossary">術語表</a></li><li><a href="#installation">安裝和設定</a></li><li><a href="#interface">介面指南</a></li><li><a href="#plugin-karaoke-screen">卡拉OK屏</a></li><li><a href="#shortcuts">鍵盤快捷鍵</a></li><li><a href="#plugin-korean-romanization">韓語羅馬拼音</a></li><li><a href="#lrcx">LRCX 參考</a></li><li><a href="#plugin-lyrics-translator">歌詞翻譯</a></li><li><a href="#main">主頁</a></li><li><a href="#playback">音樂與播放</a></li><li><a href="#plugin-directory">外掛目錄</a></li><li><a href="#plugins">外掛</a></li><li><a href="#settings-reference">設定參考</a></li><li><a href="#sharing">分享及影像卡</a></li><li><a href="#translations">翻譯</a></li><li><a href="#troubleshooting">故障排除</a></li><li><a href="#tutorials">工作教程</a></li><li><a href="#plugin-ytdlp-import">yt-dlp音訊匯入</a></li></ul></article>
+      </div>
+      <section id="talk-panel" hidden="" aria-labelledby="talk-heading">
+        <h1 id="talk-heading">討論</h1><p class="subtitle">來自 LRCPlus 手冊討論頁面</p>
+        <p id="talk-latest" class="talk-latest"></p>
+        <aside class="talk-notice" aria-label="關於此討論頁面">
+          <div class="talk-intro"><p>這是 <strong> 討論頁面 </strong>，用於討論對 <a id="talk-article-link" href="#main"> 這篇文章 </a> 的改進。</p><p>討論的重點是手冊的措辭、示例和準確性。</p></div>
+          <div class="talk-guidelines">
+            <div class="talk-reading"><ul><li>在舊文本下新增新文本。</li><li>第一次來到 LRCPlus.wiki？歡迎！請登入以參與討論。</li></ul><a id="talk-browse-link" class="talk-browse" href="zh-hant-account.html#login">新增主題</a></div>
+            <div><ul><li>假設是善意的。</li><li>保持禮貌並討論措辭。</li><li>做出歡迎新聽眾的解釋。</li><li>讓每次討論都集中在其主題上。</li></ul></div>
+            <div class="talk-principles"><h2>文章原則</h2><ul><li>清晰、中立的描述</li><li>與應用程式匹配的示例</li><li>可驗證的指令</li></ul></div>
+          </div>
+          <p class="talk-references"><i>手冊參考：</i> <a href="#getting-started">入門</a>·<a href="#settings-reference">設定參考</a>·<a href="#troubleshooting">故障排除</a></p>
+        </aside>
+        <div id="talk-body"></div>
+      </section>
+      
+      
+      
+      
+      <section id="source-panel" hidden="" aria-labelledby="source-heading"><h1 id="source-heading">檢視原始碼</h1><p>這是本文的 HTML 原始碼。要編輯它，請在文本編輯器中開啟 <code>docs/manual/index.html</code>。</p><pre class="article-source" tabindex="0" aria-label="文章 HTML 源"><code id="source-code"></code></pre></section>
+      <section id="search-results" hidden="" aria-labelledby="search-heading"><h1 id="search-heading">搜尋結果</h1><p id="search-summary" role="status"></p><div id="results-list"></div></section>
+      <noscript><p class="note">JavaScript 被停用。所有文章均顯示在此頁面；使用瀏覽器的“查詢”命令來搜尋它們。</p></noscript>
+      <div class="category">類別： <a href="#main">使用者文件</a></div>
+    </main>
+    <footer>LRCPlus 手冊 · Vector Legacy 啟發的佈局</footer>
+  </div>
+
+
+</body></html>

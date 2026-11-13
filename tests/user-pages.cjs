@@ -45,8 +45,8 @@ function page(file = 'user.html', query = `?id=${id}`, options = {}) {
   w.eval(read('user-page.js'));
   return {dom, requests, api};
 }
-test('public user pages load only public profile columns in all seven languages', async () => {
-  for (const file of ['user.html', 'ja-user.html', 'ko-user.html', 'yue-user.html', 'zh-user.html', 'cs-user.html', 'vi-user.html']) {
+test('public user pages load only public profile columns in all eight languages', async () => {
+  for (const file of ['user.html', 'ja-user.html', 'ko-user.html', 'yue-user.html', 'zh-user.html', 'zh-hant-user.html', 'cs-user.html', 'vi-user.html']) {
     const {dom, requests} = page(file);
     await flush();
     const doc = dom.window.document;
@@ -116,7 +116,7 @@ test('late responses after leaving the page do not repopulate the profile', asyn
   dom.window.close();
 });
 test('user links prefer localized username URLs, fall back to IDs and leave deleted users unlinked', async () => {
-  for (const [file, target] of [['user.html','user.html'], ['ja-user.html','ja-user.html'], ['ko-user.html','ko-user.html'], ['yue-user.html','yue-user.html'], ['zh-user.html','zh-user.html'], ['cs-user.html','cs-user.html'], ['vi-user.html','vi-user.html']]) {
+  for (const [file, target] of [['user.html','user.html'], ['ja-user.html','ja-user.html'], ['ko-user.html','ko-user.html'], ['yue-user.html','yue-user.html'], ['zh-user.html','zh-user.html'], ['zh-hant-user.html','zh-hant-user.html'], ['cs-user.html','cs-user.html'], ['vi-user.html','vi-user.html']]) {
     const {dom, api} = page(file);
     await flush();
     const link = api.userLink('Example_User', id);
@@ -147,7 +147,7 @@ test('legacy URLs preserve context and resolve trusted usernames instead of edit
 });
 
 test('owners preview safe Markdown and publish using the loaded revision in all languages', async () => {
-  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html','zh-user.html','cs-user.html','vi-user.html']) {
+  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html','zh-user.html','zh-hant-user.html','cs-user.html','vi-user.html']) {
     const options = {owner: true, page: {body: 'Old introduction', revision: 4}, rpc: async name => ({data: name === 'community_save_user_page' ? 5 : [], error: null})};
     const {dom, requests} = page(file, `?id=${id}`, options);
     await flush();
@@ -234,7 +234,7 @@ test('missing user-page migration retains profile viewing and disables editing',
   dom.window.close();
 });
 test('title menu copies the username link and supports Escape in every language', async () => {
-  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html','zh-user.html','cs-user.html','vi-user.html']) {
+  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html','zh-user.html','zh-hant-user.html','cs-user.html','vi-user.html']) {
     const {dom} = page(file, '?name=ExampleUser');
     await flush();
     const doc=dom.window.document;
