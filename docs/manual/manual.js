@@ -139,7 +139,36 @@
     actions.append(reply, menu);
     comment.append(actions);
   }
-  window.ManualTalkUI = { addCommentActions, contents: messages.contents, permalink: messages.permalink };
+  const latestLabel = cantonese ? '最新留言' : korean ? '최근 댓글' : japanese ? '最新のコメント' : 'Latest comment';
+  function latestTime(date, hash) {
+    const link = document.createElement('a');
+    link.href = hash;
+    const time = document.createElement('time');
+    time.dateTime = new Date(date).toISOString();
+    time.textContent = window.ManualTalkTimestamps.relative(date, document.documentElement.lang);
+    time.title = window.ManualTalkTimestamps.format(new Date(date), document.documentElement.lang);
+    link.append(time);
+    return link;
+  }
+  function topicLatest(metadata, date, hash) {
+    metadata.querySelector('.talk-meta-latest')?.remove();
+    const item = document.createElement('span');
+    item.className = 'talk-meta-item talk-meta-latest';
+    item.append(`${latestLabel}: `, latestTime(date, hash));
+    metadata.prepend(item);
+  }
+  function pageLatest(date, hash, author, topicHash, title, authorLink) {
+    const latest = document.getElementById('talk-latest');
+    if (latest.dataset.latestDate && new Date(latest.dataset.latestDate) > new Date(date)) return;
+    latest.dataset.latestDate = new Date(date).toISOString();
+    const topicLink = document.createElement('a');
+    topicLink.href = topicHash;
+    topicLink.textContent = title;
+    latest.replaceChildren(`${latestLabel}: `, latestTime(date, hash),
+      cantonese ? '，由 ' : korean ? ' · ' : japanese ? '、投稿者：' : ' by ', authorLink || author,
+      cantonese ? '，話題：' : korean ? ' · 주제: ' : japanese ? '、議題：' : ' in topic ', topicLink);
+  }
+  window.ManualTalkUI = { addCommentActions, topicLatest, pageLatest, contents: messages.contents, permalink: messages.permalink };
   document.addEventListener('click', event => {
     document.querySelectorAll('.talk-comment-menu[open]').forEach(menu => {
       if (!menu.contains(event.target)) menu.open = false;
@@ -154,7 +183,7 @@
     text: article.innerText.replace(/\s+/g, ' ').trim()
   }));
   const relatedPages = {
-    'getting-started': 'interface playback finding-lyrics',
+    'getting-started': 'installation interface playback finding-lyrics',
     playback: 'interface settings-reference shortcuts',
     'finding-lyrics': 'translations editor troubleshooting',
     readings: 'settings-reference tutorials glossary',
@@ -363,23 +392,23 @@
       browseLink.href = talkLoginLink(`#${article.id}/talk`);
       const latest = document.getElementById('talk-latest');
       latest.replaceChildren();
+      delete latest.dataset.latestDate;
       const comments = [...body.querySelectorAll('.talk-comment')];
       const dates = window.ManualTalkTimestamps.dates(comments, article.id);
       comments.forEach((comment, index) => {
         decorateComment(comment, article.id, index, dates[index]);
       });
+      for (const topic of body.querySelectorAll('.talk-topic')) {
+        const last = [...topic.querySelectorAll('.talk-comment')].at(-1);
+        const metadata = topic.querySelector('.talk-meta');
+        if (last && metadata) topicLatest(metadata, last.querySelector('time').dateTime, `#${article.id}/talk/${last.id}`);
+      }
       const comment = comments.at(-1);
       if (comment) {
         const heading = comment.closest('.talk-topic').querySelector('h2');
         const author = comment.querySelector('.talk-signature b').textContent;
-        const commentLink = document.createElement('a');
-        commentLink.href = `#${article.id}/talk/${comment.id}`;
-        commentLink.textContent = cantonese ? '最後收錄嘅留言' : korean ? '마지막 수록 댓글' : japanese ? '最後に収録されたコメント' : 'Latest included comment';
-        const topicLink = document.createElement('a');
-        topicLink.href = `#${article.id}/talk/${heading.id}`;
-        topicLink.textContent = heading.firstChild.textContent;
-        latest.append(commentLink, cantonese ? `：${author}，話題「` : korean ? `: ${author}, 주제 “` : japanese ? `：${author}、議題「` : `: by ${author} in topic `,
-          topicLink, cantonese ? '」' : korean ? '”' : japanese ? '」' : '');
+        pageLatest(comment.querySelector('time').dateTime, `#${article.id}/talk/${comment.id}`,
+          author, `#${article.id}/talk/${heading.id}`, heading.firstChild.textContent);
       } else {
         latest.textContent = cantonese ? '呢篇文章暫時未收錄留言。' : korean ? '이 문서에는 아직 수록된 댓글이 없습니다.' : japanese ? 'この記事には、まだコメントが収録されていません。' : 'No comments included for this article yet.';
       }

@@ -329,6 +329,32 @@ test('staff labels use verified roles in localized headers and public Talk signa
   }
 });
 
+test('scripted Talk shows localized relative latest-comment links above topics and the banner', () => {
+  for (const [file, label] of [['index.html','Latest comment'],['ja.html','最新のコメント']]) {
+    const dom = page(file, '#main/talk', 'file:');
+    mockAuth(dom, false);
+    evalScript(dom, 'talk-timestamps.js');
+    evalScript(dom, 'manual.js');
+    const doc = dom.window.document;
+    const latest = doc.getElementById('talk-latest');
+    assert.ok(latest.textContent.startsWith(label + ': '));
+    const target = doc.getElementById(new URL(latest.querySelector('a').href).hash.split('/')[2]);
+    assert.equal(latest.querySelector('time').dateTime, target.querySelector('time').dateTime);
+    for (const topic of doc.querySelectorAll('#talk-body .talk-topic')) {
+      const item = topic.querySelector('.talk-meta').firstElementChild;
+      assert.ok(item.textContent.startsWith(label + ': '));
+      assert.equal(item.querySelector('time').dateTime, [...topic.querySelectorAll('.talk-comment time')].at(-1).dateTime);
+      assert.match(item.querySelector('time').title, /\(UTC\)$/);
+    }
+    const now = Date.UTC(2026, 10, 13);
+    const relative = dom.window.ManualTalkTimestamps.relative;
+    assert.equal(relative(now - 4 * 31536000000, 'en', now), '4 years ago');
+    assert.equal(relative(now - 20 * 60000, 'en', now), '20 minutes ago');
+    for (const lang of ['en','ja','ko','yue-Hant']) assert.ok(relative(now - 60000, lang, now));
+    dom.window.close();
+  }
+});
+
 test('Talk renders untrusted text safely and verified sessions can compose topics and replies', async () => {
   const dom = page('index.html', '#main/talk');
   const { emit } = mockAuth(dom);
@@ -346,6 +372,8 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
     return builder;
   };
   api.client.rpc = async (name, payload) => {
+    if (name === 'community_talk_activity') return {data:[{topic_id:topic.id,title:topic.title,comment_id:comment.id,
+      latest_at:new Date().toISOString(),author_id:'bob',username:'Bob'}],error:null};
     if (name === 'community_topic_stats') return {data:[{topic_id:topic.id,comment_count:2,participant_count:2}],error:null};
     if (name === 'community_staff_indicators') return {data:[],error:null};
     posted.push({name,payload}); return {data:'new-id',error:null};
@@ -368,7 +396,11 @@ test('Talk renders untrusted text safely and verified sessions can compose topic
   assert.equal(live.querySelector('.section-link').hash, '#main/talk/community-topic-topic-1');
   assert.equal(live.querySelectorAll('.talk-actions').length, 2);
   assert.equal(live.querySelector('.talk-meta').hidden, false);
-  assert.deepEqual([...live.querySelectorAll('.talk-meta-item')].map(node => node.textContent), ['2 comments', '2 people in discussion']);
+  assert.match(live.querySelector('.talk-meta-item').textContent, /^Latest comment: .* ago$/);
+  assert.deepEqual([...live.querySelectorAll('.talk-meta-item:not(.talk-meta-latest)')].map(node => node.textContent), ['2 comments', '2 people in discussion']);
+  assert.equal(live.querySelector('.talk-meta-latest a').hash, '#main/talk/community-comment-comment-1');
+  assert.match(doc.getElementById('talk-latest').textContent, /^Latest comment: .* ago by Bob in topic /);
+  assert.equal(doc.querySelector('#talk-latest a:last-child').textContent, topic.title);
   assert.equal(live.querySelector('.talk-depth-0 .talk-signature').textContent, '— Alice 1 January 2026 at 00:00 (UTC)');
   assert.equal(live.querySelector('.talk-depth-1 .talk-signature').textContent, '— Bob 1 January 2026 at 00:00 (UTC)');
   assert.ok(live.querySelector('.talk-actions a[href*="account.html"]'));
@@ -585,7 +617,7 @@ test('PostgreSQL topic aggregates count all comments, respect RLS, and retain de
       create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email_confirmed_at timestamptz,banned_until timestamptz);
       create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
       grant usage on schema public,auth to anon,authenticated;`);
-    for (const file of ['community.sql','moderation.sql','content-controls.sql','talk-performance.sql']) {
+    for (const file of ['community.sql','moderation.sql','content-controls.sql','talk-performance.sql','talk-activity.sql']) {
       await db.exec(fs.readFileSync(path.join(__dirname,'../supabase',file),'utf8'));
     }
     const alice = '30000000-0000-0000-0000-000000000001';
@@ -602,6 +634,10 @@ test('PostgreSQL topic aggregates count all comments, respect RLS, and retain de
         .map(row => [row.topic_id,Number(row.comment_count),Number(row.participant_count)]);
     }
     await db.exec('set role anon');
+    const activity = async () => (await db.query("select * from community_talk_activity('main')")).rows;
+    assert.equal((await activity())[0].topic_id, topic);
+    assert.ok((await activity())[0].comment_id, 'deleted latest placeholder does not hide the latest public reply');
+    assert.deepEqual((await db.query("select * from community_talk_activity('playback')")).rows, []);
     assert.deepEqual(await counts(),[[topic,1003,2]]);
     assert.deepEqual(await counts([topic,topic]),[[topic,1003,2]]);
     assert.deepEqual(await counts([]),[]);
@@ -611,8 +647,11 @@ test('PostgreSQL topic aggregates count all comments, respect RLS, and retain de
     assert.deepEqual(await counts(),[[topic,1003,1]],'deleted profiles lose attribution without reducing comment counts');
     await db.exec("reset role;alter policy comments_read on community_comments using (body <> 'Reply');set role anon");
     assert.deepEqual(await counts(),[[topic,2,1]],'invoker aggregates respect comment read policies');
+    assert.equal((await activity())[0].comment_id, null, 'only the visible opening post remains eligible');
+    assert.equal((await activity())[0].username, 'Alice');
     await db.exec('reset role;alter policy topics_read on community_topics using (false);alter policy comments_read on community_comments using (false);set role anon');
     assert.deepEqual(await counts(),[]);
+    assert.deepEqual(await activity(),[], 'activity respects topic visibility');
   } finally { await db.close(); }
 });
 
@@ -630,6 +669,12 @@ test('PostgreSQL enforces public reads, protected attribution, verification and 
     const articles = [...read('index.html').matchAll(/<article id="([^"]+)/g)].map(m => m[1]);
     const stored = (await db.query('select id from community_articles')).rows.map(r => r.id);
     assert.deepEqual(articles.sort(), stored.sort());
+    // Existing projects gain the new article through a repeatable data migration.
+    await db.exec("delete from community_articles where id = 'installation'");
+    const installationMigration = fs.readFileSync(path.join(__dirname,'../supabase/installation-article.sql'),'utf8');
+    await db.exec(installationMigration);
+    await db.exec(installationMigration);
+    assert.deepEqual((await db.query('select id from community_articles')).rows.map(r => r.id).sort(), articles);
     const alice = '00000000-0000-0000-0000-000000000001';
     const bob = '00000000-0000-0000-0000-000000000002';
     const unverified = '00000000-0000-0000-0000-000000000003';

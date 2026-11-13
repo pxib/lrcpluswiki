@@ -1,0 +1,3 @@
+# Identifies this checkout to the Supabase CLI. The hosted project is selected
+# separately with supabase link --project-ref (from a GitHub Actions secret).
+project_id = "lrcpluswiki"

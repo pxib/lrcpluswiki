@@ -49,5 +49,13 @@ window.ManualTalkTimestamps = (() => {
     }).format(date) + ' (UTC)';
   }
 
-  return { dates, format };
+  function relative(date, language, now = Date.now()) {
+    const seconds = Math.max(0, (now - new Date(date).getTime()) / 1000);
+    const [unit, size] = [['year', 31536000], ['month', 2592000], ['day', 86400],
+      ['hour', 3600], ['minute', 60], ['second', 1]].find(([, size]) => seconds >= size) || ['second', 1];
+    const locale = language.startsWith('yue') ? 'zh-HK' : language;
+    return new Intl.RelativeTimeFormat(locale, {numeric: 'always'}).format(-Math.floor(seconds / size), unit);
+  }
+
+  return { dates, format, relative };
 })();

@@ -164,6 +164,28 @@
     live.append(more);
     let offset = 0;
     const metadataNodes = new Map();
+    const activity = new Map();
+    const latest = document.getElementById('talk-latest');
+    const includedLatest = latest.cloneNode(true);
+    async function loadActivity() {
+      try {
+        const {data, error} = await api.client.rpc('community_talk_activity', {p_article: article});
+        if (error || version !== generation || !Array.isArray(data)) return;
+        activity.clear();
+        latest.replaceChildren(...[...includedLatest.childNodes].map(node => node.cloneNode(true)));
+        if (includedLatest.dataset.latestDate) latest.dataset.latestDate = includedLatest.dataset.latestDate;
+        else delete latest.dataset.latestDate;
+        for (const row of data) {
+          if (!row.topic_id || !row.latest_at || !Number.isFinite(new Date(row.latest_at).getTime())) continue;
+          const topicHash = `#${article}/talk/community-topic-${row.topic_id}`;
+          const hash = row.comment_id ? `#${article}/talk/community-comment-${row.comment_id}` : topicHash;
+          activity.set(row.topic_id, {date: row.latest_at, hash});
+          const author = row.username || t.deleted;
+          window.ManualTalkUI.pageLatest(row.latest_at, hash, author, topicHash, row.title,
+            row.author_id && row.username ? api.userLink(row.username, row.author_id) : null);
+        }
+      } catch { /* Older databases still provide discussion counts. */ }
+    }
     const replyDisclosures = new Map();
     const topicAuthors = new Map();
     const renderedTopics = new Set();
@@ -193,7 +215,10 @@
     async function loadMetadata(ids) {
       if (!ids.length) return;
       try {
-        let { data, error } = await api.client.rpc('community_topic_stats', {p_topics: ids});
+        const [stats] = await Promise.all([
+          api.client.rpc('community_topic_stats', {p_topics: ids}), loadActivity()
+        ]);
+        let { data, error } = stats;
         if (error?.code === 'PGRST202') data = await fallbackStats(ids);
         else if (error) throw error;
         if (version !== generation) return;
@@ -202,6 +227,8 @@
           if (!metadata) continue;
           metadata.replaceChildren(...metadataLabels(Number(row.comment_count), Number(row.participant_count))
             .map(label => el('span', label, 'talk-meta-item')));
+          const last = activity.get(row.topic_id);
+          if (last) window.ManualTalkUI.topicLatest(metadata, last.date, last.hash);
           metadata.hidden = false;
           const disclosure = replyDisclosures.get(row.topic_id);
           if (disclosure) disclosure.hidden = Number(row.comment_count) <= 1;

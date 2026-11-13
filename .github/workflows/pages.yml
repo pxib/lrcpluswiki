@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      record_existing_migrations:
+        description: 'One-time setup: all eight original SQL files are already applied in this database'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +32,42 @@ jobs:
 
       - name: Check published files
         run: node tools/check-pages.cjs
+
+      - name: Install Supabase CLI
+        if: vars.SUPABASE_MIGRATIONS_ENABLED == 'true' || inputs.record_existing_migrations == true
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply database migrations
+        if: vars.SUPABASE_MIGRATIONS_ENABLED == 'true' || inputs.record_existing_migrations == true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          RECORD_EXISTING: ${{ inputs.record_existing_migrations }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          if [[ "$RECORD_EXISTING" == "true" ]]; then
+            # Frozen adoption list: never add future migrations here.
+            supabase migration repair --remote --status applied \
+              20261113000001 20261113000002 20261113000003 20261113000004 \
+              20261113000005 20261113000006 20261113000007 20261113000008
+          fi
+          supabase db push --remote --dry-run
+          supabase db push --remote --yes
+
+      - name: Database automation setup reminder
+        if: vars.SUPABASE_MIGRATIONS_ENABLED != 'true' && inputs.record_existing_migrations != true
+        run: echo '::notice::Database migrations are disabled. Follow supabase/AUTOMATION.md to complete the one-time setup.'
 
       - name: Stamp wiki update version
         run: node tools/stamp-wiki-build.cjs

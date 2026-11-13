@@ -1,5 +1,10 @@
 # Community database updates
 
+For automatic deployment with GitHub Actions, follow [AUTOMATION.md](AUTOMATION.md).
+The numbered files in `migrations/` are the deployment source. The top-level
+SQL files below are retained for the original manual installation workflow;
+do not run them again after adopting migration tracking.
+
 Run SQL files in Supabase's SQL Editor as the project owner, in this order:
 
 1. `community.sql` — initial accounts/profiles and discussions.
@@ -7,6 +12,8 @@ Run SQL files in Supabase's SQL Editor as the project owner, in this order:
 3. `content-controls.sql` — word filters and reply deletion.
 4. `talk-performance.sql` — batched public topic counts.
 5. `user-pages.sql` — public joined dates, owner-edited introductions, and user-page reports (requires content-controls).
+6. `installation-article.sql` — enables live Talk topics for the installation and setup guide (safe to reapply; included in new `community.sql` installations).
+7. `talk-activity.sql` — public latest-comment timestamps and attribution for topic metadata and the Talk page summary (requires content-controls; safe to reapply).
 
 Each file is a one-time transactional migration. For an existing installation,
 run only the migrations you have not applied, then push the website changes.
@@ -40,7 +47,15 @@ deleted reply placeholders count as comments; null/deleted author IDs do not
 count as participants. Invoker security preserves the caller's read policies.
 No private moderation or authentication records are queried.
 
-The initial Talk view loads 20 topic openings and one aggregate request,
+Apply `talk-activity.sql` to enable relative latest-comment links for live topics
+and the page summary. Its invoker function returns the latest visible, undeleted
+post in each article topic, including the opening when it has no replies. It
+returns only public IDs, timestamps, titles, and attribution, without reply
+bodies. The page summary selects the newest comment across scripted examples
+and live topics, including topics beyond the first page. Without this migration,
+live counts and replies remain available, and the summary uses scripted examples.
+
+The initial Talk view loads 20 topic openings, one aggregate request, and one activity request,
 without downloading reply bodies or author lists. Expand **Replies** to fetch
 50 replies at a time. Comment permalinks resolve their topic directly, expand
 its replies, and load through the linked comment. **Load more** continues to

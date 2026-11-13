@@ -3,7 +3,7 @@ begin;
 
 create table public.community_articles (id text primary key);
 insert into public.community_articles(id) values
- ('main'), ('getting-started'), ('interface'), ('playback'), ('finding-lyrics'),
+ ('main'), ('installation'), ('getting-started'), ('interface'), ('playback'), ('finding-lyrics'),
  ('readings'), ('editor'), ('lrcx'), ('settings-reference'), ('translations'),
  ('sharing'), ('ayami'), ('companion'), ('customization'), ('plugins'),
  ('troubleshooting'), ('shortcuts'), ('tutorials'), ('glossary'), ('article-index'),
