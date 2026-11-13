@@ -5,6 +5,7 @@
   const panel = document.getElementById('moderation-panel');
   let roleGeneration = 0;
   let viewGeneration = 0;
+  let lastSessionId = api.session?.user.id;
   const el = (tag, text, className) => {
     const node = document.createElement(tag);
     if (text) node.textContent = text;
@@ -91,7 +92,84 @@
     controls.append(lock,status);
     parent.append(controls);
   }
-  window.ManualCommunityModeration = {addReport,addTopicControls};
+  function addDeleteComment(parent,row,onDeleted) {
+    if (!api.session || row.deleted_at || (!api.staffRole && row.author_id !== api.session.user.id)) return;
+    const popup = parent.querySelector('.talk-comment-popup');
+    if (!popup) return;
+    const status = el('span','','talk-copy-status');
+    status.setAttribute('role','status');
+    const control = button(t.deleteComment,async () => {
+      if (!window.confirm(t.confirmDeleteComment)) return;
+      control.disabled = true;
+      try {
+        const {error} = await api.client.rpc('community_delete_comment',{p_comment:row.id});
+        if (error) throw error;
+        await onDeleted();
+      } catch(error) {status.textContent = api.errorText(error);}
+      finally {control.disabled=false;}
+    });
+    popup.append(control,status);
+  }
+  window.ManualCommunityModeration = {addReport,addTopicControls,addDeleteComment};
+  function wordFilters(version) {
+    const section=el('section','','community-word-filters');
+    const form=el('form','','community-composer');
+    form.setAttribute('method','dialog');
+    const term=el('input');
+    term.required=true;
+    term.maxLength=100;
+    const mode=select(['whole_word','contains']);
+    field(form,t.filterTerm,term);
+    field(form,t.memberAction,mode);
+    const submit=el('button',t.addFilter);
+    submit.type='submit';
+    const status=el('p');
+    status.setAttribute('role','status');
+    const list=el('ul');
+    section.append(el('h2',t.wordFilters),el('p',t.filterHelp,'account-notice'),form,status,list);
+    form.append(submit);
+    let pending=false;
+    let request=0;
+    function controls() {
+      section.querySelectorAll('input,select,button').forEach(node=>{node.disabled=pending;});
+    }
+    async function load() {
+      const current=++request;
+      status.textContent=t.busy;
+      try {
+        const {data,error}=await api.client.rpc('community_list_word_filters');
+        if(error) throw error;
+        if(version!==viewGeneration || current!==request)return;
+        list.replaceChildren();
+        status.textContent=data.length?'':t.noFilters;
+        for(const row of data) {
+          const item=el('li');
+          item.append(el('span',`${row.term} · ${t[row.match_mode]} `));
+          item.append(button(row.enabled?t.disable:t.enable,()=>save(row.term,row.match_mode,!row.enabled)));
+          list.append(item);
+        }
+      }catch(error){if(version===viewGeneration && current===request)status.textContent=api.errorText(error);}
+    }
+    async function save(value,matchMode,enabled) {
+      if(pending)return;
+      pending=true;controls();status.textContent=t.busy;
+      try {
+        const {error}=await api.client.rpc('community_set_word_filter',{p_term:value,p_mode:matchMode,p_enabled:enabled});
+        if(error)throw error;
+        if(version!==viewGeneration)return;
+        form.reset();
+        await load();
+      }catch(error){if(version===viewGeneration)status.textContent=api.errorText(error);}
+      finally{pending=false;controls();}
+    }
+    form.addEventListener('submit',event=>{
+      event.preventDefault();
+      if(form.reportValidity())save(term.value.trim(),mode.value,true);
+    });
+    section.append(button(t.refresh,load));
+    load();
+    return section;
+  }
   async function loadRole() {
     const version = ++roleGeneration;
     await api.ready;
@@ -104,9 +182,10 @@
       } catch { /* A missing migration never grants access. */ }
     }
     if (version !== roleGeneration || id !== api.session?.user.id) return;
+    const changed = api.staffRole !== role;
     api.staffRole = role;
     window.dispatchEvent(new Event('moderationchange'));
-    renderQueue();
+    if (changed || (panel && !panel.childElementCount)) renderQueue();
   }
   async function renderQueue() {
     if (!panel) return;
@@ -211,12 +290,15 @@
       });
       section.append(el('h2',t.manageMembers),form);
       panel.append(section);
+      panel.append(wordFilters(version));
     }
     await load(true);
   }
   window.addEventListener('communitychange',()=>{
     // Remove any old staff queue synchronously, before a different account loads.
-    if (panel) {viewGeneration++;panel.replaceChildren();}
+    const id = api.session?.user.id;
+    if (panel && id !== lastSessionId) {viewGeneration++;panel.replaceChildren();}
+    lastSessionId = id;
     loadRole();
   });
   window.addEventListener('accountmodechange',renderQueue);

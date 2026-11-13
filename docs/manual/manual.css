@@ -208,6 +208,9 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .community-composer button:disabled,.moderation-report button:disabled{opacity:.6;cursor:default}
 .moderation-report{border-bottom:1px solid var(--border);padding:12px 0}
 .moderation-report blockquote{margin:12px 0;padding:12px;border-left:3px solid var(--border);background:var(--panel)}
+.community-deleted{color:var(--muted);font-style:italic}
+.community-word-filters li{margin:8px 0;overflow-wrap:anywhere}
+.community-word-filters button{width:auto;margin-left:8px;padding:4px 8px;border:1px solid var(--border);background:var(--surface);color:var(--link);font:inherit;cursor:pointer}
 .talk-actions a[aria-disabled="true"]{color:var(--muted);cursor:default;text-decoration:none}
 [hidden]{display:none!important}
 @media print{.community-toolbar,.community-composer,.community-talk button,.account-links{display:none!important}}

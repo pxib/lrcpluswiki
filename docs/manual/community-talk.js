@@ -216,7 +216,7 @@
             moreReplies.disabled = true;
             if (reset) { replyOffset = 0; replies.replaceChildren(); }
             try {
-              const result = await api.client.from('community_comments').select('id,body,created_at,profiles(username)')
+              const result = await api.client.from('community_comments').select('*,profiles(username)')
                 .eq('topic_id', row.id).order('created_at', {ascending: true}).order('id', {ascending: true}).range(replyOffset, replyOffset + 49);
               if (result.error) throw result.error;
               if (version !== generation) return;
@@ -226,9 +226,12 @@
               for (const reply of result.data) {
                 const comment = el('div', '', 'talk-comment talk-depth-1');
                 comment.id = `community-comment-${reply.id}`;
-                comment.append(el('p', reply.body, 'community-message'), signature(reply, article, comment.id));
+                comment.append(el('p', reply.deleted_at ? t.deletedComment : reply.body, reply.deleted_at ? 'community-message community-deleted' : 'community-message'), signature(reply, article, comment.id));
                 window.ManualTalkUI.addCommentActions(comment, `#${article}/talk/${comment.id}`, replyOptions);
-                window.ManualCommunityModeration?.addReport(comment, 'comment', reply.id);
+                if (!reply.deleted_at) {
+                  window.ManualCommunityModeration?.addReport(comment, 'comment', reply.id);
+                  window.ManualCommunityModeration?.addDeleteComment(comment, reply, () => Promise.all([loadReplies(true),loadMetadata()]));
+                }
                 if (row.locked) comment.querySelector('.talk-actions > a').title = t.locked;
                 replies.append(comment);
               }

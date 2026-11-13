@@ -25,10 +25,19 @@
     yue: ['舉報','原因','垃圾內容','騷擾或辱罵','錯誤或誤導內容','其他','補充資料（可選）','送出舉報','收到舉報，管理團隊會審查。','只有版主同管理員睇到舉報。舉報唔會自動刪除內容。','你已經舉報過呢個留言，仲等緊審查。','舉報功能暫時未開放。','管理舉報','待處理','已駁回','已移除','舉報人','作者','駁回舉報','移除內容','移除呢段內容？移除話題亦會刪除全部回覆。','鎖定話題','解鎖話題','呢個話題已鎖定。','管理用戶','操作','用戶','版主','管理員','限制發文','解除發文限制','套用','已儲存。','呢個帳戶已被限制發文同舉報。','需要管理權限。','搵唔到指定內容或帳戶。','你唔可以更改自己嘅權限或限制。','限制呢個帳戶之前，請先移除管理權限。']
   };
   const moderation = moderationTranslations[lang.startsWith('yue') ? 'yue' : lang] || moderationTranslations.en;
+  const contentKeys = ['deleteComment','confirmDeleteComment','deletedComment','wordFilters','filterTerm','whole_word','contains','addFilter','filterHelp','enable','disable','wordFiltered','deleteForbidden','filterLimit','noFilters','featureUnavailable'];
+  const contentTranslations = {
+    en: ['Delete comment','Delete this comment? Its text will be removed and a placeholder will remain.','This comment was deleted.','Word filters','Word or phrase','Whole word or phrase','Anywhere in text','Add filter','Literal matching ignores letter case and normalizes Unicode and whitespace. Choose whole-word matching to avoid blocking parts of longer words. Filters apply to new topic titles and messages.','Enable','Disable','Your post contains a blocked word or phrase. Please revise it.','You can only delete your own comments.','The filter list has reached its limit of 500 entries.','No word filters have been added.','This feature is not available yet.'],
+    ja: ['コメントを削除','このコメントを削除しますか？本文は消去され、削除の表示が残ります。','このコメントは削除されました。','単語フィルター','単語またはフレーズ','単語・フレーズ単位','文字列の一部も一致','フィルターを追加','大文字・小文字を区別せず、Unicode と空白を正規化して文字列を照合します。長い単語の一部を除外したい場合は単語単位を選択してください。新しい話題のタイトルと本文に適用されます。','有効にする','無効にする','禁止された単語やフレーズが含まれています。投稿を修正してください。','自分のコメントだけ削除できます。','フィルターの上限500件に達しました。','単語フィルターはまだありません。','この機能はまだ利用できません。'],
+    ko: ['댓글 삭제','이 댓글을 삭제할까요? 내용이 지워지고 삭제 표시가 남습니다.','삭제된 댓글입니다.','단어 필터','단어 또는 구문','단어 또는 구문 전체','문자열 일부도 일치','필터 추가','대소문자를 구분하지 않고 유니코드와 공백을 정규화하여 문자열을 비교합니다. 긴 단어의 일부가 차단되지 않게 하려면 전체 일치를 선택하세요. 새 주제 제목과 내용에 적용됩니다.','활성화','비활성화','차단된 단어나 구문이 포함되어 있습니다. 내용을 수정해 주세요.','본인의 댓글만 삭제할 수 있습니다.','필터가 최대 500개에 도달했습니다.','아직 단어 필터가 없습니다.','이 기능은 아직 사용할 수 없습니다.'],
+    yue: ['刪除留言','刪除呢個留言？內容會移除，並保留已刪除嘅標示。','呢個留言已刪除。','字詞過濾','字詞或短語','完整字詞或短語','文字任何位置','新增過濾規則','按字面比對，唔分大小寫，並統一 Unicode 同空白。揀完整字詞比對可以避免擋住較長字詞嘅一部分。規則適用於新話題標題同內容。','啟用','停用','內容包含被封鎖嘅字詞或短語，請修改後再發佈。','你只可以刪除自己嘅留言。','過濾規則已達到 500 條上限。','暫時未有字詞過濾規則。','呢個功能暫時未開放。']
+  };
+  const content = contentTranslations[lang.startsWith('yue') ? 'yue' : lang] || contentTranslations.en;
   window.ManualCommunityText = Object.freeze({
     ...Object.fromEntries(keys.map((key, i) => [key, values[i]])),
     ...Object.fromEntries(settingsKeys.map((key, i) => [key, settings[i]])),
     ...Object.fromEntries(moderationKeys.map((key, i) => [key, moderation[i]])),
+    ...Object.fromEntries(contentKeys.map((key, i) => [key, content[i]])),
     noReports: lang.startsWith('yue') ? '呢個分類暫時冇舉報。' : lang === 'ko' ? '이 상태의 신고가 없습니다.' : lang === 'ja' ? 'この状態の報告はありません。' : 'No reports with this status.'
   });
 })();

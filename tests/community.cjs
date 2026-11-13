@@ -576,3 +576,150 @@ test('moderation queue renders text safely, limits admin controls, and clears on
   assert.equal(dom.window.document.querySelector('[data-moderation]').hidden,true);
   dom.window.close();
 });
+
+test('word filters enforce literal normalized matching and reply deletion preserves private report evidence', async () => {
+  const db=new PGlite();
+  const admin='20000000-0000-0000-0000-000000000001';
+  const mod='20000000-0000-0000-0000-000000000002';
+  const author='20000000-0000-0000-0000-000000000003';
+  const member='20000000-0000-0000-0000-000000000004';
+  async function as(id){await db.exec(`reset role;set role authenticated;set request.jwt.claim.sub='${id}'`);}
+  try {
+    await db.exec(`create role anon;create role authenticated;create schema auth;
+      create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email_confirmed_at timestamptz,banned_until timestamptz);
+      create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+      grant usage on schema public,auth to anon,authenticated;`);
+    for(const file of ['community.sql','moderation.sql','content-controls.sql'])await db.exec(fs.readFileSync(path.join(__dirname,'../supabase',file),'utf8'));
+    await db.exec(`insert into auth.users values
+      ('${admin}','{"username":"AdminUser"}',now(),null),('${mod}','{"username":"ModUser"}',now(),null),
+      ('${author}','{"username":"AuthorUser"}',now(),null),('${member}','{"username":"MemberUser"}',now(),null);
+      insert into community_staff values('${admin}','admin'),('${mod}','moderator');`);
+    await as(author);
+    const topic=(await db.query("select community_start_topic('main','Original topic','Existing blocked text') as id")).rows[0].id;
+    await db.exec('reset role');
+    const comment=(await db.query('insert into community_comments(topic_id,author_id,body) values($1,$2,$3) returning id',[topic,author,'Original reply to preserve in report'])).rows[0].id;
+    const second=(await db.query('insert into community_comments(topic_id,author_id,body) values($1,$2,$3) returning id',[topic,member,'Second reply'])).rows[0].id;
+    await db.exec('set role anon');
+    await assert.rejects(db.query('select * from community_word_filters'),/permission denied/);
+    await assert.rejects(db.query(`select community_delete_comment('${comment}')`),/permission denied/);
+    await as(member);
+    await assert.rejects(db.query('select * from community_list_word_filters()'),/staff_required/);
+    await assert.rejects(db.query("select community_set_word_filter('blocked','whole_word',true)"),/staff_required/);
+    await assert.rejects(db.query(`select community_delete_comment('${comment}')`),/comment_delete_forbidden/);
+    await db.query(`select community_report('comment','${comment}','spam','Private evidence')`);
+    await as(mod);
+    await assert.rejects(db.query("select community_set_word_filter('blocked','contains',true)"),/staff_required/);
+    await as(admin);
+    await db.query("select community_set_word_filter('Blocked','whole_word',true)");
+    await db.query("select community_set_word_filter('ＢＬＯＣＫＥＤ','whole_word',true)");
+    assert.equal((await db.query('select * from community_list_word_filters()')).rows.length,1);
+    await db.query("select community_set_word_filter('bad phrase','whole_word',true)");
+    await db.query("select community_set_word_filter('禁止','contains',true)");
+    await db.query("select community_set_word_filter('c++.*','contains',true)");
+    await as(member);
+    await assert.rejects(db.query("select community_check_words('blocked')"),/permission denied/);
+    for(const text of ['BLOCKED!','ＢＬＯＣＫＥＤ','a bad\n\tphrase here','これは禁止です','literal c++.* string']) {
+      await assert.rejects(db.query("select community_start_topic('main','Clean title',$1)",[text]),/word_filtered/);
+    }
+    await assert.rejects(db.query("select community_start_topic('main','blocked','clean body')"),/word_filtered/);
+    // Failed filtered attempts roll back the posting cooldown.
+    await db.query("select community_start_topic('main','Clean title','unblocked and c+++ are allowed')");
+    await db.exec("reset role;update community_post_limits set last_post_at=now()-interval '2 minutes'");
+    await as(author);
+    await assert.rejects(db.query(`select community_reply('${topic}','blocked')`),/word_filtered/);
+    await db.query(`select community_reply('${topic}','A clean reply')`);
+    await db.query(`select community_delete_comment('${comment}')`);
+    const deleted=(await db.query('select * from community_comments where id=$1',[comment])).rows[0];
+    assert.equal(deleted.body,'[deleted]');
+    assert.equal(deleted.author_id,null);
+    assert.ok(deleted.deleted_at);
+    await assert.rejects(db.query(`update community_comments set body='Restore text' where id='${comment}'`),/permission denied/);
+    // A different account cannot report an already deleted placeholder.
+    await assert.rejects(db.query(`select community_report('comment','${comment}','spam','')`),/target_not_found/);
+    await as(mod);
+    const reports=(await db.query("select * from community_report_queue('removed',0)")).rows;
+    assert.equal(reports[0].content,'Original reply to preserve in report');
+    assert.equal(reports[0].details,'Private evidence');
+    await db.query(`select community_report('comment','${second}','spam','')`);
+    const report=(await db.query('select * from community_report_queue()')).rows[0];
+    await db.query(`select community_review_report('${report.id}','remove')`);
+    assert.ok((await db.query('select deleted_at from community_comments where id=$1',[second])).rows[0].deleted_at);
+    await as(admin);
+    await db.query("select community_set_word_filter('blocked','whole_word',false)");
+    await as(member);
+    await db.query("select community_start_topic('main','blocked','Now allowed')");
+    await db.exec('reset role');
+    await assert.rejects(db.query('insert into community_comments(topic_id,author_id,body) values($1,$2,$3)',[topic,member,'bad phrase']),/word_filtered/);
+    await assert.rejects(db.query('insert into community_comments(topic_id,body,deleted_at) values($1,$2,now())',[topic,'Hidden original text']),/check constraint/);
+    assert.ok((await db.query("select * from community_moderation_log where action='delete_comment'")).rows.length>=2);
+  }finally{await db.close();}
+});
+
+test('comment menus offer owner deletion with confirmation and render deleted placeholders', async () => {
+  const dom=page('index.html','#main/talk');
+  const {emit}=mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api=dom.window.ManualCommunity;
+  emit('SIGNED_IN',{user:{id:'owner',user_metadata:{username:'Owner'}}});
+  const rows=[
+    {id:'own-reply',body:'Owner original text',author_id:'owner',created_at:'2026-01-01',profiles:{username:'Owner'}},
+    {id:'other-reply',body:'Other person text',author_id:'other',created_at:'2026-01-01',profiles:{username:'Other'}}
+  ];
+  api.client.from=table=>({select(){return this;},eq(){return this;},order(){return this;},async range(){return {data:table==='community_topics'?[{id:'topic',title:'Topic',body:'Opening',created_at:'2026-01-01',author_id:'other',profiles:{username:'Other'}}]:rows,error:null};}});
+  const calls=[];
+  api.client.rpc=async(name,payload)=>{
+    calls.push({name,payload});
+    if(name==='community_delete_comment')Object.assign(rows[0],{body:'[deleted]',author_id:null,profiles:null,deleted_at:'2026-01-02'});
+    return {data:null,error:null};
+  };
+  evalScript(dom,'talk-timestamps.js');evalScript(dom,'manual.js');evalScript(dom,'community-moderation.js');evalScript(dom,'community-talk.js');
+  await flush();
+  const doc=dom.window.document;
+  const own=doc.getElementById('community-comment-own-reply');
+  const other=doc.getElementById('community-comment-other-reply');
+  assert.ok([...own.querySelectorAll('button')].find(node=>node.textContent==='Delete comment'));
+  assert.equal([...other.querySelectorAll('button')].find(node=>node.textContent==='Delete comment'),undefined);
+  const remove=[...own.querySelectorAll('button')].find(node=>node.textContent==='Delete comment');
+  dom.window.confirm=()=>false;remove.click();await flush();
+  assert.equal(calls.filter(call=>call.name==='community_delete_comment').length,0);
+  dom.window.confirm=()=>true;remove.click();await flush();
+  assert.equal(calls.find(call=>call.name==='community_delete_comment').payload.p_comment,'own-reply');
+  const placeholder=doc.getElementById('community-comment-own-reply');
+  assert.match(placeholder.textContent,/This comment was deleted/);
+  assert.doesNotMatch(placeholder.textContent,/Owner original text/);
+  assert.equal([...placeholder.querySelectorAll('button')].find(node=>['Report','Delete comment'].includes(node.textContent)),undefined);
+  dom.window.close();
+});
+
+test('admins manage literal word filters through the moderation page', async () => {
+  const dom=page('account.html','#moderation');
+  const {emit}=mockAuth(dom);
+  await dom.window.ManualCommunity.ready;
+  const api=dom.window.ManualCommunity;
+  const calls=[];
+  const filters=[];
+  api.client.rpc=async(name,payload)=>{
+    calls.push({name,payload});
+    if(name==='community_staff_role')return {data:'admin',error:null};
+    if(name==='community_list_word_filters')return {data:filters,error:null};
+    if(name==='community_set_word_filter') {
+      filters.splice(0,filters.length,{term:payload.p_term,match_mode:payload.p_mode,enabled:payload.p_enabled});
+      return {data:'filter-id',error:null};
+    }
+    return {data:[],error:null};
+  };
+  emit('SIGNED_IN',{user:{id:'admin',user_metadata:{username:'Admin'}}});
+  evalScript(dom,'account.js');evalScript(dom,'community-moderation.js');await flush();
+  const section=dom.window.document.querySelector('.community-word-filters');
+  assert.match(section.textContent,/No word filters/);
+  section.querySelector('input').value='Test phrase';
+  section.querySelector('select').value='contains';
+  section.querySelector('form').dispatchEvent(new dom.window.Event('submit',{cancelable:true}));await flush();
+  const saved=calls.find(call=>call.name==='community_set_word_filter');
+  assert.equal(saved.payload.p_term,'Test phrase');assert.equal(saved.payload.p_mode,'contains');assert.equal(saved.payload.p_enabled,true);
+  const disable=[...section.querySelectorAll('button')].find(node=>node.textContent==='Disable');
+  disable.click();await flush();
+  assert.equal(calls.filter(call=>call.name==='community_set_word_filter').at(-1).payload.p_enabled,false);
+  assert.ok([...section.querySelectorAll('button')].find(node=>node.textContent==='Enable'), section.outerHTML);
+  dom.window.close();
+});
