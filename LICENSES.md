@@ -22,12 +22,14 @@ The following bundled fonts are licensed under the **SIL Open Font License, Vers
 
 - **Chocolate Classical Sans** — The Chocolate Classical Sans Project Authors
 - **Cactus Classical Serif** — The Caactus Classical Serif Project Authors
+- **LXGW WenKai TC** — Copyright 2024 The LXGW WenKai Project Authors (https://github.com/lxgw/LxgwWenkaiTC)
 
 These fonts are distributed under their respective copyright notices and license terms.
 
 See:
 
 - `docs/manual/assets/fonts/OFL.txt`
+- `docs/manual/assets/fonts/OFL-LXGWWenKaiTC.txt`
 - `docs/manual/assets/fonts/README.md`
 
 The repository's MIT License does not replace or override the fonts' original license.

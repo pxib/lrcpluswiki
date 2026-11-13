@@ -57,7 +57,7 @@ function navigation(document, lang, kind) {
     document.head.append(link, '\n');
   }
 }
-const serialize = dom => dom.serialize() + '\n';
+const serialize = dom => dom.serialize().replace(/^[\t ]+$/gm, '') + '\n';
 for (const [lang, , base] of languages.slice(4)) {
   const dictionary = JSON.parse(fs.readFileSync(path.join(root, `locales/${base}.json`), 'utf8'));
   for (const key of ui) if (dictionary[key] === undefined) throw new Error(`Missing ${lang} UI translation: ${key}`);
@@ -79,6 +79,11 @@ for (const [lang, , base] of languages.slice(4)) {
     const script = document.createElement('script');
     script.src = `locales/${base}.js`;
     document.head.querySelector('script').before(script);
+    if (lang === 'zh-Hant') {
+      const fonts = document.createElement('link');
+      fonts.rel = 'stylesheet'; fonts.href = 'traditional-fonts.css';
+      document.head.querySelector('link[href="manual.css"]').after(fonts);
+    }
     navigation(document, lang, kind);
     write(path.join(root, kind ? `${base}-${kind}.html` : `${base}.html`), serialize(dom));
   }

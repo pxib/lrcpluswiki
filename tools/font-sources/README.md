@@ -1,4 +1,17 @@
-# Original Cantonese font sources
+# Font sources
+
+`LXGWWenKaiTC-google.css` is the original Google Fonts stylesheet retrieved
+on 2026-11-13 for LXGW WenKai TC Regular (400) and Bold (700), with a WOFF2-capable
+browser user agent:
+
+`https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap`
+
+Its versioned `fonts.gstatic.com` URLs are the pinned download source for
+`tools/build-traditional-fonts.cjs`. `LXGWWenKaiTC-files.json` records the
+SHA-256 checksums of the unmodified WOFF2 files bundled in the manual.
+The license is `docs/manual/assets/fonts/OFL-LXGWWenKaiTC.txt`.
+
+## Cantonese fonts
 
 These unchanged WOFF 1 wrappers of the user's installed Regular TrueType
 fonts were previously published under `docs/manual/assets/fonts/`.

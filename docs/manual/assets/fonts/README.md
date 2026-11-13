@@ -1,4 +1,42 @@
-# Cantonese manual fonts
+# Manual fonts
+
+## Traditional Chinese: LXGW WenKai TC
+
+`LXGWWenKaiTC-400-*.woff2` (Regular) and `LXGWWenKaiTC-700-*.woff2` (Bold)
+are the unmodified Google Fonts WOFF2 subsets of **LXGW WenKai TC**. The
+Traditional Chinese manual, account, and user pages load `traditional-fonts.css`;
+its family rules apply only to `zh-Hant`. Article text, headings, navigation,
+and controls use this family, while code examples and source editors retain
+their monospace fonts. Other editions keep their existing fonts.
+
+All 230 subsets (9,370,536 bytes total) are bundled for offline use. The
+upstream `unicode-range` declarations let browsers request only the subsets
+needed by the current text, including live discussions. `font-display: swap`
+keeps text readable while fonts load. No Google Fonts requests occur at runtime.
+
+The original Google Fonts CSS, with versioned source URLs, is pinned in
+`tools/font-sources/LXGWWenKaiTC-google.css`. The corresponding SHA-256
+checksums are in `LXGWWenKaiTC-files.json` in the same directory. To recreate
+or verify the bundled CSS and files from the repository root:
+
+```console
+node tools/build-traditional-fonts.cjs --download
+node tools/build-traditional-fonts.cjs --check
+node tools/build-locales.cjs
+node tools/check-pages.cjs
+```
+
+The download flag retrieves only missing files. Normal generation and checking
+work offline. Changing the pinned CSS requires reviewing the new upstream
+files, license, and checksums. The font files remain unchanged and retain their
+upstream names and metadata; filenames here use the weight and a source-URL hash.
+
+Copyright 2024 The LXGW WenKai Project Authors
+([upstream](https://github.com/lxgw/LxgwWenkaiTC)). Licensed under the SIL Open
+Font License 1.1; the original notice and license are in `OFL-LXGWWenKaiTC.txt`.
+The source is the [Google Fonts distribution](https://github.com/google/fonts/tree/main/ofl/lxgwwenkaitc).
+
+## Cantonese: Cactus and Chocolate
 
 `CactusClassicalSerif-Regular-*.woff2` supplies article and section headings.
 `ChocolateClassicalSans-Regular-*.woff2` supplies body text and navigation.
