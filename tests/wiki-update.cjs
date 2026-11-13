@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {JSDOM} = require('../.tmp/community-check/node_modules/jsdom');
+const {stampHtml} = require('../tools/stamp-wiki-build.cjs');
 const root = path.join(__dirname, '../docs/manual');
 const script = fs.readFileSync(path.join(root, 'update.js'), 'utf8');
 const settle = () => new Promise(resolve => setImmediate(resolve));
@@ -58,4 +59,44 @@ test('every HTML entry point loads the indicator and carries a build marker', ()
     assert.match(html, /src="update.js" defer/, name);
     assert.match(html, /href="update.css"/, name);
   }
+});
+
+test('deployment stamping versions every local script and stylesheet across all editions', () => {
+  for (const name of fs.readdirSync(root).filter(name => name.endsWith('.html'))) {
+    const html = fs.readFileSync(path.join(root, name), 'utf8');
+    const stamped = stampHtml(html, 'deployment-123');
+    const dom = new JSDOM(stamped, {url: `https://example.com/wiki/${name}`});
+    const doc = dom.window.document;
+    assert.equal(doc.querySelector('meta[name="wiki-build"]').content, 'deployment-123');
+    for (const node of doc.querySelectorAll('script[src],link[rel="stylesheet"]')) {
+      const url = new URL(node.src || node.href);
+      if (url.origin !== 'https://example.com') continue;
+      assert.equal(url.searchParams.get('v'), 'deployment-123', `${name}: ${url}`);
+      assert.ok(fs.existsSync(path.join(root, url.pathname.replace('/wiki/', ''))));
+    }
+    assert.equal(stampHtml(stamped, 'deployment-123'), stamped);
+    const next = new JSDOM(stampHtml(stamped, 'deployment-124'), {url: `https://example.com/wiki/${name}`});
+    assert.notEqual(next.window.document.querySelector('script[src]').src, doc.querySelector('script[src]').src);
+    next.window.close(); dom.window.close();
+  }
+});
+
+test('asset versioning preserves script order, other query parameters, fragments and external resources', () => {
+  const html = '<meta name="wiki-build" content="development">'
+    + '<script src="locales/cs.js?lang=cs&amp;v=old#entry"></script>'
+    + '<script src="community-i18n.js" defer></script>'
+    + '<script src="https://example.net/external.js"></script>'
+    + '<link rel="stylesheet" href="manual.css">'
+    + '<link rel="alternate" href="cs.html"><link rel="icon" href="icon.png">';
+  const dom = new JSDOM(stampHtml(html, 'new-build'), {url: 'https://example.com/wiki/cs.html'});
+  const doc = dom.window.document;
+  const scripts = [...doc.querySelectorAll('script')];
+  assert.equal(new URL(scripts[0].src).searchParams.get('lang'), 'cs');
+  assert.deepEqual(new URL(scripts[0].src).searchParams.getAll('v'), ['new-build']);
+  assert.equal(new URL(scripts[0].src).hash, '#entry');
+  assert.ok(scripts[1].defer);
+  assert.equal(scripts[2].src, 'https://example.net/external.js');
+  assert.equal(doc.querySelector('[rel="alternate"]').getAttribute('href'), 'cs.html');
+  assert.equal(doc.querySelector('[rel="icon"]').getAttribute('href'), 'icon.png');
+  dom.window.close();
 });

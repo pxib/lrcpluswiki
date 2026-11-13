@@ -52,7 +52,7 @@ Numbered callouts are HTML overlays, not alterations to the captures. Their posi
 
 ### Published wiki updates
 
-The Pages workflow runs `node tools/stamp-wiki-build.cjs` before upload. It stamps the deployment ID into every HTML page and `version.json` together; no manual version bump is needed. `update.js` checks the published manifest on load, when returning to a tab (at most once a minute), and every five minutes while visible. A different build shows a localized **Update available — Refresh** notice. Refresh is voluntary and uses the browser's normal reload, preserving its unsaved-change prompts. Network failures stay silent, and bundled `file://` copies skip update checks. Tabs opened before this feature was deployed need one refresh to start checking.
+The Pages workflow runs `node tools/stamp-wiki-build.cjs` before upload. It stamps the deployment ID into every HTML page and `version.json` together; no manual version bump is needed. Local script and stylesheet URLs receive the same deployment ID as a `v` query parameter, so new HTML loads matching locale and application code instead of reusing a previous deployment's cached assets. `update.js` checks the published manifest on load, when returning to a tab (at most once a minute), and every five minutes while visible. A different build shows a localized **Update available — Refresh** notice. Refresh is voluntary and uses the browser's normal reload, preserving its unsaved-change prompts. Network failures stay silent, and bundled `file://` copies skip update checks. Tabs opened before this feature was deployed need one refresh to start checking.
 
 Run `node --test tests/wiki-update.cjs` to verify update detection, localization, offline behavior, and page integration.
 
