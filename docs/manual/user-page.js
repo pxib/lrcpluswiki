@@ -46,7 +46,64 @@
   const joinedLabel = node('dt', words[0]);
   joined.hidden = joinedLabel.hidden = true;
   document.querySelector('.user-details').append(joinedLabel, joined);
-  const actions = node('div', '', 'community-toolbar');
+  const menuWords = {
+    en: ['Copy link', 'Link copied.', 'Select the link below to copy it.', 'User page permalink', 'More user page options'],
+    ja: ['リンクをコピー', 'コピーしました。', 'リンクを選択してコピーしてください。', '利用者ページの固定リンク', '利用者ページのその他の操作'],
+    ko: ['링크 복사', '링크를 복사했습니다.', '아래 링크를 선택하여 복사하세요.', '사용자 문서 고유 링크', '사용자 문서 추가 작업'],
+    yue: ['複製連結', '已複製連結。', '請選取下面嘅連結再複製。', '用戶頁面固定連結', '更多用戶頁面操作']
+  }[lang.startsWith('yue') ? 'yue' : lang] || ['Copy link', 'Link copied.', 'Select the link below to copy it.', 'User page permalink', 'More user page options'];
+  const titleRow = node('div', '', 'user-page-title');
+  const menu = node('details', '', 'talk-comment-menu');
+  const summary = node('summary', '•••');
+  summary.setAttribute('aria-label', menuWords[4]);
+  const popup = node('div', '', 'talk-comment-popup');
+  const copy = node('a', menuWords[0]);
+  const copyStatus = node('span', '', 'talk-copy-status');
+  copyStatus.setAttribute('role', 'status');
+  copy.addEventListener('click', async event => {
+    event.preventDefault();
+    if (!profile) return;
+    const url = api.userLink(profile.username, profile.id).href;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      copied = true;
+    } catch {
+      const field = node('textarea', '', 'visually-hidden');
+      field.value = url;
+      field.readOnly = true;
+      popup.append(field);
+      field.select();
+      try { copied = document.execCommand('copy'); } catch { /* Manual copy remains available. */ }
+      field.remove();
+      copy.focus({preventScroll: true});
+    }
+    copyStatus.textContent = copied ? menuWords[1] : menuWords[2];
+    if (!copied) {
+      let field = popup.querySelector('input');
+      if (!field) {
+        field = node('input');
+        field.type = 'text';
+        field.readOnly = true;
+        field.setAttribute('aria-label', menuWords[3]);
+        popup.append(field);
+      }
+      field.value = url;
+      field.focus();
+      field.select();
+    }
+  });
+  menu.append(summary, popup);
+  heading.before(titleRow);
+  titleRow.append(menu, heading);
+  menu.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      menu.open = false;
+      summary.focus();
+      event.stopPropagation();
+    }
+  });
+  document.addEventListener('click', event => { if (!menu.contains(event.target)) menu.open = false; });
   const edit = button(words[1], () => {
     if (!canEdit()) return;
     if (!editor.hidden) { draft.focus(); return; }
@@ -58,12 +115,11 @@
     feedback.textContent = '';
     draft.focus();
   });
-  const report = button(t.report, openReport);
-  actions.append(report);
+  const report = button(t.report, () => { menu.open = false; openReport(); });
+  popup.append(copy, report, copyStatus);
   document.querySelector('.page-tabs').append(edit);
   edit.setAttribute('aria-controls', 'user-page-editor');
   edit.setAttribute('aria-expanded', 'false');
-  details.before(actions);
   const editor = node('form', '', 'community-composer user-page-editor');
   editor.setAttribute('method', 'dialog');
   editor.id = 'user-page-editor';
@@ -97,7 +153,9 @@
     edit.hidden = !canEdit();
     edit.disabled = saving;
     report.hidden = !profile || !page?.body || !api.session || api.recovery;
-    actions.hidden = report.hidden;
+    menu.hidden = !profile;
+    if (profile) copy.href = api.userLink(profile.username, profile.id).href;
+    else { menu.open = false; copyStatus.textContent = ''; popup.querySelector('input')?.remove(); }
     if (!canEdit() || (editingUser && editingUser !== api.session?.user.id)) closeEditor();
     if (!api.session || (reportHost.dataset.user && reportHost.dataset.user !== api.session.user.id)) reportHost.replaceChildren();
     editor.querySelectorAll('input,textarea,button').forEach(control => { control.disabled = saving || !canEdit(); });
@@ -228,6 +286,7 @@
       if (error) throw error;
       if (!data) { status.textContent = text[4]; return; }
       profile = data;
+      controls();
       title(data.username);
       document.getElementById('user-username').textContent = data.username;
       details.hidden = false;

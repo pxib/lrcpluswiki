@@ -177,7 +177,7 @@ test('reports target the public user page and clear private drafts on account ch
   const {dom, api, requests} = page('user.html', `?id=${id}`, {page:{body:'Reported content',revision:2}, rpc:async name=>({data:name==='community_report'?'report-id':[],error:null})});
   await flush();
   const doc=dom.window.document;
-  const report=doc.querySelector('.community-toolbar button');
+  const report=doc.querySelector('.user-page-title .talk-comment-popup button');
   assert.equal(report.hidden,true);
   api.session={user:{id:'other-user'}};
   dom.window.dispatchEvent(new dom.window.Event('communitychange'));
@@ -206,5 +206,46 @@ test('missing user-page migration retains profile viewing and disables editing',
   assert.equal(doc.getElementById('user-details').hidden,false);
   assert.equal(doc.querySelector('[aria-controls="user-page-editor"]').hidden,true);
   assert.match(doc.getElementById('user-status').textContent,/not available yet/);
+  dom.window.close();
+});
+test('title menu copies the stable user link and supports Escape in every language', async () => {
+  for (const file of ['user.html','ja-user.html','ko-user.html','yue-user.html']) {
+    const {dom} = page(file, '?name=ExampleUser');
+    await flush();
+    const doc=dom.window.document;
+    const menu=doc.querySelector('.user-page-title .talk-comment-menu');
+    assert.equal(menu.nextElementSibling.id,'user-heading');
+    assert.equal(menu.hidden,false);
+    const copy=menu.querySelector('a');
+    let copied;
+    Object.defineProperty(dom.window.navigator,'clipboard',{value:{writeText:async value=>{copied=value;}}});
+    menu.open=true;
+    copy.click();
+    await flush();
+    assert.equal(new URL(copied).searchParams.get('id'),id);
+    assert.equal(new URL(copied).searchParams.has('name'),false);
+    assert.equal(new URL(copied).pathname.endsWith('/'+file),true);
+    assert.ok(menu.querySelector('[role="status"]').textContent);
+    menu.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    assert.equal(menu.open,false);
+    assert.equal(doc.activeElement,menu.querySelector('summary'));
+    menu.open=true;
+    doc.body.click();
+    assert.equal(menu.open,false);
+    dom.window.close();
+  }
+});
+test('copy menu offers a selected read-only link when clipboard access is unavailable', async () => {
+  const {dom}=page();
+  await flush();
+  const doc=dom.window.document;
+  const menu=doc.querySelector('.user-page-title .talk-comment-menu');
+  menu.querySelector('a').click();
+  await flush();
+  const field=menu.querySelector('input');
+  assert.equal(field.readOnly,true);
+  assert.equal(new URL(field.value).searchParams.get('id'),id);
+  assert.equal(doc.activeElement,field);
+  assert.equal(menu.querySelector('textarea'),null);
   dom.window.close();
 });

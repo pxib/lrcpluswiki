@@ -267,4 +267,8 @@ html[lang|="yue"] .toc[open] summary::after{content:' [收起]'}
 .user-page .user-page-editor textarea{font-family:Consolas,monospace;min-height:240px}
 .user-page .community-toolbar button{padding:5px 10px;border:1px solid var(--border);background:var(--panel);color:var(--link);font:inherit}
 .user-page .page-tabs>button{padding:14px 8px 7px;border:0;border-bottom:1px solid var(--frame);border-right:1px solid var(--frame);font-size:13px;line-height:18px;color:var(--link);background:linear-gradient(to top,var(--tab),var(--surface))}
+.user-page-title{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.user-page-title h1{flex:1;min-width:0;border:0;margin:0;overflow-wrap:anywhere}
+.user-page-title>.talk-comment-menu{flex:none;font:14px/1.6 Arial,Helvetica,sans-serif}
+@media print{.user-page-title>.talk-comment-menu{display:none}}
 @media print{.user-page .community-toolbar,.user-page .community-composer{display:none!important}}
