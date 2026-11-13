@@ -102,8 +102,9 @@ figcaption{padding:7px 5px 3px;font-size:12px;color:var(--muted);line-height:1.5
 .talk-comment-menu summary::-webkit-details-marker{display:none}
 .talk-comment-menu summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .talk-comment-popup{position:absolute;top:100%;left:0;z-index:3;background:var(--surface);border:1px solid var(--border);box-shadow:0 2px 6px #0003;padding:6px;width: min(250px,55vw);letter-spacing:normal}
-.talk-comment-popup a{display:block;text-align:left;color:var(--link);padding:6px 8px;font-size:13px}
-.talk-comment-popup a:hover{background:var(--panel)}
+.talk-comment-popup a,.talk-comment-popup button{display:block;box-sizing:border-box;width:100%;margin:0;padding:6px 8px;border:0;border-radius:0;background:transparent;text-align:left;color:var(--link);font:inherit;font-size:13px;line-height:1.4;text-decoration:none;cursor:pointer}
+.talk-comment-popup a:hover,.talk-comment-popup button:hover{background:var(--panel);text-decoration:underline}
+.talk-comment-popup a:focus-visible,.talk-comment-popup button:focus-visible{background:var(--panel);outline:2px solid var(--accent);outline-offset:-2px}
 .talk-copy-status{display:block;font-size:12px;padding:0 8px;color:var(--muted)}
 .talk-comment-popup input{display:block;border:1px solid var(--border);margin-top:6px;color:var(--text)}
 .talk-signature time{color:var(--muted)}
