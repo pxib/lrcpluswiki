@@ -1,0 +1,50 @@
+.bad-apple { position:fixed; inset:0; z-index:1000; pointer-events:auto; }
+.bad-apple canvas { display:block; width:100%; height:100%; pointer-events:none; }
+.bad-apple-media { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.bad-apple-lyrics { position:absolute; min-height:64px; padding:0 20px; text-align:center; color:var(--text); pointer-events:none; }
+.bad-apple-lyric-line { font-size:clamp(16px,2vw,24px); line-height:1.5; text-wrap:balance; overflow-wrap:anywhere; }
+.bad-apple-lyric-reading { margin-top:5px; font-size:clamp(12px,1.3vw,16px); line-height:1.45; color:var(--muted); text-wrap:balance; overflow-wrap:anywhere; }
+.bad-apple-lyric-hint { font:12px/1.5 Arial,sans-serif; color:var(--muted); }
+.bad-apple-controls { position:absolute; right:16px; bottom:12px; left:16px; display:flex; justify-content:flex-end; align-items:center; gap:10px; font:13px/1.4 Arial,sans-serif; color:var(--text); }
+.bad-apple-controls span { padding:8px 12px; border-radius:4px; background:var(--panel); }
+.bad-apple-controls button { padding:8px 12px; border:1px solid var(--border); border-radius:4px; background:var(--panel); color:var(--text); }
+.bad-apple-controls button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.bad-apple-controls button:disabled { opacity:.5; cursor:default; }
+.bad-apple-controls .bad-apple-lyrics-toggle[aria-pressed="true"] { border-color:var(--accent); background:var(--tab); }
+.bad-apple-source { visibility:hidden; }
+.bad-apple-active { overflow:hidden; }
+.bad-apple-theme-fade { --bad-apple-theme-duration:1900ms; }
+.bad-apple-theme-playing { --bad-apple-theme-duration:220ms; }
+.bad-apple-theme-returning { --bad-apple-theme-duration:1000ms; }
+/* Animate the palette itself so gradients and inherited colors fade together. */
+@property --surface { syntax:"<color>"; inherits:true; initial-value:#fff; }
+@property --canvas { syntax:"<color>"; inherits:true; initial-value:#f6f6f6; }
+@property --text { syntax:"<color>"; inherits:true; initial-value:#202122; }
+@property --muted { syntax:"<color>"; inherits:true; initial-value:#54595d; }
+@property --subtle { syntax:"<color>"; inherits:true; initial-value:#72777d; }
+@property --heading { syntax:"<color>"; inherits:true; initial-value:#000; }
+@property --panel { syntax:"<color>"; inherits:true; initial-value:#f8f9fa; }
+@property --raised { syntax:"<color>"; inherits:true; initial-value:#eaecf0; }
+@property --border { syntax:"<color>"; inherits:true; initial-value:#a2a9b1; }
+@property --border-soft { syntax:"<color>"; inherits:true; initial-value:#c8ccd1; }
+@property --frame { syntax:"<color>"; inherits:true; initial-value:#a7d7f9; }
+@property --link { syntax:"<color>"; inherits:true; initial-value:#0645ad; }
+@property --visited { syntax:"<color>"; inherits:true; initial-value:#0b0080; }
+@property --accent { syntax:"<color>"; inherits:true; initial-value:#36c; }
+@property --tab { syntax:"<color>"; inherits:true; initial-value:#e8f2f8; }
+html.bad-apple-theme-fade {
+  transition-property:--surface,--canvas,--text,--muted,--subtle,--heading,--panel,--raised,--border,--border-soft,--frame,--link,--visited,--accent,--tab;
+  transition-duration:var(--bad-apple-theme-duration);
+  transition-timing-function:ease;
+}
+@media (prefers-reduced-motion:reduce) {
+  .bad-apple-theme-fade { --bad-apple-theme-duration:180ms; }
+  .bad-apple-theme-playing { --bad-apple-theme-duration:1000ms; }
+}
+.bad-apple-notice { position:fixed; bottom:16px; right:16px; z-index:1001; padding:12px; background:var(--surface); color:var(--text); border:1px solid var(--border); }
+@media (max-width:600px) {
+  .bad-apple-controls { flex-wrap:wrap; gap:6px; right:8px; left:8px; bottom:8px; }
+  .bad-apple-controls span { flex-basis:100%; font-size:11px; padding:4px 8px; }
+  .bad-apple-controls button { padding:6px 8px; }
+}
+@media print { .bad-apple,.bad-apple-notice { display:none; } .bad-apple-source { visibility:visible; } }

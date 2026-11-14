@@ -40,6 +40,8 @@ Original screenshots, illustrations, and other visual assets created specificall
 
 Third-party images and assets retain their respective licenses.
 
+The Bad Apple!! video and music bundled for the easter egg are third-party works and are not licensed under MIT. See [the video credits](docs/manual/assets/media/bad-apple-credits.md) for provenance and creator attribution.
+
 ## 5. Logos, Branding, and Trademarks
 
 **Copyright © 2026 maiko. All rights reserved.**

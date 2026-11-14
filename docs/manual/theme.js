@@ -15,6 +15,9 @@
     if (toggle) toggle.setAttribute('aria-pressed', String(theme === 'dark'));
   }
 
+  // Effects can use the switcher's rendering path without saving a preference.
+  window.ManualTheme = Object.freeze({setTemporary: applyTheme});
+
   applyTheme(preference || (systemTheme.matches ? 'dark' : 'light'));
   document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('theme-toggle');
