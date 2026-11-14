@@ -2,24 +2,48 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const OpenCC = require('../.tmp/lyrics-tools/node_modules/opencc-js');
+const requireLyrics = require('node:module').createRequire(path.resolve(__dirname, '../.tmp/lyrics-tools/package.json'));
+const OpenCC = requireLyrics('opencc-js');
+const ToJyutping = requireLyrics('to-jyutping');
+const {convertHangulToMC2000} = requireLyrics('koconv');
 const simplify = OpenCC.Converter({from: 't', to: 'cn'});
 const media = path.resolve(__dirname, '../docs/manual/assets/media');
 // Add future translations here using the matching page-language key.
 const sources = {
+  en: {label: 'English', file: 'badappleen.lrc'},
   ja: {label: '日本語', file: 'badappleja.lrc'},
-  ko: {label: '한국어', file: 'badapplekr.lrc'},
+  ko: {label: '한국어', file: 'badapplekr.lrc', reading: 'rr'},
   vi: {label: 'Tiếng Việt', file: 'badapplevi.lrc'},
-  yue: {label: '粵語', file: 'badappleyue.lrc'},
+  yue: {label: '粵語', file: 'badappleyue.lrc', reading: 'jyutping'},
   cs: {label: 'Čeština', file: 'badapplecz.lrc', draft: true,
     creditURL: 'https://www.hryprodivky.cz/blog/kagaminerincz/bad-apple-cz-preklad'},
   'zh-Hant': {label: '繁體中文', file: 'badapplezh.lrc', reading: 'pinyin'}
 };
+
+function romanize(text, format) {
+  if (!text) return '';
+  let reading;
+  if (format === 'jyutping') {
+    reading = ToJyutping.getJyutpingList(text).map(([character, pronunciation]) => pronunciation || character)
+      .join(' ').replace(/\s+([，。！？、；：,.!?;:])/g, '$1').replace(/\s+/g, ' ').trim();
+  } else reading = convertHangulToMC2000(text.normalize('NFC'));
+  if (/[\p{Script=Han}\p{Script=Hangul}]/u.test(reading)) {
+    throw new Error(`An unconverted character remains in the ${format} reading for: ${text}`);
+  }
+  return reading;
+}
+
+function buildReadingLrc(lrc, format) {
+  if (!['jyutping', 'rr'].includes(format)) return undefined;
+  return lrc.replace(/^((?:\[\d{1,3}:\d{2}(?:\.\d{1,3})?\][ \t]*)+)([^\r\n]*)/gm,
+    (_, timestamps, text) => timestamps + romanize(text.trim(), format));
+}
 const tracks = Object.fromEntries(Object.entries(sources).map(([language, source]) => {
   const lrc = fs.readFileSync(path.join(media, source.file), 'utf8').replace(/^\uFEFF/, '');
   if (!/\[\d+:\d{2}(?:\.\d+)?\]/.test(lrc)) throw new Error(`No timed lines in ${source.file}`);
   return [language, {label: source.label, source: source.file, reading: source.reading,
-    draft: source.draft, creditURL: source.creditURL, lrc}];
+    draft: source.draft, creditURL: source.creditURL, lrc,
+    readingLrc: buildReadingLrc(lrc, source.reading)}];
 }));
 tracks.zh = {
   ...tracks['zh-Hant'],

@@ -10,7 +10,7 @@
   let frameDataPromise = null;
   let lyricsPromise = null;
 
-  function parseLyrics(lrc, readingFormat) {
+  function parseLyrics(lrc, readingFormat, readingLrc) {
     const cues = [];
     const offset = Number(lrc.match(/^\[offset:([+-]?\d+)\]/mi)?.[1] || 0) / 1000;
     for (const line of lrc.split(/\r?\n/)) {
@@ -29,6 +29,10 @@
         if (Number(stamp[2]) >= 60) continue;
         cues.push({time: Math.max(0, Number(stamp[1]) * 60 + Number(stamp[2]) - offset), text, reading});
       }
+    }
+    if (readingLrc) {
+      const readings = new Map(parseLyrics(readingLrc).map(cue => [cue.time, cue.text]));
+      for (const cue of cues) cue.reading = readings.get(cue.time) || '';
     }
     return cues.sort((a, b) => a.time - b.time);
   }
@@ -176,7 +180,6 @@
     const themeToggle = document.getElementById('theme-toggle');
     const originalPressed = themeToggle?.getAttribute('aria-pressed');
     let themeApplied = false;
-    const scroll = {x: scrollX, y: scrollY};
     const layer = document.createElement('div');
     layer.className = 'bad-apple';
     layer.setAttribute('role', 'dialog');
@@ -194,8 +197,7 @@
     lyricLine.className = 'bad-apple-lyric-line';
     const lyricReading = document.createElement('div');
     lyricReading.className = 'bad-apple-lyric-reading';
-    lyricReading.lang = 'zh-Latn';
-    lyricReading.setAttribute('aria-label', 'Pinyin');
+    lyricReading.setAttribute('aria-label', 'Romanization');
     lyricReading.hidden = true;
     const lyricHint = document.createElement('span');
     lyricHint.className = 'bad-apple-lyric-hint';
@@ -249,7 +251,14 @@
       const chosen = options.find(code => lyricsManifest.tracks?.[code]?.lrc);
       selectedLyricsLanguage = chosen || 'ja';
       const track = lyricsManifest.tracks?.[selectedLyricsLanguage];
-      lyricCues = track?.lrc ? parseLyrics(track.lrc, track.reading) : [];
+      lyricCues = track?.lrc ? parseLyrics(track.lrc, track.reading, track.readingLrc) : [];
+      const readingInfo = {
+        pinyin: {lang: 'zh-Latn', label: 'Pinyin'},
+        jyutping: {lang: 'yue-Latn', label: 'Jyutping'},
+        rr: {lang: 'ko-Latn', label: 'Revised Romanization'}
+      }[track?.reading];
+      lyricReading.lang = readingInfo?.lang || '';
+      lyricReading.setAttribute('aria-label', readingInfo?.label || 'Romanization');
       currentCue = -2;
       captions.lang = selectedLyricsLanguage;
       updateLyrics();
@@ -327,9 +336,9 @@
       restoreTheme();
       content.classList.remove('bad-apple-source');
       root.classList.remove('bad-apple-active', 'bad-apple-theme-fade', 'bad-apple-theme-playing', 'bad-apple-theme-returning');
+      root.style.removeProperty('--bad-apple-document-height');
       layer.remove();
       for (const [element, value] of inert) element.inert = value;
-      if (!session.navigating) window.scrollTo(scroll.x, scroll.y);
       if (previousFocus?.isConnected) previousFocus.focus({preventScroll: true});
     }
     function leave(immediate = false) {
@@ -353,6 +362,12 @@
       sound.setAttribute('aria-pressed', String(!video.muted));
     }, {signal});
     document.addEventListener('keydown', event => {
+      // Leave native scrolling enabled, but keep the page's other keyboard
+      // easter eggs from consuming navigation keys while this dialog is open.
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(event.key)) {
+        event.stopImmediatePropagation();
+        return;
+      }
       if (event.key === 'Escape') { event.preventDefault(); leave(); }
       if (event.key === 'Tab') {
         event.preventDefault();
@@ -360,9 +375,9 @@
         const index = buttons.indexOf(document.activeElement);
         buttons[(index + (event.shiftKey ? buttons.length - 1 : 1)) % buttons.length].focus();
       }
-    }, {signal});
+    }, {signal, capture: true});
     window.addEventListener('resize', () => leave(true), {signal});
-    window.addEventListener('hashchange', () => { session.navigating = true; leave(true); }, {signal});
+    window.addEventListener('hashchange', () => leave(true), {signal});
     window.addEventListener('pagehide', cleanup, {signal});
     window.addEventListener('beforeprint', () => leave(true), {signal});
     document.addEventListener('visibilitychange', () => {
@@ -377,21 +392,25 @@
       const [, frames] = await Promise.all([loadVideo(video, signal), loadFrames()]);
       if (active !== session) return;
       particles = collectText(content);
+      const particleScroll = {x: scrollX, y: scrollY};
       if (!particles.length) { cleanup(); return; }
       const ctx = canvas.getContext('2d');
       if (!ctx) { cleanup(); return; }
       const mainRect = content.getBoundingClientRect();
-      const mobile = innerWidth <= 600;
+      const mobile = innerWidth <= 760;
+      const headerHeight = mobile ? 0 : (document.querySelector('.page-header')?.getBoundingClientRect().height || 0);
       const area = mobile ? {x: 0, y: 0, width: innerWidth} :
-        {x: Math.max(0, mainRect.left), y: Math.max(0, mainRect.top),
+        {x: Math.max(0, mainRect.left), y: Math.max(headerHeight, mainRect.top, 0),
           width: Math.min(innerWidth, mainRect.right) - Math.max(0, mainRect.left)};
       const controlsSpace = Math.max(64, controls.getBoundingClientRect().height + 24);
-      area.height = (mobile ? innerHeight - controlsSpace : Math.min(innerHeight - controlsSpace, mainRect.bottom)) - area.y;
-      if (area.width < 40 || area.height < 152) { cleanup(); return; }
+      // Playback is pinned to the viewport, including near the article's end.
+      // The restored desktop header keeps its normal flow height via sticky.
+      area.height = innerHeight - controlsSpace - area.y;
+      const captionSpace = ['zh', 'ko', 'yue'].includes(root.lang.split('-')[0]) ? (mobile ? 168 : 128) : 88;
+      if (area.width < 40 || area.height < Math.max(152, captionSpace + 40)) { cleanup(); return; }
       // A character cell is about half as wide as it is tall; the picture stays 4:3.
       const columns = Math.max(1, Math.ceil(Math.sqrt(particles.length * 8 / 3)));
       const rows = Math.ceil(particles.length / columns);
-      const captionSpace = root.lang.split('-')[0] === 'zh' ? (innerWidth <= 600 ? 144 : 104) : 88;
       const width = Math.min(area.width - 24, (area.height - 24 - captionSpace) * 4 / 3);
       const height = width * 3 / 4;
       const left = area.x + (area.width - width) / 2;
@@ -419,6 +438,9 @@
         particle.delay = reduced ? 0 : index / particles.length * .24;
       });
       content.classList.add('bad-apple-source');
+      // Pinning an absolute sidebar must not shorten the document and clamp
+      // the reader's scroll position on articles shorter than the navigation.
+      root.style.setProperty('--bad-apple-document-height', `${Math.max(root.scrollHeight, document.body.scrollHeight, innerHeight)}px`);
       root.classList.add('bad-apple-active', 'bad-apple-theme-fade');
       // Establish the current palette before fading the real site into dark mode.
       // This temporary change never writes the reader's saved theme preference.
@@ -444,8 +466,10 @@
         particles.forEach((particle, index) => {
           const t = returning ? progress : ease(clamp((progress - particle.delay) / (1 - particle.delay)));
           const from = returning ? particle.returnFrom : particle;
-          const x = returning ? particle.x + (from.x - particle.x) * t : particle.x + (particle.tx - particle.x) * t;
-          const y = returning ? particle.y + (from.y - particle.y) * t : particle.y + (particle.ty - particle.y) * t;
+          const sourceX = particle.x + particleScroll.x - scrollX;
+          const sourceY = particle.y + particleScroll.y - scrollY;
+          const x = returning ? sourceX + (from.x - sourceX) * t : sourceX + (particle.tx - sourceX) * t;
+          const y = returning ? sourceY + (from.y - sourceY) * t : sourceY + (particle.ty - sourceY) * t;
           const size = returning ? particle.size + (from.size - particle.size) * t : particle.size + (particle.targetSize - particle.size) * t;
           const visualT = returning ? t * (from.t || 0) : t;
           const textBlend = ease(clamp((visualT - .2) / .7));

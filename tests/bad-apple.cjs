@@ -507,6 +507,11 @@ test('Korean pages select the supplied Korean LRC using the ko language key', as
     p.frame(2500);
     assert.equal(p.w.document.querySelector('.bad-apple-lyrics').lang, 'ko');
     assert.equal(p.w.document.querySelector('.bad-apple-lyric-line').textContent, first[3].trim());
+    const reading = p.w.document.querySelector('.bad-apple-lyric-reading');
+    assert.equal(reading.textContent, 'muuimihage heulleoganeun sigan soge');
+    assert.equal(reading.lang, 'ko-Latn');
+    assert.equal(reading.getAttribute('aria-label'), 'Revised Romanization');
+    assert.equal(reading.hidden, false);
     p.type(['Escape']);
     p.frame(3600);
   } finally { p.dom.window.close(); }
@@ -645,7 +650,7 @@ test('Cantonese pages select the supplied yue track and retain its Traditional t
   const manifest = sandbox.window.ManualBadAppleLyrics;
   const supplied = fs.readFileSync(path.join(root, 'assets/media/badappleyue.lrc'), 'utf8').replace(/^\uFEFF/, '');
   assert.equal(manifest.tracks.yue.lrc, supplied);
-  assert.equal(manifest.tracks.yue.reading, undefined);
+  assert.equal(manifest.tracks.yue.reading, 'jyutping');
   const first = supplied.match(/\[(\d+):(\d+(?:\.\d+)?)\]\s*([^\r\n]+)/);
   const offset = Number(supplied.match(/^\[offset:([+-]?\d+)\]/mi)?.[1] || 0) / 1000;
   for (const language of ['yue', 'yue-Hant']) {
@@ -660,9 +665,177 @@ test('Cantonese pages select the supplied yue track and retain its Traditional t
       const captions = p.w.document.querySelector('.bad-apple-lyrics');
       assert.equal(captions.lang, 'yue');
       assert.equal(captions.querySelector('.bad-apple-lyric-line').textContent, first[3].trim());
-      assert.equal(captions.querySelector('.bad-apple-lyric-reading').hidden, true);
+      const reading = captions.querySelector('.bad-apple-lyric-reading');
+      assert.equal(reading.hidden, false);
+      assert.equal(reading.lang, 'yue-Latn');
+      assert.equal(reading.getAttribute('aria-label'), 'Jyutping');
+      assert.match(reading.textContent, /\bsi4 jat6 leoi5\b/);
       p.type(['Escape']);
       p.frame(3600);
     } finally { p.dom.window.close(); }
   }
+});
+
+test('page scrolling keeps the video pinned and returns characters at the current scroll position', async () => {
+  const p = page();
+  try {
+    p.w.scrollX = 40;
+    p.w.scrollY = 100;
+    let resets = 0;
+    p.w.scrollTo = (x, y) => { resets++; p.w.scrollX = x; p.w.scrollY = y; };
+    p.type('badapple');
+    await settle();
+    p.frame(2300);
+    const grid = p.draws.map(({x, y}) => ({x, y}));
+    p.w.scrollX = 70;
+    p.w.scrollY = 220;
+    p.draws.length = 0;
+    p.frame(2500);
+    assert.deepEqual(p.draws.map(({x, y}) => ({x, y})), grid);
+    p.type(['Escape']);
+    p.w.scrollY = 250;
+    p.draws.length = 0;
+    p.frame(3500);
+    assert.ok(p.draws.every(draw => draw.x === 0 && draw.y === -70));
+    assert.equal(p.w.scrollY, 250);
+    assert.equal(p.w.scrollX, 70);
+    assert.equal(resets, 0);
+    assert.equal(p.w.document.querySelector('.bad-apple'), null);
+  } finally { p.dom.window.close(); }
+});
+
+test('scrolling during loading captures the character origins at the time of assembly', async () => {
+  const p = page({load: false});
+  try {
+    p.w.scrollY = 100;
+    p.type('badapple');
+    p.w.scrollY = 200;
+    p.video.dispatchEvent(new p.w.Event('loadeddata'));
+    await settle();
+    p.frame(0);
+    assert.ok(p.draws.every(draw => draw.y === 80));
+    const event = new p.w.KeyboardEvent('keydown', {key: 'PageDown', bubbles: true, cancelable: true});
+    let consumed = false;
+    p.w.document.addEventListener('keydown', () => { consumed = true; event.preventDefault(); });
+    p.w.document.body.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(consumed, false);
+    p.w.dispatchEvent(new p.w.Event('resize'));
+  } finally { p.dom.window.close(); }
+});
+
+test('generated Korean and Cantonese readings preserve every timestamp, offset, and blank cue', () => {
+  const sandbox = {window: {}};
+  require('node:vm').runInNewContext(fs.readFileSync(path.join(root, 'assets/media/bad-apple-lyrics.js'), 'utf8'), sandbox);
+  for (const language of ['ko', 'yue']) {
+    const track = sandbox.window.ManualBadAppleLyrics.tracks[language];
+    assert.deepEqual(track.readingLrc.match(/\[[^\]]+\]/g), track.lrc.match(/\[[^\]]+\]/g));
+    const bodies = lrc => lrc.split(/\r?\n/).filter(line => /^\[\d+:/.test(line))
+      .map(line => line.replace(/\[\d+:\d+(?:\.\d+)?\]/g, '').trim());
+    const original = bodies(track.lrc), readings = bodies(track.readingLrc);
+    assert.equal(readings.length, original.length);
+    original.forEach((line, index) => {
+      assert.equal(Boolean(readings[index]), Boolean(line));
+      assert.ok(!/[\p{Script=Han}\p{Script=Hangul}]/u.test(readings[index]));
+      if (line && language === 'yue') assert.match(readings[index], /[a-z]+[1-6]/);
+    });
+  }
+});
+
+test('parallel romanization follows offsets, repeated timestamps, blank cues, seeking, and the Lyrics toggle', async () => {
+  const p = page({lyrics: {defaultLanguage: 'ja', tracks: {ko: {
+    reading: 'rr', lrc: '[offset:-500]\n[00:01.00][00:02.00]한국어\n[00:03.00]',
+    readingLrc: '[offset:-500]\n[00:01.00][00:02.00]hangugeo\n[00:03.00]'
+  }}}});
+  try {
+    p.w.document.documentElement.lang = 'ko';
+    p.type('badapple');
+    await settle();
+    p.frame(2300);
+    const captions = p.w.document.querySelector('.bad-apple-lyrics');
+    const line = captions.querySelector('.bad-apple-lyric-line');
+    const reading = captions.querySelector('.bad-apple-lyric-reading');
+    assert.equal(reading.hidden, true);
+    p.video.currentTime = 1.5;
+    p.frame(2500);
+    assert.equal(line.textContent, '한국어');
+    assert.equal(reading.textContent, 'hangugeo');
+    assert.equal(reading.hidden, false);
+    const toggle = p.w.document.querySelector('.bad-apple-lyrics-toggle');
+    toggle.click();
+    assert.equal(captions.hidden, true);
+    p.video.currentTime = 3.5;
+    p.frame(2800);
+    toggle.click();
+    assert.equal(line.textContent, '');
+    assert.equal(reading.textContent, '');
+    assert.equal(reading.hidden, true);
+    p.video.currentTime = 2.5;
+    p.frame(3100);
+    assert.equal(reading.textContent, 'hangugeo');
+    p.type(['Escape']);
+    p.frame(4200);
+  } finally { p.dom.window.close(); }
+});
+
+test('very short viewports restore the article instead of drawing a negative-sized video', async () => {
+  const p = page();
+  try {
+    p.w.innerWidth = 390;
+    p.w.innerHeight = 260;
+    p.w.document.documentElement.lang = 'ko';
+    p.type('badapple');
+    await settle();
+    assert.equal(p.w.document.querySelector('.bad-apple'), null);
+    assert.equal(p.w.document.querySelector('main').className, '');
+    assert.equal(p.frames.size, 0);
+    assert.equal(p.draws.length, 0);
+  } finally { p.dom.window.close(); }
+});
+
+test('starting near the article end reserves the pinned desktop header and uses the viewport', async () => {
+  const p = page();
+  try {
+    p.w.scrollY = 1500;
+    const header = p.w.document.createElement('header');
+    header.className = 'page-header';
+    header.getBoundingClientRect = () => ({top: -1500, bottom: -1420, height: 80});
+    p.w.document.body.prepend(header);
+    p.w.document.querySelector('main').getBoundingClientRect = () => ({left: 176, top: -1420, right: 1024, bottom: 140});
+    p.type('badapple');
+    await settle();
+    p.frame(2300);
+    assert.equal(p.w.document.querySelector('.bad-apple').dataset.phase, 'playing');
+    assert.ok(p.draws.every(draw => draw.y >= 80 && draw.y < 704));
+    assert.ok(p.w.document.documentElement.classList.contains('bad-apple-active'));
+    p.type(['Escape']);
+    p.frame(3400);
+    assert.equal(p.w.scrollY, 1500);
+    assert.equal(p.w.document.documentElement.classList.contains('bad-apple-active'), false);
+    assert.equal(p.w.document.documentElement.style.getPropertyValue('--bad-apple-document-height'), '');
+  } finally { p.dom.window.close(); }
+});
+
+test('English pages select the supplied English lyrics with their timing intact', async () => {
+  const sandbox = {window: {}};
+  require('node:vm').runInNewContext(fs.readFileSync(path.join(root, 'assets/media/bad-apple-lyrics.js'), 'utf8'), sandbox);
+  const manifest = sandbox.window.ManualBadAppleLyrics;
+  const supplied = fs.readFileSync(path.join(root, 'assets/media/badappleen.lrc'), 'utf8').replace(/^\uFEFF/, '');
+  assert.equal(manifest.tracks.en.lrc, supplied);
+  const first = supplied.match(/\[(\d+):(\d+(?:\.\d+)?)\]\s*([^\r\n]+)/);
+  const offset = Number(supplied.match(/^\[offset:([+-]?\d+)\]/mi)?.[1] || 0) / 1000;
+  const p = page({lyrics: manifest});
+  try {
+    p.w.document.documentElement.lang = 'en';
+    p.type('badapple');
+    await settle();
+    p.frame(2300);
+    p.video.currentTime = Number(first[1]) * 60 + Number(first[2]) - offset;
+    p.frame(2500);
+    assert.equal(p.w.document.querySelector('.bad-apple-lyrics').lang, 'en');
+    assert.equal(p.w.document.querySelector('.bad-apple-lyric-line').textContent, first[3].trim());
+    assert.equal(p.w.document.querySelector('.bad-apple-lyric-reading').hidden, true);
+    p.type(['Escape']);
+    p.frame(3600);
+  } finally { p.dom.window.close(); }
 });

@@ -12,7 +12,11 @@
 .bad-apple-controls button:disabled { opacity:.5; cursor:default; }
 .bad-apple-controls .bad-apple-lyrics-toggle[aria-pressed="true"] { border-color:var(--accent); background:var(--tab); }
 .bad-apple-source { visibility:hidden; }
-.bad-apple-active { overflow:hidden; }
+@media screen and (min-width:761px) {
+  .bad-apple-active body { min-height:var(--bad-apple-document-height); }
+  .bad-apple-active .page-header { position:sticky; top:0; z-index:1001; background:var(--surface); }
+  .bad-apple-active .sidebar { position:fixed; top:0; max-height:100vh; overflow-y:auto; overflow-x:hidden; scrollbar-width:thin; z-index:1001; background:var(--canvas); }
+}
 .bad-apple-theme-fade { --bad-apple-theme-duration:1900ms; }
 .bad-apple-theme-playing { --bad-apple-theme-duration:220ms; }
 .bad-apple-theme-returning { --bad-apple-theme-duration:1000ms; }
