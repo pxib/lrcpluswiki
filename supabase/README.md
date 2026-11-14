@@ -1,5 +1,26 @@
 # Community database updates
 
+## Self-service account deletion
+
+Account settings → Password and security → Delete account requires the current
+password and explicit confirmation. The `delete-account` Edge Function validates
+the bearer token with Supabase Auth, rechecks the password, and deletes only that
+authenticated user with the server-side Admin API. Existing foreign keys remove
+the profile and introduction and detach contributions/reports. Discussion text
+and private moderation evidence remain; the UI and privacy policy explain this.
+
+Deploy with `supabase functions deploy delete-account --project-ref PROJECT_REF`.
+The Pages workflow deploys it automatically when Supabase automation is enabled.
+It uses Supabase's server-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
+`SUPABASE_SERVICE_ROLE_KEY`; no admin key belongs in browser configuration.
+`verify_jwt = false` in `config.toml` delegates token verification to the handler
+for compatibility with publishable keys; the endpoint still requires a live
+authenticated user and the correct password. Without the deployed function,
+deletion shows an unavailable error and leaves the account intact.
+
+Run `node --test tests/account-deletion.cjs` for endpoint, UI, and cascade checks.
+A live end-to-end deletion should use a disposable account after deployment.
+
 For automatic deployment with GitHub Actions, follow [AUTOMATION.md](AUTOMATION.md).
 The numbered files in `migrations/` are the deployment source. The top-level
 SQL files below are retained for the original manual installation workflow;

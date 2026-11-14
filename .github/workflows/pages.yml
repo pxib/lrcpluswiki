@@ -69,6 +69,13 @@ jobs:
           supabase db push --remote --dry-run
           supabase db push --remote --yes
 
+      - name: Deploy self-service account deletion
+        if: vars.SUPABASE_MIGRATIONS_ENABLED == 'true' || inputs.record_existing_migrations == true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_ID"
+
       - name: Database automation setup reminder
         if: vars.SUPABASE_MIGRATIONS_ENABLED != 'true' && inputs.record_existing_migrations != true
         run: echo '::notice::Database migrations are disabled. Follow supabase/AUTOMATION.md to complete the one-time setup.'

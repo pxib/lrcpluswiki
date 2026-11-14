@@ -88,6 +88,15 @@
     submit.textContent = titles[mode];
     submit.disabled = true;
     form.append(submit);
+    if (mode === 'create-account') {
+      const notice = document.createElement('p');
+      notice.className = 'account-notice';
+      const privacy = document.createElement('a');
+      privacy.href = 'privacy.html';
+      privacy.textContent = {"en":"Privacy Policy","ja":"プライバシーポリシー","ko":"개인정보 처리방침","yue":"私隱政策","zh":"隐私政策","zh-hant":"隱私權政策","cs":"Zásady ochrany osobních údajů","vi":"Chính sách quyền riêng tư"}[lang.startsWith('yue') ? 'yue' : lang.toLowerCase()] || 'Privacy Policy';
+      notice.append(privacy);
+      form.append(notice);
+    }
     if (mode !== 'login') link(panel, 'login', t.login);
     else { link(panel, 'create-account', t.signup); link(panel, 'password-reset', t.reset); }
     panels[mode] = { panel, status, form, submit };

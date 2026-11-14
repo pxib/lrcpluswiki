@@ -77,6 +77,21 @@
   passwordSection.form.append(node('p', t.passwordHelp, 'account-notice'), passwordSection.submit);
   const sessions = section('sessions', t.otherSessions);
   sessions.form.append(sessions.submit);
+  const deletionText = {
+    en: ['Delete account', 'Permanently delete your account? This cannot be undone.', 'Your login, profile, and introduction will be removed. Discussion text stays with its account attribution removed. Private report snapshots and moderation history may remain. Delete individual replies first if you want their public text removed.', 'Your account has been deleted.'],
+    ja: ['アカウントを削除', 'アカウントを完全に削除しますか？元に戻せません。', 'ログイン情報、プロフィール、自己紹介を削除します。議論の本文はアカウントとの関連付けを解除して残ります。非公開の報告内容や管理履歴が残る場合があります。返信の公開本文も削除したい場合は、先に個別に削除してください。', 'アカウントを削除しました。'],
+    ko: ['계정 삭제', '계정을 영구적으로 삭제하시겠습니까? 되돌릴 수 없습니다.', '로그인 정보, 프로필과 소개가 삭제됩니다. 토론 내용은 계정 연결이 해제된 상태로 남습니다. 비공개 신고 자료와 관리 기록은 남을 수 있습니다. 댓글의 공개 내용도 지우려면 먼저 각 댓글을 삭제하세요.', '계정이 삭제되었습니다.'],
+    yue: ['刪除帳戶', '永久刪除你嘅帳戶？呢個操作無法復原。', '登入資料、個人檔案同自我介紹會被刪除。討論文字會保留，但會移除帳戶關聯。私人舉報內容同管理紀錄可能會保留。如果想移除回覆嘅公開文字，請先逐一刪除回覆。', '你嘅帳戶已刪除。'],
+    zh: ['删除账户', '永久删除你的账户？此操作无法撤销。', '登录信息、个人资料和自我介绍将被删除。讨论文字会保留，但会移除账户关联。私密举报快照和管理记录可能保留。如需移除回复的公开文字，请先逐条删除回复。', '你的账户已删除。'],
+    'zh-hant': ['刪除帳戶', '永久刪除你的帳戶？此操作無法復原。', '登入資訊、個人資料和自我介紹將被刪除。討論文字會保留，但會移除帳戶關聯。私人檢舉快照和管理紀錄可能保留。如需移除回覆的公開文字，請先逐一刪除回覆。', '你的帳戶已刪除。'],
+    cs: ['Smazat účet', 'Trvale smazat účet? Tuto akci nelze vrátit zpět.', 'Přihlašovací údaje, profil a představení budou odstraněny. Text diskusí zůstane bez propojení s účtem. Soukromé kopie hlášení a historie moderování mohou zůstat zachovány. Chcete-li odstranit veřejný text odpovědí, nejprve je jednotlivě smažte.', 'Váš účet byl smazán.'],
+    vi: ['Xóa tài khoản', 'Xóa vĩnh viễn tài khoản của bạn? Không thể hoàn tác thao tác này.', 'Thông tin đăng nhập, hồ sơ và phần giới thiệu sẽ bị xóa. Nội dung thảo luận vẫn được giữ lại nhưng không còn liên kết với tài khoản. Bản chụp báo cáo riêng tư và lịch sử kiểm duyệt có thể được giữ lại. Nếu muốn xóa nội dung công khai của các phản hồi, hãy xóa từng phản hồi trước.', 'Tài khoản của bạn đã được xóa.']
+  };
+  const deletion = deletionText[document.documentElement.lang.startsWith('yue') ? 'yue' : document.documentElement.lang.toLowerCase()] || deletionText.en;
+  const deleteSection = section('delete-account', deletion[0]);
+  const deletePassword = field(deleteSection.form, 'settings-delete-password', t.currentPassword, 'password', 'current-password');
+  deleteSection.form.prepend(node('p', deletion[2], 'account-notice'));
+  deleteSection.form.append(deleteSection.submit);
   // Preferences uses a horizontal section selector, as in MediaWiki's Help:Preferences.
   const labels = {
     en: [l('User profile'), l('Password and security')],
@@ -92,7 +107,7 @@
   const profile = node('div', '', 'preferences-panel');
   const security = node('div', '', 'preferences-panel');
   profile.append(...details.childNodes);
-  security.append(passwordSection.form.parentElement, sessions.form.parentElement);
+  security.append(passwordSection.form.parentElement, sessions.form.parentElement, deleteSection.form.parentElement);
   details.append(tabs, profile, security);
   const sections = [profile, security];
   const tabButtons = sections.map((section, index) => {
@@ -137,7 +152,7 @@
     username.textContent = email.textContent = verified.textContent = '';
     details.hidden = true;
     forms.forEach(form => form.reset());
-    [emailSection, passwordSection, sessions].forEach(({status}) => { status.textContent = ''; });
+    [emailSection, passwordSection, sessions, deleteSection].forEach(({status}) => { status.textContent = ''; });
     controls();
   }
   async function render() {
@@ -227,6 +242,46 @@
     return api.client.auth.updateUser({password});
   });
   bind(sessions, () => api.client.auth.signOut({scope: 'others'}));
+  deleteSection.form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (busy || !user || !api.client || panel.hidden || api.session?.user.id !== user.id || !deleteSection.form.reportValidity()) return;
+    if (!window.confirm(deletion[1])) return;
+    const id = user.id;
+    const version = generation;
+    const password = deletePassword.value;
+    deletePassword.value = '';
+    busy = true;
+    controls();
+    deleteSection.form.setAttribute('aria-busy', 'true');
+    deleteSection.status.textContent = t.busy;
+    try {
+      const result = await api.client.functions.invoke('delete-account', {body: {password, confirmation: 'DELETE'}});
+      if (result.error) {
+        const detail = await result.error.context?.json?.().catch(() => null);
+        if (version === generation) deleteSection.status.textContent = detail?.error === 'invalid_credentials' ? t.invalid : detail?.error === 'rate_limit' ? t.rateLimit : t.unavailable;
+        return;
+      }
+      if (!result.data?.deleted) throw new Error('Deletion not confirmed');
+      // Never sign out a different account that signed in while this request ran.
+      if (api.session?.user.id !== id) return;
+      await api.client.auth.signOut({scope: 'local'}).catch(() => {});
+      if (api.session?.user.id === id) {
+        api.session = null;
+        api.staffRole = null;
+        window.dispatchEvent(new Event('communitychange'));
+      }
+      gate.textContent = deletion[3];
+      gate.tabIndex = -1;
+      gate.focus();
+    } catch {
+      if (version === generation) deleteSection.status.textContent = t.unavailable;
+    } finally {
+      busy = false;
+      deleteSection.form.setAttribute('aria-busy', 'false');
+      controls();
+      if (version === generation) deleteSection.status.focus();
+    }
+  });
   window.addEventListener('accountmodechange', render);
   window.addEventListener('communitychange', render);
   window.addEventListener('pagehide', clear);

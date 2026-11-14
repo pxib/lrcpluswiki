@@ -1,3 +1,8 @@
 # Identifies this checkout to the Supabase CLI. The hosted project is selected
 # separately with supabase link --project-ref (from a GitHub Actions secret).
 project_id = "lrcpluswiki"
+
+# The handler validates the bearer token with Auth and verifies the current
+# password itself. This supports the wiki's publishable API key.
+[functions.delete-account]
+verify_jwt = false
