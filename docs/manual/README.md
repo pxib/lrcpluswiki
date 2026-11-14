@@ -42,6 +42,36 @@ Run `node --test tests/user-pages.cjs tests/user-pages-sql.cjs tests/community.c
 
 ## Editing articles
 
+### Playback and audio-import coverage
+
+The playback, lyric-search, and yt-dlp guides were checked against
+[LRCPlus commit `34ba57f`](https://github.com/pxib/lrcplus/tree/34ba57f402bc6f8671aca84bffe90cf9ee754013)
+on November 14, 2026. The additions cover local lyric-text search, named
+playlists and M3U portability, independent search histories, dependency setup,
+batch and playlist downloads, download concurrency and restart behavior,
+subtitle conversion, lyric lookup, and artwork reuse. They are included in all
+eight HTML editions; the four generated editions also have matching paragraph
+and heading entries in their source dictionaries. Application control names
+remain in English so readers can locate them in the player.
+
+Source references for future updates:
+
+- [Library controls](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/ui/player_library.py),
+  [lyric search](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/core/library_lyrics.py),
+  and [playlist dialog](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/ui/playlist_dialog.py).
+- [Search-history limits](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/core/search_history.py)
+  and [history controls](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/ui/search_history.py).
+- [yt-dlp plugin guide](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/plugins/community/ytdlp_import/README.md)
+  and [download queue controls](https://github.com/pxib/lrcplus/blob/34ba57f402bc6f8671aca84bffe90cf9ee754013/plugins/community/ytdlp_import/queue_view.py).
+
+Before these edits, `build-locales.cjs --check` already failed on missing
+Pronunciation Guide translations. The localization suite also already failed
+because the English manual contains an extra Pronunciation Guide article and
+a ninth language link (Neko). Those existing differences are preserved. Until
+they are reconciled, verify additions against the dictionaries and all eight
+HTML editions directly; a complete locale rebuild is still blocked by the
+missing translations.
+
 The full manual is available in English, Japanese, Korean, Cantonese, Simplified Chinese (`zh.html`), Traditional Chinese (`zh-hant.html`, `zh-Hant`), Czech (`cs.html`), and Vietnamese (`vi.html`). Each edition has matching account and public user pages. Language switching retains article fragments, account return routes, and user lookups. Community posts keep their original text; localization changes the interface, not user content. The Talk welcome consistently invites users to log in; read-only labeling applies to the archived scripted examples.
 
 Chinese, Czech, and Vietnamese are machine-assisted translation drafts with terminology and link corrections. Their source dictionaries are `locales/zh.json`, `locales/cs.json`, and `locales/vi.json`; `locales/ui.json` lists dynamic interface strings. Complete paragraphs with inline markup have their own dictionary entries to preserve sentence context. Code examples, keyboard keys, section IDs, and screenshot resources are preserved. These editions start with live community discussions, without copies of the English scripted examples. Further native-speaker review is welcome.
