@@ -74,7 +74,7 @@ for (const [lang, , base] of languages.slice(4)) {
     document.querySelectorAll('noscript [lang="en"]').forEach(node => node.lang = lang);
     for (const a of document.querySelectorAll('a[href]')) {
       if (a.closest('.language-switch')) continue;
-      a.setAttribute('href', a.getAttribute('href').replace(/^(index|account|user)\.html/, (_, page) => page === 'index' ? `${base}.html` : `${base}-${page}.html`));
+      a.setAttribute('href', a.getAttribute('href').replace(/^(index|account|user|privacy)\.html/, (_, page) => page === 'index' ? `${base}.html` : `${base}-${page}.html`));
     }
     const script = document.createElement('script');
     script.src = `locales/${base}.js`;
@@ -99,4 +99,5 @@ for (const [lang, , base] of languages.slice(0, 4)) for (const kind of ['', 'acc
   if (!kind) source = source.replace('</head>', [...dom.window.document.querySelectorAll('link[rel="alternate"]')].map(node => '  ' + node.outerHTML).join('\n') + '\n</head>');
   write(file, source);
 }
+require('./build-privacy.cjs').buildPrivacy(check);
 console.log(check ? 'Language outputs are current.' : 'Built Simplified and Traditional Chinese, Czech, and Vietnamese editions and language navigation.');

@@ -244,7 +244,7 @@
   controls();
   function title(username) {
     heading.textContent = username ? `${text[1]}:${username}` : text[0];
-    document.title = `${heading.textContent} — LRCPlus wiki`;
+    document.title = `${heading.textContent} — LRCPlus.wiki`;
   }
   title();
   document.querySelectorAll('.language-switch a').forEach(anchor => {

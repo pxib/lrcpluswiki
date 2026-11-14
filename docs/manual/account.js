@@ -92,7 +92,7 @@
       const notice = document.createElement('p');
       notice.className = 'account-notice';
       const privacy = document.createElement('a');
-      privacy.href = 'privacy.html';
+      privacy.href = (lang === 'en' ? '' : lang.startsWith('yue') ? 'yue-' : `${lang.toLowerCase()}-`) + 'privacy.html';
       privacy.textContent = {"en":"Privacy Policy","ja":"プライバシーポリシー","ko":"개인정보 처리방침","yue":"私隱政策","zh":"隐私政策","zh-hant":"隱私權政策","cs":"Zásady ochrany osobních údajů","vi":"Chính sách quyền riêng tư"}[lang.startsWith('yue') ? 'yue' : lang.toLowerCase()] || 'Privacy Policy';
       notice.append(privacy);
       form.append(notice);
@@ -223,7 +223,7 @@
     document.getElementById('settings-panel').hidden = currentMode !== 'settings';
     document.getElementById('moderation-panel').hidden = currentMode !== 'moderation';
     directory.hidden = currentMode !== 'special-pages';
-    document.title = `${titles[currentMode]} — LRCPlus wiki`;
+    document.title = `${titles[currentMode]} — LRCPlus.wiki`;
     document.getElementById('special-tab').href = `#${currentMode}`;
     document.getElementById('manual-return').href = manual + returnHash;
     document.querySelectorAll('.language-switch a, .account-links a').forEach(a => {
