@@ -50,6 +50,11 @@ automatically. Leave the one-time checkbox unchecked on future manual runs.
 The existing workflow concurrency group prevents overlapping database deploys.
 No credentials are published in the wiki artifact.
 
+The workflow also deploys the `delete-account` Edge Function with an explicit
+`--remote=PROJECT_REF` target and `--yes` for unattended confirmation. If a run
+fails with a confirmation-required error, push the corrected workflow and start
+a new run; rerunning an older job uses that job's original workflow command.
+
 Each workflow attempt uploads and deploys a matching artifact named
 `github-pages-RUN_ID-ATTEMPT`. The workflow waits for that artifact to appear in
 the listing API before deploying, so a retry does not select an older attempt's

@@ -9,7 +9,7 @@ authenticated user with the server-side Admin API. Existing foreign keys remove
 the profile and introduction and detach contributions/reports. Discussion text
 and private moderation evidence remain; the UI and privacy policy explain this.
 
-Deploy with `supabase functions deploy delete-account --project-ref PROJECT_REF`.
+Deploy with `supabase functions deploy delete-account --remote=PROJECT_REF --yes`.
 The Pages workflow deploys it automatically when Supabase automation is enabled.
 It uses Supabase's server-provided `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
 `SUPABASE_SERVICE_ROLE_KEY`; no admin key belongs in browser configuration.
