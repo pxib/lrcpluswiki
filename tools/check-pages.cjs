@@ -2,11 +2,11 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const root = path.resolve(__dirname, '../docs/manual');
+const root = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(__dirname, '../docs/manual');
 const errors = [];
 function check(file, reference) {
   if (/^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(reference)) return;
-  const target = path.resolve(path.dirname(file), reference.split(/[?#]/)[0]);
+  const target = path.resolve(path.dirname(file), decodeURIComponent(reference.split(/[?#]/)[0]));
   if (!target.startsWith(root + path.sep) || !fs.existsSync(target)) {
     errors.push(`${path.relative(root, file)}: missing published resource ${reference}`);
   }
