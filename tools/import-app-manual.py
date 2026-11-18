@@ -19,6 +19,8 @@ EXTRA_SECTIONS = {
 }
 HEADINGS = re.compile(r'<h2\b[^>]*\bid="([^"]+)"[^>]*>', re.I)
 RESOURCE = re.compile(r'''(\s(?:href|src)\s*=\s*)(["'])(.*?)\2''', re.I)
+SIDEBAR_NAV = re.compile(r'<aside\b[^>]*>(?:(?!</aside>).)*?<nav\b[^>]*>(.*?)</nav>', re.I | re.S)
+ARTICLE_LINK = re.compile(r'''<a\b[^>]*\shref\s*=\s*(["'])#([^"'/]+)\1[^>]*>.*?</a>''', re.I | re.S)
 
 
 class Articles(HTMLParser):
@@ -55,6 +57,29 @@ class Articles(HTMLParser):
             article_id, title, start = self.current
             self.articles[article_id] = (title, start, self.source_position())
             self.current = None
+
+
+def import_sidebar_links(app, wiki, imported_ids):
+    app_nav, wiki_nav = SIDEBAR_NAV.search(app), SIDEBAR_NAV.search(wiki)
+    if not app_nav or not wiki_nav:
+        raise ValueError('Both editions must have sidebar navigation')
+
+    wiki_links = {link[2]: link.end() for link in ARTICLE_LINK.finditer(wiki_nav[1])}
+    insertions = {}
+    position = 0
+    for link in ARTICLE_LINK.finditer(app_nav[1]):
+        article_id = link[2]
+        if article_id in wiki_links:
+            position = wiki_links[article_id]
+        elif article_id in imported_ids:
+            insertions.setdefault(position, []).append(link[0])
+
+    nav = wiki_nav[1]
+    for position, links in sorted(insertions.items(), reverse=True):
+        added = ''.join('\n      ' + link for link in links)
+        nav = nav[:position] + added + nav[position:]
+    start, end = wiki_nav.span(1)
+    return wiki[:start] + nav + wiki[end:]
 
 
 def import_edition(app, wiki, fix_resources):
@@ -99,7 +124,7 @@ def import_edition(app, wiki, fix_resources):
         replacements.append((index_start, index_start, ''.join(new_articles)))
     for start, end, article in sorted(replacements, reverse=True):
         wiki = wiki[:start] + article + wiki[end:]
-    return wiki
+    return import_sidebar_links(app, wiki, app_articles.keys() - WIKI_ARTICLES)
 
 
 def build(app_root, wiki_manual):
