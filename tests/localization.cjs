@@ -1,8 +1,11 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const {runInNewContext} = require('node:vm');
 const {JSDOM} = require('../.tmp/community-check/node_modules/jsdom');
+const {buildArticleLanguages} = require('../tools/build-article-languages.cjs');
 const root = path.resolve(__dirname, '../docs/manual');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const editions = ['index', 'ja', 'ko', 'yue', 'zh', 'zh-hant', 'cs', 'vi'];
@@ -14,7 +17,8 @@ function page(lang, hash = '#main', protocol = 'https:') {
   w.scrollTo = () => {};
   w.HTMLElement.prototype.scrollIntoView = () => {};
   Object.defineProperty(w.HTMLElement.prototype, 'innerText', {get() {return this.textContent;}});
-  for (const file of [`locales/${lang}.js`, 'community-i18n.js', 'talk-timestamps.js', 'manual.js']) w.eval(read(file));
+  const localeFiles = translated.includes(lang) ? [`locales/${lang}.js`] : [];
+  for (const file of [...localeFiles, 'community-i18n.js', 'talk-timestamps.js', 'article-languages.js', 'manual.js']) w.eval(read(file));
   return dom;
 }
 test('every edition has eight matching manual, account and user language destinations', () => {
@@ -96,6 +100,69 @@ test('translated article, search, source and Talk routes work offline and preser
     assert.equal(login.searchParams.get('return'), '#editor/talk');
     for (const a of doc.querySelectorAll('.language-switch a')) assert.equal(a.hash, '#editor/talk');
     w.close();
+  }
+});
+test('the language menu disables unavailable article translations and restores links when navigating away', () => {
+  const articleRoute = '#pronunciation-guide/pronunciation-guide-kana';
+  for (const protocol of ['https:', 'file:']) {
+    const dom = page('index', articleRoute, protocol);
+    const w = dom.window, doc = w.document;
+    const languages = [...doc.querySelectorAll('.language-switch a')];
+    const english = languages.find(link => link.hreflang === 'en');
+    const neko = languages.find(link => link.hreflang === 'neko');
+    const translations = languages.filter(link => link !== english && link !== neko);
+    const navigate = hash => { w.location.hash = hash; w.dispatchEvent(new w.Event('hashchange')); };
+
+    assert.equal(english.hash, articleRoute);
+    assert.equal(neko.hash, '');
+    for (const hash of [articleRoute, '#pronunciation-guide/source', '#pronunciation-guide/talk']) {
+      navigate(hash);
+      for (const link of translations) {
+        assert.equal(link.getAttribute('aria-disabled'), 'true', link.hreflang);
+        assert.equal(link.hasAttribute('href'), false, link.hreflang);
+        assert.equal(link.getAttribute('role'), 'link');
+        link.focus();
+        assert.notEqual(doc.activeElement, link, link.hreflang);
+      }
+    }
+
+    for (const hash of ['#editor/editor-timing', '#search/lyrics']) {
+      navigate(hash);
+      for (const link of translations) {
+        assert.equal(link.hash, hash, link.hreflang);
+        assert.equal(link.hasAttribute('aria-disabled'), false, link.hreflang);
+      }
+    }
+    w.close();
+  }
+});
+test('article language coverage follows new articles and translations in the edition HTML', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-article-languages-'));
+  const write = (file, html) => fs.writeFileSync(path.join(directory, file), html);
+  const bundle = path.join(directory, 'article-languages.js');
+  const coverage = () => {
+    buildArticleLanguages(directory);
+    const window = {};
+    runInNewContext(fs.readFileSync(bundle, 'utf8'), {window});
+    return window.ManualArticleLanguages;
+  };
+  const main = '<article id="main"></article>';
+  const future = '<article id="future-guide"></article>';
+  try {
+    write('index.html', '<link rel="alternate" hreflang="en" href="index.html">\n'
+      + '<link rel="alternate" hreflang="ja" href="ja.html">\n' + main + future);
+    write('ja.html', main);
+    assert.deepEqual(Array.from(coverage().get('future-guide')), ['en']);
+
+    write('ja.html', main + future + '<article id="local-guide"></article>');
+    const updated = coverage();
+    assert.equal(updated.has('future-guide'), false);
+    assert.deepEqual(Array.from(updated.get('local-guide')), ['ja']);
+  } finally {
+    for (const file of ['index.html', 'ja.html', 'article-languages.js']) {
+      fs.rmSync(path.join(directory, file), {force: true});
+    }
+    fs.rmdirSync(directory);
   }
 });
 test('welcome notices consistently invite logging in while keeping valid list markup', () => {

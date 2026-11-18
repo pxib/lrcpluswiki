@@ -24,6 +24,11 @@
   };
   const articles = [...document.querySelectorAll('#articles > article')];
   const byId = new Map(articles.map(article => [article.id, article]));
+  const editionLanguages = new Set([...document.querySelectorAll('link[rel="alternate"][hreflang]')]
+    .map(link => link.hreflang));
+  const languageLinks = [...document.querySelectorAll('.language-switch a[href]')]
+    .filter(link => editionLanguages.has(link.hreflang))
+    .map(link => ({link, url: new URL(link.href)}));
   // Capture authored markup before adding contents, permalinks, or related links.
   const sources = new Map(articles.map(article => [article.id, article.outerHTML]));
   const searchPanel = document.getElementById('search-results');
@@ -422,9 +427,19 @@
       document.getElementById('source-heading').textContent = `${messages.source}: ${article.dataset.title}`;
       document.getElementById('source-code').textContent = sources.get(article.id);
     } else document.title = `${article.dataset.title} — ${messages.manual}`;
-    document.querySelectorAll('.language-switch a').forEach(link => {
-      link.hash = location.hash || '#main';
-    });
+    const articleLanguages = searching ? undefined : window.ManualArticleLanguages?.get(article.id);
+    for (const {link, url} of languageLinks) {
+      if (articleLanguages && !articleLanguages.includes(link.hreflang)) {
+        link.removeAttribute('href');
+        link.setAttribute('role', 'link');
+        link.setAttribute('aria-disabled', 'true');
+      } else {
+        url.hash = location.hash || '#main';
+        link.href = url.href;
+        link.removeAttribute('role');
+        link.removeAttribute('aria-disabled');
+      }
+    }
     document.querySelectorAll('.account-links a').forEach(link => {
       const url = new URL(link.href);
       url.searchParams.set('return', location.hash || '#main');

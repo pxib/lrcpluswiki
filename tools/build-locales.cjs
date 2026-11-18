@@ -100,4 +100,5 @@ for (const [lang, , base] of languages.slice(0, 4)) for (const kind of ['', 'acc
   write(file, source);
 }
 require('./build-privacy.cjs').buildPrivacy(check);
+if (!check) require('./build-article-languages.cjs').buildArticleLanguages(root);
 console.log(check ? 'Language outputs are current.' : 'Built Simplified and Traditional Chinese, Czech, and Vietnamese editions and language navigation.');

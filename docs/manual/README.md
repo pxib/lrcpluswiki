@@ -88,6 +88,8 @@ Articles are ordinary HTML inside `#articles` in `index.html`. Each article need
 
 `manual.js` creates article contents, section permalinks, breadcrumbs, related links, and the local search index. Add a space-separated `data-related` list to an article to select its related pages. Update the static A–Z index and sidebar when adding an article. With JavaScript disabled, all articles remain readable in one document. Character articles use `class="character-article"` for a right-hand profile box and `data-toc="after-lead"` to place generated contents after the introduction, immediately before the first section. The profile stacks with the text on narrow screens and in print.
 
+The language menu uses article IDs in each edition to determine which translations are available. The Pages workflow and locale builder regenerate the bundled list. After adding or removing articles by hand, run `node tools/build-article-languages.cjs` to refresh the list for local previews.
+
 ## Installation and setup
 
 `#installation` covers the Windows x64 release ZIP, full extraction, first-run setup, a playback check, optional features, and startup troubleshooting in all eight editions. It is linked from the sidebar, main page, Getting started, and article index; search and contents are generated automatically. Existing Supabase projects must apply supabase/installation-article.sql before publishing to enable live Talk topics for the new article. The download link uses the official latest stable release rather than a pinned version.

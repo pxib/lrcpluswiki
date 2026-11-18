@@ -34,7 +34,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Check published files
-        run: node tools/check-pages.cjs
+        run: |
+          node tools/build-article-languages.cjs
+          node tools/check-pages.cjs
 
       - name: Install Supabase CLI
         if: vars.SUPABASE_MIGRATIONS_ENABLED == 'true' || inputs.record_existing_migrations == true

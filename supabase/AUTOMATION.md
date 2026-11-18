@@ -13,6 +13,10 @@ SQL files again. Use this setup option only against that existing database.
 
 1. Create a Supabase personal access token at
    <https://supabase.com/dashboard/account/tokens>.
+   Scope it to this project and include **Edge Functions: Read-write** for
+   deploying `delete-account`. Keep the permissions needed by the existing
+   database workflow as well; `supabase link` needs **Project Settings**,
+   **API Keys**, and **API Key Secrets**, each with **Read** access.
 2. Find the project reference in your Supabase project dashboard URL:
    `https://supabase.com/dashboard/project/PROJECT_REF`.
 3. Get the project's database password (the password used for PostgreSQL
@@ -54,6 +58,17 @@ The workflow also deploys the `delete-account` Edge Function with an explicit
 `--remote=PROJECT_REF` target and `--yes` for unattended confirmation. If a run
 fails with a confirmation-required error, push the corrected workflow and start
 a new run; rerunning an older job uses that job's original workflow command.
+
+If function deployment returns `403` with `edge_functions_write` missing, the
+personal access token lacks **Edge Functions: Read-write**. Create a replacement
+scoped token with that permission and the existing workflow permissions, then
+update `SUPABASE_ACCESS_TOKEN` in GitHub Actions secrets. If the `github-pages`
+environment defines the same secret, update that environment secret: it takes
+precedence over the repository secret. Rerun the failed job after updating the
+secret; no command change is needed for this permission error. A project API
+key or service-role key is not a replacement for the CLI personal access token.
+
+See [Supabase personal access token permissions](https://supabase.com/docs/guides/platform/personal-access-tokens).
 
 Each workflow attempt uploads and deploys a matching artifact named
 `github-pages-RUN_ID-ATTEMPT`. The workflow waits for that artifact to appear in
