@@ -20,20 +20,20 @@ function stampHtml(html, build) {
     });
   });
 }
-function stampWiki(root, build) {
+function stampWiki(root, build, {manualDigest, wikiRevision} = {}) {
   for (const name of fs.readdirSync(root).filter(name => name.endsWith('.html'))) {
     const file = path.join(root, name);
     const html = fs.readFileSync(file, 'utf8');
     fs.writeFileSync(file, stampHtml(html, build));
   }
-  fs.writeFileSync(path.join(root, 'version.json'), JSON.stringify({build}) + '\n');
+  fs.writeFileSync(path.join(root, 'version.json'), JSON.stringify({build, manualDigest, wikiRevision}) + '\n');
 }
 if (require.main === module) {
   const root = path.resolve(__dirname, '../docs/manual');
   const build = process.env.GITHUB_SHA
     ? `${process.env.GITHUB_SHA}-${process.env.GITHUB_RUN_ID || 'local'}-${process.env.GITHUB_RUN_ATTEMPT || '1'}`
     : `local-${Date.now()}`;
-  stampWiki(root, build);
+  stampWiki(root, build, {manualDigest: process.env.MANUAL_DIGEST, wikiRevision: process.env.GITHUB_SHA});
   console.log(`Stamped wiki build ${build}`);
 }
 module.exports = {stampHtml, stampWiki};
