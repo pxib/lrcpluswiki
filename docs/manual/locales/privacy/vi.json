@@ -2,7 +2,8 @@
   "title": "Chính sách quyền riêng tư",
   "updated": "Cập nhật lần cuối:",
   "date": "14 tháng 11 năm 2026",
-  "headings": ["Thông tin tôi sử dụng", "Lưu trữ trên trình duyệt", "Nhà cung cấp dịch vụ và xử lý quốc tế", "Lưu giữ và xóa", "Lựa chọn và yêu cầu về quyền riêng tư", "Liên hệ về quyền riêng tư", "Thay đổi chính sách"],
+  "headings": ["Thông tin tôi sử dụng", "Lưu trữ trên trình duyệt", "Nhà cung cấp dịch vụ và xử lý quốc tế", "Lưu giữ và xóa", "Lựa chọn và yêu cầu về quyền riêng tư", "Liên hệ về quyền riêng tư", "Thay đổi chính sách"
+  ],
   "items": [
     "<strong>Tài khoản:</strong> địa chỉ email, tên người dùng, mã định danh tài khoản, thông tin đăng ký và xác minh, cùng hồ sơ xác thực. Supabase Auth xử lý mật khẩu và phiên đăng nhập để cung cấp quyền truy cập tài khoản, xác minh và đặt lại mật khẩu. Địa chỉ email của bạn không hiển thị trên các trang người dùng công khai.",
     "<strong>Đóng góp công khai:</strong> tên người dùng, mã định danh tài khoản công khai, ngày tham gia, phần giới thiệu trên trang người dùng, chủ đề thảo luận, phản hồi và thời điểm tương ứng. Vai trò của nhân sự quản lý cũng có thể hiển thị công khai. Bất kỳ ai cũng có thể đọc các đóng góp công khai; công cụ tìm kiếm hoặc người truy cập khác có thể sao chép chúng.",
@@ -21,7 +22,7 @@
     "Bạn có thể thay đổi địa chỉ email và mật khẩu trong <a href=\"account.html#settings\">cài đặt tài khoản</a>, và chỉnh sửa phần giới thiệu công khai trên trang người dùng. Để tự xóa tài khoản, hãy mở cài đặt tài khoản, chọn <strong>Mật khẩu và bảo mật</strong>, rồi dùng <strong>Xóa tài khoản</strong>. Nhập mật khẩu hiện tại và xác nhận xóa vĩnh viễn.",
     "Xóa tài khoản sẽ loại bỏ thông tin đăng nhập, hồ sơ và phần giới thiệu. Nội dung thảo luận hiện có vẫn được giữ lại nhưng không còn liên kết với tài khoản; những gì bạn viết trong bài đăng vẫn có thể giúp nhận diện bạn. Nếu muốn xóa nội dung công khai của các phản hồi, hãy xóa các phản hồi đó trước khi xóa tài khoản. Bản chụp báo cáo riêng tư và lịch sử kiểm duyệt có thể được giữ lại như mô tả ở trên. Không thể hoàn tác việc xóa.",
     "Yêu cầu về quyền riêng tư không hạn chế quyền khiếu nại đến cơ quan có thẩm quyền hoặc tìm kiếm các biện pháp bảo vệ khác theo pháp luật áp dụng.",
-    "Tôi hiện chưa có địa chỉ email liên hệ riêng về quyền riêng tư. Tôi sẽ cập nhật trang này khi có địa chỉ liên hệ. Bạn có thể dùng các chức năng tài khoản, giới thiệu và phản hồi nêu trên để trực tiếp quản lý thông tin của mình.",
+    "Nếu có câu hỏi hoặc yêu cầu về quyền riêng tư, hãy gửi email đến <a href=\"mailto:lrcplus@outlook.jp\">lrcplus@outlook.jp</a>. Bạn cũng có thể trực tiếp quản lý thông tin của mình bằng các chức năng tài khoản, giới thiệu và trả lời được nêu ở trên.",
     "Tôi sẽ cập nhật trang này và ngày ở trên khi cách xử lý dữ liệu của wiki thay đổi. Nếu thay đổi cần thêm thông báo hoặc sự đồng ý, tôi sẽ thông báo hoặc xin sự đồng ý trước khi thực hiện việc xử lý liên quan."
   ]
 }

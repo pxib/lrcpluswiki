@@ -2,7 +2,8 @@
   "title": "Zásady ochrany osobních údajů",
   "updated": "Poslední aktualizace:",
   "date": "14. listopadu 2026",
-  "headings": ["Údaje, které používám", "Úložiště prohlížeče", "Poskytovatelé služeb a mezinárodní zpracování", "Uchovávání a odstraňování", "Vaše možnosti a žádosti týkající se soukromí", "Kontakt pro ochranu soukromí", "Změny těchto zásad"],
+  "headings": ["Údaje, které používám", "Úložiště prohlížeče", "Poskytovatelé služeb a mezinárodní zpracování", "Uchovávání a odstraňování", "Vaše možnosti a žádosti týkající se soukromí", "Kontakt pro ochranu soukromí", "Změny těchto zásad"
+  ],
   "items": [
     "<strong>Účty:</strong> e-mailová adresa, uživatelské jméno, identifikátor účtu, registrační a ověřovací údaje a záznamy o ověřování totožnosti. Supabase Auth zpracovává heslo a přihlašovací relace pro přístup k účtu, ověřování a obnovení hesla. Vaše e-mailová adresa se na veřejných uživatelských stránkách nezobrazuje.",
     "<strong>Veřejné příspěvky:</strong> uživatelské jméno, veřejný identifikátor účtu, datum registrace, představení na uživatelské stránce, diskusní témata, odpovědi a jejich časové údaje. Veřejně se mohou zobrazovat i role správců a moderátorů. Veřejné příspěvky může číst kdokoli a vyhledávače nebo jiní návštěvníci je mohou kopírovat.",
@@ -21,7 +22,7 @@
     "E-mailovou adresu a heslo můžete změnit v <a href=\"account.html#settings\">nastavení účtu</a> a veřejné představení na své uživatelské stránce. Chcete-li účet sami smazat, otevřete nastavení účtu, vyberte <strong>Heslo a zabezpečení</strong> a použijte <strong>Smazat účet</strong>. Zadejte aktuální heslo a potvrďte trvalé smazání.",
     "Smazání účtu odstraní přihlašovací údaje, profil a představení. Stávající text diskusí zůstane bez propojení s účtem; text vložený do příspěvku vás přesto může identifikovat. Chcete-li odstranit veřejný text odpovědí, smažte je před smazáním účtu. Soukromé snímky hlášení a historie moderování mohou zůstat zachovány, jak je popsáno výše. Smazání nelze vrátit zpět.",
     "Žádost týkající se soukromí neomezuje vaše právo podat stížnost příslušnému orgánu nebo využít jiné prostředky nápravy podle příslušných právních předpisů.",
-    "Samostatnou kontaktní e-mailovou adresu pro ochranu soukromí zatím nemám. Jakmile bude zřízena, tuto stránku aktualizuji. Své údaje můžete přímo spravovat pomocí výše popsaných funkcí účtu, představení a odpovědí.",
+    "S dotazy nebo žádostmi týkajícími se soukromí napište na <a href=\"mailto:lrcplus@outlook.jp\">lrcplus@outlook.jp</a>. Své údaje můžete spravovat také přímo pomocí výše uvedených funkcí účtu, úvodu a odpovědí.",
     "Pokud se změní způsob nakládání s údaji na wiki, aktualizuji tuto stránku a datum výše. Pokud změna vyžaduje další oznámení nebo souhlas, poskytnu oznámení nebo získám souhlas před zahájením příslušného zpracování."
   ]
 }
